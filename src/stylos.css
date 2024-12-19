@@ -1,0 +1,169 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  /* Navbar */
+  .navbar {
+    @apply bg-customBlue dark:bg-black text-yellow-400 py-4 shadow-md;
+  }
+
+  .navbar-container {
+    @apply flex items-center justify-between px-4;
+  }
+
+  .navbar-logo-title {
+    @apply flex flex-row items-center gap-2;
+  }
+
+  .navbar-logo {
+    @apply flex items-center gap-1;
+  }
+
+  .navbar-text {
+    @apply flex flex-col items-start;
+  }
+
+  .navbar-title {
+    @apply text-3xl font-bold;
+  }
+
+  .navbar-subtitle {
+    @apply text-2xl text-gray-300 mt-1;
+  }
+
+  .navbar-nav {
+    @apply flex items-center gap-4;
+  }
+
+  .navbar-list {
+    @apply flex space-x-5 mx-4;
+  }
+
+  .navbar-link {
+    @apply text-lg text-yellow-400 dark:text-gray-300  
+      hover:text-yellow-400 dark:hover:text-yellow-300  
+      font-medium transition-colors duration-200;
+  }
+
+  .theme-toggle-btn {
+    @apply bg-amarillobtn dark:bg-amarillobtn text-white dark:text-white px-3 py-1  
+      rounded transition duration-300 mr-4;
+  }
+
+  /* Fondo Global */
+  body {
+    @apply bg-fondoClaro dark:bg-fondoObscuro transition-colors duration-300;
+  }
+
+  /* FormularioS  */
+  .form-container {
+    @apply h-screen flex flex-col justify-start items-center;
+  }
+  
+  .form-card {
+    @apply bg-transparent border-2 border-white dark:border-gray-400 
+      rounded-lg shadow-lg p-10 w-full max-w-md mt-10 lg:mt-20;
+  }
+
+  .form-title {
+    @apply text-2xl font-bold text-yellow-400 dark:text-yellow-300 text-center mb-4;
+  }
+
+  .form-group {
+    @apply mb-4;
+  }
+
+  .form-label {
+    @apply block text-yellow-400 dark:text-yellow-300 text-sm font-medium mb-1;
+  }
+
+  .form-input {
+    @apply w-full bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-300 
+      rounded-lg px-3 py-2 focus:outline-none focus:ring-2 
+      focus:ring-yellow-400 dark:focus:ring-yellow-500;
+  }
+
+
+  .form-footer {
+    @apply mt-4 text-center;
+  }
+
+  .form-link {
+    @apply text-yellow-400 dark:text-yellow-300 
+      hover:text-red-400 dark:hover:text-red-400 
+      text-sm;
+  }
+
+  /* Botones  */
+  .btn-aceptar {
+    @apply w-full bg-green-600 dark:bg-green-500 hover:bg-green-700 
+          dark:hover:bg-green-600 text-white dark:text-gray-900 
+          font-bold py-2 px-4 rounded-lg transition duration-300;
+  }
+
+  .btn-cancelar {
+    @apply w-full bg-red-600 dark:bg-red-500 hover:bg-red-700 
+          dark:hover:bg-red-600 text-white dark:text-gray-900 
+          font-bold py-2 px-4 rounded-lg transition duration-300;
+  }
+  .button-yellow {
+    @apply w-full bg-yellow-600 dark:bg-yellow-500 hover:bg-yellow-700 
+      dark:hover:bg-yellow-600 text-white dark:text-gray-900 font-bold py-2 px-4 
+      rounded-lg transition duration-300;
+  }
+
+  /*Home*/
+  .home-banner {
+    @apply relative;
+  }
+
+  .home-banner-img {
+    @apply w-full h-[500px] object-cover;
+  }
+
+  .home-banner-overlay {
+    @apply absolute inset-0 flex items-center justify-center bg-black bg-opacity-50;
+  }
+
+  .home-banner-title {
+    @apply text-4xl md:text-5xl text-white font-bold text-center;
+  }
+
+  /* Servicios  */
+  .services-section {
+    @apply bg-fondoClaro dark:bg-fondoObscuro py-12 transition-colors duration-300;
+  }
+
+  .services-container {
+    @apply container mx-auto px-4 text-center;
+  }
+
+  .services-title {
+    @apply text-3xl text-white dark:text-gray-200 font-bold mb-8;
+  }
+
+  .services-grid {
+    @apply grid grid-cols-1 md:grid-cols-3 gap-8;
+  }
+
+  .service-card {
+    @apply bg-cardClaro dark:bg-cardObscuro rounded-lg overflow-hidden shadow-lg transition-colors duration-300;
+  }
+
+  .service-card-img {
+    @apply w-full h-48 object-cover;
+  }
+
+  .service-card-content {
+    @apply p-6;
+  }
+
+  .service-card-title {
+    @apply text-white dark:text-white text-xl font-bold mb-2;
+  }
+
+  .service-card-text {
+    @apply text-white dark:text-gray-300 text-sm;
+  }
+}
