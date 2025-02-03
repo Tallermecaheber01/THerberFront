@@ -1,10 +1,27 @@
-import React from 'react';
+import React, { useState } from 'react'; // Agregado useState
+import { Link } from "react-router-dom";
+import "./stylos.css";  
 import { FaFacebook, FaTwitter, FaInstagram } from 'react-icons/fa'; // Iconos de redes sociales
 
 function Footer() {
+    const [theme, setTheme] = useState("light");
+    
+    const toggleTheme = () => {
+      const newTheme = theme === "light" ? "dark" : "light";
+      setTheme(newTheme);
+      document.documentElement.classList.toggle("dark");
+    };
+
   return (
+    <div>
+      <div className="flex justify-end mt-4 mb-4 mr-4">
+          <button onClick={toggleTheme} className="theme-toggle-btn">
+            {theme === "light" ? "Modo Oscuro" : "Modo Claro"}
+            </button>
+      </div>
     <footer className="footer">
       <div className="footerContainer">
+        
         <div className="gridContainer">
           {/* Sección de Navegación */}
           <div>
@@ -52,14 +69,20 @@ function Footer() {
                 <FaInstagram size={24} />
               </a>
             </div>
+            <h3 className="subtitlefooter mt-4 ">Dejanos saber tu opinion</h3>
+            <ul>
+            <li>
+                <a href="feedback" className="navbar-link">Comentarios</a>
+            </li>
+            </ul>
           </div>
         </div>
-
-        <div className="text-center mt-8">
+        <div className="text-center mt-4">
           <p className="text-gray-500">© 2025 Taller automotriz Heber. Todos los derechos reservados.</p>
         </div>
       </div>
     </footer>
+    </div>
   );
 }
 

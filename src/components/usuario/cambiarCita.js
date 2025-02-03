@@ -71,10 +71,10 @@ function CambiarCita() {
   };
 
   return (
+    <div>
+            {/* Breadcrumbs fuera del formulario */}
+    <Breadcrumbs paths={breadcrumbPaths} />
     <div className="form-container">
-      {/* Breadcrumbs fuera del formulario */}
-      <Breadcrumbs paths={breadcrumbPaths} />
-
       <div className="form-card">
         <h2 className="form-title">Cambiar Cita en el Taller Mecánico</h2>
         <form onSubmit={manejarEnviar}>
@@ -186,6 +186,7 @@ function CambiarCita() {
          </div>
         </form>
       </div>
+    </div>
     </div>
   );
 }

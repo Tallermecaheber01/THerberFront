@@ -47,9 +47,10 @@
     }
 
     .theme-toggle-btn {
-      @apply bg-amarillobtn dark:bg-amarillobtn text-white dark:text-white px-3 py-1  
-        rounded transition duration-300 mr-4;
+      @apply bg-amarillobtn dark:bg-amarillobtn text-white dark:text-white px-3 py-1.5
+    rounded transition duration-300 ml-auto;
     }
+    
 
     /* Fondo Global */
     body {

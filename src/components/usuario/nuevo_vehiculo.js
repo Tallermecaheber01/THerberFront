@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Breadcrumbs from "../Breadcrumbs";
 
 function NuevoVehiculo() {
   const [formData, setFormData] = useState({
@@ -61,7 +62,14 @@ function NuevoVehiculo() {
     alert('Registro cancelado.');
   };
 
+  const breadcrumbPaths = [
+    { name: "Inicio", link: "/" }, // Ruta al inicio
+    { name: "Registrar vehiculo", link: "/nuevovehiculo" }, // Ruta al login
+  ];
+
   return (
+    <div>
+      <Breadcrumbs paths={breadcrumbPaths} />
     <div className="form-container">
       <div className="form-card">
         <h1 className="form-title">Registrar Vehículo</h1>
@@ -185,6 +193,7 @@ function NuevoVehiculo() {
           </div>
         </form>
       </div>
+    </div>
     </div>
   );
 }

@@ -15,6 +15,7 @@ import BadRequest from "./components/failed/BadRequest";
 import AcercaDe from "./components/publico/AcercaDe";
 import PoliticaDePrivacidad from "./components/publico/PoliticaDePrivacidad";
 import TerminosYCondiciones from "./components/publico/TerminosYCondiciones";
+import ValidacionCuenta from "./components/publico/ValidacionCuenta";
 // Usuarios
 import AtencionCliente from "./components/usuario/atencion_cliente";
 import ConsultaCita from "./components/usuario/Consulta_cita";
@@ -56,6 +57,7 @@ const AppRoutes = () => {
       <Route path="AcercaDe" element={< AcercaDe/>} />
       <Route path="PoliticaDePrivacidad" element={< PoliticaDePrivacidad/>} />
       <Route path="TerminosYCondiciones" element={< TerminosYCondiciones/>} />
+      <Route path="ValidacionCuenta" element={< ValidacionCuenta/>}/>
 
       {/* usuarios */}
       <Route path="atencioncliente" element={<AtencionCliente />} />

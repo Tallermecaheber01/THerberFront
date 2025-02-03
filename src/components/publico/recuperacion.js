@@ -31,7 +31,7 @@ function Recuperacion() {
   const breadcrumbPaths = [
     { name: "Inicio", link: "/" }, // Ruta al inicio
     { name: "Login", link: "/login" }, // Ruta al login
-    { name: "Recuperación de Contraseña", link: "/recuperacion" }, // Ruta actual
+    { name: "Recuperación", link: "/recuperacion" }, // Ruta actual
   ];
 
   // Función para validar la entrada del usuario según el campo
@@ -185,10 +185,9 @@ function Recuperacion() {
 
   // Renderiza el componente
   return (
-    <div className="form-container">
-      {/* Mostramos las migas de pan */}
+    <div>
       <Breadcrumbs paths={breadcrumbPaths} />
-
+    <div className="form-container">
       <div className="form-card">
         <h1 className="form-title">Recuperación de Contraseña</h1>
         <form onSubmit={handleSubmit}>
@@ -329,6 +328,7 @@ function Recuperacion() {
         </form>
       </div>
       <ToastContainer />
+    </div>
     </div>
   );
 }

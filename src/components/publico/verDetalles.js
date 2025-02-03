@@ -1,4 +1,5 @@
 import React from "react";
+import Breadcrumbs from "../Breadcrumbs";
 
 const servicio = {
   id: 1,
@@ -14,25 +15,33 @@ const servicio = {
 };
 
 function verDetalles() {
+  const breadcrumbPaths = [
+    { name: "Inicio", link: "/" },
+    { name: "Consulta Servicios", link: "/consultaservicios" },
+    { name: "Detalles", link: "/verDetalles" },
+  ];
   return (
-    <section className="services-section">
-      <div className="detalle-container">
-        <img src={servicio.imagen} alt={servicio.titulo} className="detalle-img" />
-        <div className="detalle-content">
-          <h2 className="detalle-title">{servicio.titulo}</h2>
-          <p className="detalle-descripcion">{servicio.descripcion}</p>
-          <p className="detalle-costo">
-            <span className="detalle-label">Costo:</span> {servicio.costo}
-          </p>
-          <p className="detalle-duracion">
-            <span className="detalle-label">Categoria:</span> {servicio.categoria}
-          </p>
-          <p className="detalle-duracion">
-            <span className="detalle-label">Duración aproximado:</span> {servicio.duracion}
-          </p>
+    <div>
+      <Breadcrumbs paths={breadcrumbPaths} />
+      <section className="services-section">
+        <div className="detalle-container">
+          <img src={servicio.imagen} alt={servicio.titulo} className="detalle-img" />
+          <div className="detalle-content">
+            <h2 className="detalle-title">{servicio.titulo}</h2>
+            <p className="detalle-descripcion">{servicio.descripcion}</p>
+            <p className="detalle-costo">
+              <span className="detalle-label">Costo:</span> {servicio.costo}
+            </p>
+            <p className="detalle-duracion">
+              <span className="detalle-label">Categoria:</span> {servicio.categoria}
+            </p>
+            <p className="detalle-duracion">
+              <span className="detalle-label">Duración aproximado:</span> {servicio.duracion}
+            </p>
+          </div>
         </div>
+      </section>
       </div>
-    </section>
   );
 }
 

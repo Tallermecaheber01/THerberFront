@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import Breadcrumbs from "../Breadcrumbs";
 
 function AtencionCliente() {
   const [formData, setFormData] = useState({
@@ -6,6 +7,11 @@ function AtencionCliente() {
     contacto: "",
     mensaje: "",
   });
+
+  const breadcrumbPaths = [
+    { name: "Inicio", link: "/" }, // Ruta al inicio
+    { name: "Atencion Cliente", link: "/atencioncliente" }, // Ruta al login
+  ];
 
   const handleChange = (e) => {
     const { id, value } = e.target;
@@ -27,6 +33,8 @@ function AtencionCliente() {
   };
 
   return (
+    <div>
+       <Breadcrumbs paths={breadcrumbPaths} /> 
     <div className="form-container">
       <div className="form-card">
         <h2 className="form-title">Atención al Cliente</h2>
@@ -87,6 +95,7 @@ function AtencionCliente() {
           </div>
         </form>
       </div>
+    </div>
     </div>
   );
 }

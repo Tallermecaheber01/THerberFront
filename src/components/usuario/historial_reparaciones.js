@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Breadcrumbs from "../Breadcrumbs";
 
 function HistorialReparaciones() {
   const [filtroVehiculoID, setFiltroVehiculoID] = useState('');
@@ -20,7 +21,14 @@ function HistorialReparaciones() {
 
   const reparacionesFiltradas = handleBuscarReparaciones();
 
+  const breadcrumbPaths = [
+    { name: "Inicio", link: "/" }, // Ruta al inicio
+    { name: "Historial Reparaciones", link: "/historialreperaciones" }, // Ruta al login
+  ];
+
   return (
+    <div>
+      <Breadcrumbs paths={breadcrumbPaths} />
     <div className="citasContainer">
       <form className="citasForm flex flex-col">
         <h1 className="form-title text-center">Consultar Historial de Reparaciones</h1>
@@ -92,6 +100,7 @@ function HistorialReparaciones() {
           )}
         </div>
       </form>
+    </div>
     </div>
   );
 }

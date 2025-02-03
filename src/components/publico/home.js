@@ -1,6 +1,13 @@
 import React from 'react';
+import Breadcrumbs from "../Breadcrumbs";
 
 function Home() {
+
+  const breadcrumbPaths = [
+    { name: "Catalogo", link: "/consultaservicios" }, // Ruta al login
+    { name: "Inicio", link: "/" }, // Ruta al inicio
+  ];
+
   return (
     <div>
       {/* Sección Principal */}
@@ -14,7 +21,7 @@ function Home() {
           <h1 className="home-banner-title">Bienvenido a Taller Automotriz Heber</h1>
         </div>
       </section>
-
+      <Breadcrumbs paths={breadcrumbPaths} />
       {/* Sección de Servicios */}
       <section className="services-section">
         <div className="services-container">

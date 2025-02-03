@@ -57,17 +57,16 @@ function AgregarCita() {
     console.log('Cita agregada', { fecha, serviciosSeleccionados, total });
   };
 
-  return (
-    <div className="form-container">
-      {/* Aquí van las migas de pan */}
-      <Breadcrumbs
-        paths={[
-          { name: 'Inicio', link: '/' },
-          { name: 'Consulta de Citas', link: '/consultaCita' },
-          { name: 'Agregar Cita', link: '/agregarCita' }
-        ]}
-      />
+  const breadcrumbPaths = [
+    { name: 'Inicio', link: '/' },
+    { name: 'Consulta Cita', link: '/consultacita' },
+    { name: 'Agregar cita', link: '/agregarCita' },
+  ];
 
+  return (
+    <div>
+     <Breadcrumbs paths={breadcrumbPaths} />
+    <div className="form-container">
       <div className="form-card">
         <h2 className="form-title">Agregar Cita en el Taller Mecánico</h2>
         <form onSubmit={manejarEnviar}>
@@ -174,6 +173,7 @@ function AgregarCita() {
          </div>
         </form>
       </div>
+    </div>
     </div>
   );
 }

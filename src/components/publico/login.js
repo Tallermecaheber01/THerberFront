@@ -14,7 +14,13 @@ import Breadcrumbs from "../Breadcrumbs";
 
 import { loginUser } from "../../api/users";
 
+
 const Login = () => {
+
+  const breadcrumbPaths = [
+    { name: "Inicio", link: "/" }, 
+    { name: "Login", link: "/login" },          
+  ];
   // Estados para manejar los valores de los campos y errores.
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -124,11 +130,13 @@ const Login = () => {
     setShowPassword(!showPassword);
   };
 
+  
   return (
+    <div>
+      <Breadcrumbs paths={breadcrumbPaths} />
     <div className="form-container">
       <div className="form-card">
         {/* Componente para mostrar el rastro de navegación */}
-        <Breadcrumbs paths={[]} />
 
         <h1 className="form-title">Iniciar Sesión</h1>
         <form onSubmit={handleSubmit}>
@@ -203,6 +211,7 @@ const Login = () => {
         </div>
       </div>
       <ToastContainer />
+    </div>
     </div>
   );
 };

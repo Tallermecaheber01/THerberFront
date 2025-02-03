@@ -2,8 +2,15 @@ import React, { useState } from 'react';
 import { sendFeedback } from '../../api/users';
 import { toast, ToastContainer } from 'react-toastify';
 import { Link, useNavigate } from 'react-router-dom';
+import Breadcrumbs from "../Breadcrumbs";
 
 function Feedback() {
+
+  const breadcrumbPaths = [
+    { name: "Inicio", link: "/" }, // Ruta al inicio
+    { name: "Comentarios", link: "/feedback" }, // Ruta al login
+  ];
+
   const [nombre, setNombre] = useState('');
   const [servicio, setServicio] = useState('');
   const [comentario, setComentario] = useState('');
@@ -51,6 +58,8 @@ function Feedback() {
   };
 
   return (
+    <div>
+       <Breadcrumbs paths={breadcrumbPaths} />
     <div className="form-container">
       <div className="form-card">
         <h1 className="form-title">Feedback del Servicio</h1>
@@ -120,6 +129,7 @@ function Feedback() {
         </form>
       </div>
       <ToastContainer />
+    </div>
     </div>
   );
 }

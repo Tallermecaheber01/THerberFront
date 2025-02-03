@@ -1,21 +1,18 @@
 import React, { useRef, useState } from 'react';
-// Importa React y los hooks useRef (para referencias a campos) y useState (para manejar estados).
-
 import { FiXCircle, FiEye, FiEyeOff } from 'react-icons/fi';
-// Íconos de error y visibilidad de contraseña.
-
 import { ToastContainer, toast } from 'react-toastify';
-// Biblioteca para mostrar notificaciones emergentes.
-
 import { useNavigate } from 'react-router-dom';
-// Hook para redirigir a otras rutas.
-
 import 'react-toastify/dist/ReactToastify.css';
-// Estilos predeterminados de las notificaciones.
-
-import { registerUser, sendVerificationCode2, verifyCode2 } from '../../api/users';
+import { registerUser, sendVerificationCode2 } from '../../api/users';
+import Breadcrumbs from "../Breadcrumbs";
 
 function Registro() {
+  const navigate = useNavigate();
+  const breadcrumbPaths = [
+    { name: "Inicio", link: "/" },
+    { name: "Registro", link: "/registro" },
+  ];
+
   // Referencias para los valores de los campos del formulario.
   const nombreReg = useRef(null);
   const apellidoPaternoReg = useRef(null);
@@ -29,12 +26,6 @@ function Registro() {
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [showVerificationForm, setShowVerificationForm] = useState(false); // Controla la visibilidad del formulario de verificación
-  const [verificationCode, setVerificationCode] = useState(''); // Código de verificación
-  const [userData, setUserData] = useState(null);  // Datos del usuario que se van a guardar una vez validado el código
-
-  const navigate = useNavigate();
-  // Hook para redirigir después del registro.
 
   // Validación de cada campo del formulario según el tipo de dato.
   const validateInput = (name, value) => {
@@ -48,7 +39,7 @@ function Registro() {
         break;
       case 'correo':
         if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(value) || value.length < 12 || value.length > 60) {
-          return 'Correo no válido (12-60 caracteres)';
+          return 'Correo no válido (12-60 caracteres y @)';
         }
         break;
       case 'telefono':
@@ -72,11 +63,45 @@ function Registro() {
     return '';
   };
 
+  // Validación dinámica de la contraseña
+  const validContra = (value) => {
+    const errors = [];
+    if (value.length < 8 || value.length > 20) {
+      errors.push('La contraseña debe tener entre 8 y 20 caracteres.');
+    }
+    else if (!/[A-Z]/.test(value)) {
+      errors.push('Debe contener al menos una mayúscula.');
+    }
+    if (!/[a-z]/.test(value)) {
+      errors.push('Debe contener al menos una minúscula.');
+    }
+    if (!/[0-9]/.test(value)) {
+      errors.push('Debe contener al menos un número.');
+    }
+    if (!/[!@#$%^&*]/.test(value)) {
+      errors.push('Debe contener al menos un símbolo (!@#$%^&*).');
+    }
+    return errors;
+  };
+
+
   // Maneja la validación de los campos al perder el foco.
   const handleBlur = (e) => {
     const { name, value } = e.target;
     const error = validateInput(name, value.trim());
     setErrors((prev) => ({ ...prev, [name]: error }));
+  };
+
+  // Maneja la validación de los campos mientras se escribe.
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    if (name === 'contrasena') {
+      const passwordErrors = validContra(value);
+      setErrors((prev) => ({ ...prev, [name]: passwordErrors.join(' ') }));
+    } else if (name === 'correo') {
+      const error = validateInput(name, value.trim());
+      setErrors((prev) => ({ ...prev, [name]: error }));
+    }
   };
 
   // Limpia todos los campos y errores del formulario.
@@ -115,7 +140,8 @@ function Registro() {
       setErrors(errors); // Actualiza los errores si hay alguno.
       return;
     }
-    //Datos del usuario para el registro
+
+    // Datos del usuario para el registro
     const userData = {
       nombre: nombreReg.current.value,
       apellido_paterno: apellidoPaternoReg.current.value,
@@ -126,14 +152,14 @@ function Registro() {
     };
 
     try {
-      // Enviar los datos al backend para registrar y enviar el código de verificación
-
-      setShowVerificationForm(true); // Mostrar el formulario de verificación
-      setUserData(userData); // Guardar los datos para usarlos luego de la verificación
+      // Enviar el código de verificación
       await sendVerificationCode2(userData.correo);
       toast.success("¡Código de verificación enviado!");
 
+      // Redirigir a la página de validación con los datos del usuario
+      navigate('/ValidacionCuenta', { state: { userData } });
     } catch (error) {
+      //navigate('/ValidacionCuenta', { state: { userData } });
       toast.error("Error al registrar cuenta", {
         position: "top-right",
         autoClose: 3000,
@@ -141,44 +167,10 @@ function Registro() {
     }
   };
 
-
-  const handleVerificationSubmit = async (e) => {
-    e.preventDefault();
-
-    if (verificationCode === "") {
-      toast.error("Por favor ingresa el código de verificación", {
-        position: "top-right",
-        autoClose: 3000,
-      });
-      return;
-    }
-
-    try {
-      // Validar el código de verificación
-      const response = await verifyCode2(userData.correo, verificationCode);
-      console.log(userData.correo)
-      console.log(verificationCode, 'xd')
-      console.log('Respuesta de la API:', response);
-      console.log("Respuesta de verificacion code2", response);
-      await registerUser(userData);
-      toast.success("¡Usuario Registrado correctamente!");
-      setTimeout(() => {
-        navigate('/login');
-      }, 3000);
-    } catch (error) {
-      toast.error("Error en la verificación", {
-        position: "top-right",
-        autoClose: 3000,
-      });
-    }
-  };
-
-
-
   return (
-    <div className="form-container">
-      {/* Mostrar solo el formulario de registro si no se ha mostrado el formulario de verificación */}
-      {!showVerificationForm && (
+    <div>
+      <Breadcrumbs paths={breadcrumbPaths} />
+      <div className="form-container">
         <div className="form-card">
           <h1 className="form-title">Registro</h1>
           <form onSubmit={handleSubmit}>
@@ -214,6 +206,7 @@ function Registro() {
                 className={`form-input`}
                 ref={correoReg}
                 onBlur={handleBlur}
+                onChange={handleChange} // Validación dinámica
               />
               {errors.correo && (
                 <p className="textError">
@@ -250,6 +243,7 @@ function Registro() {
                 className={`form-input`}
                 ref={contrasenaReg}
                 onBlur={handleBlur}
+                onChange={handleChange} // Validación dinámica
               />
               <button
                 type="button"
@@ -296,34 +290,10 @@ function Registro() {
             </div>
           </form>
         </div>
-      )}
-
-      {/* Formulario de verificación */}
-      {showVerificationForm && (
-        <div className="form-card mt-6">
-          <h2 className="form-title">Verificación</h2>
-          <form onSubmit={handleVerificationSubmit}>
-            <div className="form-group">
-              <label htmlFor="verificationCode" className="form-label">Código de Verificación</label>
-              <input
-                type="text"
-                id="verificationCode"
-                name="verificationCode"
-                placeholder="Ingresa el código"
-                className="form-input"
-                value={verificationCode}
-                onChange={(e) => setVerificationCode(e.target.value)}
-              />
-            </div>
-            <div className="form-group flex gap-4 mt-4">
-              <button type="submit" className="btn-aceptar">Verificar</button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      <ToastContainer />
+        <ToastContainer />
+      </div>
     </div>
   );
 }
+
 export default Registro;
