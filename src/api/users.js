@@ -18,9 +18,10 @@ export const registerUser = async (userData) => {
 export const sendVerificationCode2 = async (email) => {
   try {
     const response = await api.post('users/register/send-code', { correo: email });
-    console.log('codigo de vericiacion enviado:', response.data);
+    console.log('codigo de vericación enviado:', response.data);
     return response.data;
   } catch (error) {
+    toast.error("El correo ya está en uso")
     console.error('error al enviar el codigo de verificacion:', error.response ? error.response.data : error.message);
     throw error;
   }
@@ -53,19 +54,12 @@ export const loginUser = async (credentials) => {
     }
     return response.data;
   } catch (error) {
-    if (error.response) {
-      // Verifica si el error es un 400
-      if (error.response.status === 400) {
-        console.error('Error 400 - Solicitud incorrecta:', error.response.data);
-        // Redirige a la vista específica
-        window.location.href = 'http://localhost:3001/400';
-        return; // Finaliza la ejecución después de la redirección
-      }
-    }
-    // Manejo genérico de errores
-    console.error('Error al iniciar sesión:', error.response ? error.response.data : error.message);
+    // No imprimir nada en consola
 
-    throw error;
+    // Opcional: Mostrar un mensaje al usuario
+    toast.error("Credenciales incorrectas. Verifica tu usuario y contraseña.");
+
+    return null; // Indicar que la autenticación falló
   }
 }
 

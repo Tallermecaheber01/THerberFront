@@ -92,7 +92,6 @@ const Login = () => {
     try {
       // Llama a la función de login y guarda la respuesta
       const response = await loginUser({ correo: email, contrasena: password });
-      console.log("Respuesta del servidor:", response); // Imprime la respuesta completa para ver su estructura
 
       // Asegúrate de que 'token' existe antes de intentar acceder a él
       if (response && response.token) {
@@ -115,11 +114,6 @@ const Login = () => {
       // Si el error es debido a un usuario no registrado
       if(error.response.data.statusCode === 500){
         toast.error("Usuario no registrado. Por favor, verifica tu información.");
-        toast.error("Ocurrió un error inesperado.");
-        setTimeout(() => {
-          navigate("/500");
-        }, 3000); // 3000 ms = 3 segundos
-
       }
     }
   };

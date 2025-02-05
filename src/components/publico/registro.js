@@ -156,8 +156,10 @@ function Registro() {
       await sendVerificationCode2(userData.correo);
       toast.success("¡Código de verificación enviado!");
 
-      // Redirigir a la página de validación con los datos del usuario
-      navigate('/ValidacionCuenta', { state: { userData } });
+      setTimeout(() => {
+        navigate('/ValidacionCuenta', { state: { userData } });
+      }, 5000);
+
     } catch (error) {
       //navigate('/ValidacionCuenta', { state: { userData } });
       toast.error("Error al registrar cuenta", {
