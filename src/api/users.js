@@ -44,14 +44,10 @@ export const verifyCode2 = async (email, code) => {
 //Funcion para iniciar sesion
 export const loginUser = async (credentials) => {
   try {
-    const response = await api.post('users/login', credentials);
+    const response = await api.post('users/login', credentials,
+      { withCredentials: true } // Habilitar envío de cookies
+    );
     console.log('Inicio de sesion exitodo:', response.data);
-
-    //Asegurar de guardar el token recibido
-    if (response.data.token) {
-      localStorage.setItem('authToken', response.data.token);
-      console.log('Token guardado en el localStorage')
-    }
     return response.data;
   } catch (error) {
     // No imprimir nada en consola

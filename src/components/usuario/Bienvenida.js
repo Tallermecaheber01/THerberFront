@@ -7,10 +7,22 @@ function Bienvenida() {
   const [usuario, setUsuario] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+
+  // Función para obtener el token de las cookies
+  const getTokenFromCookies = () => {
+    const cookie = document.cookie.split('; ').find(row => row.startsWith('authToken='));
+    if (!cookie) {
+      return null; // No se encontró el token
+    }
+    // Asegúrate de que el valor de la cookie esté correctamente separado
+    const token = cookie.split('=')[1];
+    return token ? decodeURIComponent(token) : null; // Decodificar el token en caso de que contenga caracteres especiales
+  };
+
   useEffect(() => {
-    const token = localStorage.getItem('authToken'); // Obtener el token del localStorage
+    const token = getTokenFromCookies(); // Obtener el token desde la cookie
     if (!token) {
-      console.log('No se encontró token de autenticación');
+      console.log('No se encontró token de autenticación,prueba otra vez');
       navigate('/login'); // Redirige al inicio de sesión si no hay token
       return;
     }
@@ -45,7 +57,7 @@ function Bienvenida() {
     return <div>Cargando...</div>;
   }
 
-   const handleNavigate = () => {
+  const handleNavigate = () => {
     navigate('/feedback');  // Redirige a la ruta '/feedback'
   };
 

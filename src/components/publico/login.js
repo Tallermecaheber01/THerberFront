@@ -18,8 +18,8 @@ import { loginUser } from "../../api/users";
 const Login = () => {
 
   const breadcrumbPaths = [
-    { name: "Inicio", link: "/" }, 
-    { name: "Login", link: "/login" },          
+    { name: "Inicio", link: "/" },
+    { name: "Login", link: "/login" },
   ];
   // Estados para manejar los valores de los campos y errores.
   const [email, setEmail] = useState("");
@@ -80,7 +80,7 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Valida los campos antes de enviar.
+    // Validar antes de enviar
     const emailError = validateInput("email", email);
     const passwordError = validateInput("password", password);
 
@@ -90,30 +90,25 @@ const Login = () => {
     }
 
     try {
-      // Llama a la función de login y guarda la respuesta
       const response = await loginUser({ correo: email, contrasena: password });
 
-      // Asegúrate de que 'token' existe antes de intentar acceder a él
-      if (response && response.token) {
-        // Guarda el token en localStorage o donde prefieras
-        localStorage.setItem("token", response.token);
-
-        console.log("Token guardado en localStorage:", localStorage.getItem("token"));
-        // Muestra la alerta de éxito
+      if (response) {
         toast.success("¡Inicio de sesión exitoso!");
-
-        // Retrasa la redirección 3 segundos después de mostrar la alerta
-        setTimeout(() => {
-          navigate("/Bienvenida");
-        }, 3000); // 3000 ms = 3 segundos
-
+        setTimeout(() => navigate("/Bienvenida"), 3000);
       } else {
-        toast.error("Respuesta inválida del servidor.");
+        toast.error("Credenciales incorrectas.");
       }
     } catch (error) {
-      // Si el error es debido a un usuario no registrado
-      if(error.response.data.statusCode === 500){
-        toast.error("Usuario no registrado. Por favor, verifica tu información.");
+      if (error.response) {
+        if (error.response.status === 401) {
+          toast.error("Usuario o contraseña incorrectos.");
+        } else if (error.response.status === 500) {
+          toast.error("Error en el servidor. Intenta más tarde.");
+        } else {
+          toast.error("Ocurrió un error inesperado.");
+        }
+      } else {
+        toast.error("No hay respuesta del servidor. Verifica tu conexión.");
       }
     }
   };
@@ -124,88 +119,88 @@ const Login = () => {
     setShowPassword(!showPassword);
   };
 
-  
+
   return (
     <div>
       <Breadcrumbs paths={breadcrumbPaths} />
-    <div className="form-container">
-      <div className="form-card">
-        {/* Componente para mostrar el rastro de navegación */}
+      <div className="form-container">
+        <div className="form-card">
+          {/* Componente para mostrar el rastro de navegación */}
 
-        <h1 className="form-title">Iniciar Sesión</h1>
-        <form onSubmit={handleSubmit}>
-          {/* Campo de correo electrónico */}
-          <div className="form-group">
-            <label htmlFor="email" className="form-label">
-              Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={email}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              placeholder="Ingresa tu correo"
-              className={`form-input`}
-            />
-            {errors.email && (
-              <p className="textError">
-                <FiXCircle className="iconoError" />
-                {errors.email}
-              </p>
-            )}
-          </div>
-
-          {/* Campo de contraseña */}
-          <div className="form-group relative">
-            <label htmlFor="password" className="form-label">
-              Contraseña
-            </label>
-            <input
-              type={showPassword ? "text" : "password"}
-              id="password"
-              name="password"
-              value={password}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              placeholder="Ingresa tu contraseña"
-              className={`form-input`}
-            />
-            <button
-              type="button"
-              onClick={togglePasswordVisibility}
-              className="absolute right-3 top-9"
-            >
-              {showPassword ? (
-                <FiEyeOff className="iconoVer" />
-              ) : (
-                <FiEye className="iconoVer" />
+          <h1 className="form-title">Iniciar Sesión</h1>
+          <form onSubmit={handleSubmit}>
+            {/* Campo de correo electrónico */}
+            <div className="form-group">
+              <label htmlFor="email" className="form-label">
+                Email
+              </label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={email}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                placeholder="Ingresa tu correo"
+                className={`form-input`}
+              />
+              {errors.email && (
+                <p className="textError">
+                  <FiXCircle className="iconoError" />
+                  {errors.email}
+                </p>
               )}
+            </div>
+
+            {/* Campo de contraseña */}
+            <div className="form-group relative">
+              <label htmlFor="password" className="form-label">
+                Contraseña
+              </label>
+              <input
+                type={showPassword ? "text" : "password"}
+                id="password"
+                name="password"
+                value={password}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                placeholder="Ingresa tu contraseña"
+                className={`form-input`}
+              />
+              <button
+                type="button"
+                onClick={togglePasswordVisibility}
+                className="absolute right-3 top-9"
+              >
+                {showPassword ? (
+                  <FiEyeOff className="iconoVer" />
+                ) : (
+                  <FiEye className="iconoVer" />
+                )}
+              </button>
+              {errors.password && (
+                <p className="textError">
+                  <FiXCircle className="iconoError" />
+                  {errors.password}
+                </p>
+              )}
+            </div>
+
+            {/* Botón para enviar el formulario */}
+            <button type="submit" className="btn-aceptar">
+              Iniciar Sesión
             </button>
-            {errors.password && (
-              <p className="textError">
-                <FiXCircle className="iconoError" />
-                {errors.password}
-              </p>
-            )}
+          </form>
+
+          {/* Enlace para recuperar contraseña */}
+          <div className="form-footer">
+            <Link to="/recuperacion" className="form-link">
+              ¿Olvidaste tu contraseña?
+            </Link>
           </div>
-
-          {/* Botón para enviar el formulario */}
-          <button type="submit" className="btn-aceptar">
-            Iniciar Sesión
-          </button>
-        </form>
-
-        {/* Enlace para recuperar contraseña */}
-        <div className="form-footer">
-          <Link to="/recuperacion" className="form-link">
-            ¿Olvidaste tu contraseña?
-          </Link>
         </div>
+        <ToastContainer />
       </div>
-      <ToastContainer />
-    </div>
     </div>
   );
 };
