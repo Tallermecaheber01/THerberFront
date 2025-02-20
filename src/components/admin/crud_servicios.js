@@ -18,7 +18,7 @@ function CrudServicios() {
   // Estos estados permiten elegir una opción a la vez antes de agregarla al array.
   const [selectedTipoVehiculo, setSelectedTipoVehiculo] = useState('');
   const [selectedMarca, setSelectedMarca] = useState('');
-
+ 
   // Estado para determinar si estamos en modo edición (actualizando un servicio existente)
   const [modoEdicion, setModoEdicion] = useState(false);
   // Guarda el ID del servicio que se está editando
@@ -26,6 +26,10 @@ function CrudServicios() {
 
   // Referencia al input de archivo para poder reiniciarlo después de subir una imagen
   const fileInputRef = useRef(null);
+  const [editingTipoIndex, setEditingTipoIndex] = useState(null);
+  const [editingTipoValue, setEditingTipoValue] = useState('');
+  const [editingMarcaIndex, setEditingMarcaIndex] = useState(null);
+  const [editingMarcaValue, setEditingMarcaValue] = useState('');
 
   // Opciones disponibles para marcas y tipos de vehículo.
   // Estos valores se muestran en los selects y pueden modificarse dinámicamente.
@@ -109,6 +113,27 @@ function CrudServicios() {
     }));
   };
 
+  // Función para iniciar la edición de un tipo
+const handleEditTipo = (index) => {
+  setEditingTipoIndex(index);
+  setEditingTipoValue(tipoVehiculoOptions[index]);
+};
+
+// Función para guardar el cambio en un tipo
+const handleSaveTipo = (index) => {
+  const updatedOptions = [...tipoVehiculoOptions];
+  updatedOptions[index] = editingTipoValue;
+  setTipoVehiculoOptions(updatedOptions);
+  setEditingTipoIndex(null);
+  setEditingTipoValue('');
+};
+
+// Función para eliminar un tipo
+const handleDeleteTipo = (index) => {
+  const updatedOptions = tipoVehiculoOptions.filter((_, i) => i !== index);
+  setTipoVehiculoOptions(updatedOptions);
+};
+
   // Función para agregar una marca a la lista de marcas seleccionadas.
   const agregarMarca = () => {
     if (selectedMarca && !datosServicio.marcas.includes(selectedMarca)) {
@@ -127,6 +152,26 @@ function CrudServicios() {
       ...prev,
       marcas: prev.marcas.filter((item) => item !== marca),
     }));
+  };
+
+  const handleEditMarca = (index) => {
+    setEditingMarcaIndex(index);
+    setEditingMarcaValue(marcasOptions[index]);
+  };
+  
+  // Función para guardar el cambio en una marca
+  const handleSaveMarca = (index) => {
+    const updatedMarcas = [...marcasOptions];
+    updatedMarcas[index] = editingMarcaValue;
+    setMarcasOptions(updatedMarcas);
+    setEditingMarcaIndex(null);
+    setEditingMarcaValue('');
+  };
+  
+  // Función para eliminar una marca
+  const handleDeleteMarca = (index) => {
+    const updatedMarcas = marcasOptions.filter((_, i) => i !== index);
+    setMarcasOptions(updatedMarcas);
   };
 
   // Función para manejar el submit del formulario.
@@ -168,9 +213,12 @@ function CrudServicios() {
     // Si es edición, se conserva el ID; de lo contrario se genera uno nuevo.
     const nuevoServicio = {
       ...datosServicio,
+      tipoVehiculo: [...datosServicio.tipoVehiculo],
+      marcas: [...datosServicio.marcas],
       imagen: imagenUrl,
       id: modoEdicion ? idEdicion : Date.now(),
     };
+    
 
     // Si estamos en modo edición, se actualiza el servicio existente.
     // Caso contrario, se agrega el nuevo servicio a la lista.
@@ -450,7 +498,6 @@ function CrudServicios() {
                             newTipo.trim(),
                           ]);
                           setNewTipo('');
-                          setShowTipoForm(false);
                         } else {
                           alert('Ingrese un tipo válido');
                         }
@@ -468,6 +515,63 @@ function CrudServicios() {
                     >
                       Cerrar
                     </button>
+                  </div>
+                  <div className="mt-4">
+                    <h4 className="detalle-label">Tipos de Vehículo Disponibles</h4>
+                    {tipoVehiculoOptions.map((tipo, index) => (
+                      <div key={index} className="service-card-text flex items-center justify-between my-1">
+                        {editingTipoIndex === index ? (
+                          <>
+                            {/* Contenedor con ancho fijo para el input en modo edición */}
+                            <div className="w-40">
+                              <input
+                                type="text"
+                                value={editingTipoValue}
+                                onChange={(e) => setEditingTipoValue(e.target.value)}
+                                className="form-input w-full"
+                              />
+                            </div>
+                            <div className="flex gap-2">
+                              <button
+                                type="button"
+                                className="btn-aceptar w-20"
+                                onClick={() => handleSaveTipo(index)}
+                              >
+                                Guardar
+                              </button>
+                              <button
+                                type="button"
+                                className="btn-cancelar w-20"
+                                onClick={() => setEditingTipoIndex(null)}
+                              >
+                                Cancelar
+                              </button>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            {/* Contenedor con ancho fijo para el texto */}
+                            <span className="w-40">{tipo}</span>
+                            <div className="flex gap-2">
+                              <button
+                                type="button"
+                                className="btn-aceptar w-20"
+                                onClick={() => handleEditTipo(index)}
+                              >
+                                Editar
+                              </button>
+                              <button
+                                type="button"
+                                className="btn-cancelar w-20"
+                                onClick={() => handleDeleteTipo(index)}
+                              >
+                                Eliminar
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
@@ -496,7 +600,6 @@ function CrudServicios() {
                           // Se agrega la nueva marca a las opciones disponibles
                           setMarcasOptions([...marcasOptions, newMarca.trim()]);
                           setNewMarca('');
-                          setShowMarcaForm(false);
                         } else {
                           alert('Ingrese una marca válida');
                         }
@@ -514,6 +617,64 @@ function CrudServicios() {
                     >
                       Cerrar
                     </button>
+                  </div>
+                  {/* Aquí se muestra la lista de marcas con opción para editar y eliminar */}
+                  <div className="mt-4">
+                    <h4 className="detalle-label">Marcas Disponibles</h4>
+                    {marcasOptions.map((marca, index) => (
+                      <div key={index} className="service-card-text flex items-center justify-between my-1">
+                        {editingMarcaIndex === index ? (
+                          <>
+                            {/* Contenedor con ancho fijo para el input en modo edición */}
+                            <div className="w-40">
+                              <input
+                                type="text"
+                                value={editingMarcaValue}
+                                onChange={(e) => setEditingMarcaValue(e.target.value)}
+                                className="form-input w-full"
+                              />
+                            </div>
+                            <div className="flex gap-2">
+                              <button
+                                type="button"
+                                className="btn-aceptar w-20"
+                                onClick={() => handleSaveMarca(index)}
+                              >
+                                Guardar
+                              </button>
+                              <button
+                                type="button"
+                                className="btn-cancelar w-20"
+                                onClick={() => setEditingMarcaIndex(null)}
+                              >
+                                Cancelar
+                              </button>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            {/* Contenedor con ancho fijo para el texto */}
+                            <span className="w-40">{marca}</span>
+                            <div className="flex gap-2">
+                              <button
+                                type="button"
+                                className="btn-aceptar w-20"
+                                onClick={() => handleEditMarca(index)}
+                              >
+                                Editar
+                              </button>
+                              <button
+                                type="button"
+                                className="btn-cancelar w-20"
+                                onClick={() => handleDeleteMarca(index)}
+                              >
+                                Eliminar
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
@@ -574,7 +735,7 @@ function CrudServicios() {
         </div>
       </div>
     </div>
-  );
+  );  
 }
 
 export default CrudServicios;
