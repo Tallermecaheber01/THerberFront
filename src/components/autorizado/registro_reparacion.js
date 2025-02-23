@@ -175,6 +175,11 @@ function RegistroReparacion() {
     }
   };
 
+  const handleQuitarServicio = (servicio) => {
+    setTempServices((prev) => prev.filter((s) => s !== servicio));
+  };
+
+  
   // 'handleSelectSuggestion' establece la sugerencia seleccionada como el servicio extra.
   const handleSelectSuggestion = (suggestion) => {
     setServiciosExtra(suggestion);
@@ -339,10 +344,10 @@ function RegistroReparacion() {
                     placeholder="Extra"
                   />
                 </div>
-                <button type="button" className="btn-aceptar" onClick={handleSumarExtra}>
+                <button type="button" className="btn-aceptar mt-5" onClick={handleSumarExtra}>
                   Sumar
                 </button>
-                <button type="button" className="btn-cancelar" onClick={handleRestarExtra}>
+                <button type="button" className="btn-cancelar mt-5" onClick={handleRestarExtra}>
                   Restar
                 </button>
               </div>
@@ -358,7 +363,7 @@ function RegistroReparacion() {
                     placeholder="Ej: Afinación"
                   />
                   {suggestions.length > 0 && (
-                    <div className="absolute z-10 bg-transparent border-none text-yellow-500 w-48">
+                    <div className="absolute z-10 bg-white border border-gray-300 w-48 text-black">
                       {suggestions.map((sug, idx) => (
                         <div
                           key={idx}
@@ -371,17 +376,26 @@ function RegistroReparacion() {
                     </div>
                   )}
                 </div>
-                <button type="button" className="btn-aceptar" onClick={handleAgregarServicio}>
+                <button type="button" className="btn-aceptar mt-5" onClick={handleAgregarServicio}>
                   Añadir Servicio
                 </button>
               </div>
-              {/* Muestra la lista de servicios extra agregados */}
+              {/* Muestra la lista de servicios extra agregados con botón para quitarlos */}
               {tempServices.length > 0 && (
                 <div className="mb-2">
                   <span className="detalle-label">Servicios: </span>
                   <ul className="detalle-costo text-sm">
                     {tempServices.map((serv, idx) => (
-                      <li key={idx}>{serv}</li>
+                      <li key={idx} className="grid grid-cols-[1fr_20px] items-center gap-1 px-2 rounded">
+                        <span>{serv}</span>
+                        <button
+                          type="button"
+                          className="btn-cancelar text-xs flex justify-center items-center"
+                          onClick={() => handleQuitarServicio(serv)}
+                        >
+                          X
+                        </button>
+                      </li>
                     ))}
                   </ul>
                 </div>
@@ -453,7 +467,7 @@ function RegistroReparacion() {
                 placeholder="Nombre..."
               />
               {filteredClients.length > 0 && (
-                <div className="absolute bg-transparent border-0 text-yellow-500 w-full z-10">
+                <div className="absolute bg-white border border-gray-300 text-black w-full z-10">
                   {filteredClients.map((client) => (
                     <div
                       key={client.id}
@@ -568,7 +582,7 @@ function RegistroReparacion() {
                   placeholder="Ej: Afinación"
                 />
                 {suggestions.length > 0 && (
-                  <div className="absolute bg-transparent border-0 text-yellow-500 w-full z-10">
+                  <div className="absolute bg-white border border-gray-300 text-black w-full z-10">
                     {suggestions.map((sug, idx) => (
                       <div
                         key={idx}
@@ -591,7 +605,16 @@ function RegistroReparacion() {
                 <span className="detalle-label">Servicios: </span>
                 <ul className="detalle-costo text-sm">
                   {tempServices.map((serv, idx) => (
-                    <li key={idx}>{serv}</li>
+                    <li key={idx} className="grid grid-cols-[1fr_20px] items-center gap-1 px-2 rounded">
+                      <span>{serv}</span>
+                      <button
+                        type="button"
+                        className="btn-cancelar text-xs flex justify-center items-center"
+                        onClick={() => handleQuitarServicio(serv)}
+                      >
+                        X
+                      </button>
+                    </li>
                   ))}
                 </ul>
               </div>
