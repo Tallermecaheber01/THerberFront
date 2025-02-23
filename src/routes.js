@@ -30,6 +30,8 @@ import AprobacionCitas from "./components/autorizado/aprobaciones_citas";
 import AsignacionCita from "./components/autorizado/asignacion_cita";
 import ConsultaCitas from "./components/autorizado/consulta_citas";
 import RegistroReparaciones from "./components/autorizado/registro_reparacion";
+import CitasCanceladas from "./components/autorizado/CitasCanceladas";
+import ConsultasReparaciones from "./components/autorizado/ConsultasReparaciones";
 
 // Administrador
 import AnalisisRendimiento from "./components/admin/analisis_rendimiento";
@@ -37,6 +39,7 @@ import CrudRegulatorios from "./components/admin/crud_docregulatorios";
 import CrudServicios from "./components/admin/crud_servicios";
 import DatosEstadisticos from "./components/admin/datos_estadisticos";
 import GestionFinanciera from "./components/admin/gestion_financiera";
+import CrudReparaciones from "./components/admin/CrudReparaciones";
 
 import Bienvenida from "./components/usuario/Bienvenida";
 
@@ -75,6 +78,8 @@ const AppRoutes = () => {
       <Route path="asignacioncita" element={<AsignacionCita />} />
       <Route path="consultacitas" element={<ConsultaCitas />} />
       <Route path="registroreparaciones" element={<RegistroReparaciones />} />
+      <Route path="citasCanceladas" element={<CitasCanceladas/>} />
+      <Route path="ConsultasReparaciones" element={<ConsultasReparaciones/>} />
 
       {/* administradores */}
       <Route path="analisisrendimiento" element={<AnalisisRendimiento />} />
@@ -82,6 +87,7 @@ const AppRoutes = () => {
       <Route path="crudservicios" element={<CrudServicios />} />
       <Route path="datosestadisticos" element={<DatosEstadisticos />} />
       <Route path="gestionfinanciera" element={<GestionFinanciera />} />
+      <Route path="crudReparaciones" element={<CrudReparaciones />} />
       {/*Esto concatena para paginas no encontradas*/}
       <Route path="*" element={<Navigate to="/NotFound" />} />
     </Routes>
@@ -89,3 +95,4 @@ const AppRoutes = () => {
 };
 
 export default AppRoutes;
+
