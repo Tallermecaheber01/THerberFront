@@ -5,7 +5,7 @@ import "./stylos.css";
 
 const Navbar = () => {
   const [theme, setTheme] = useState("light");
-  const [userRole, setUserRole] = useState("usuario"); // publico, usuario, empleado, admin
+  const [userRole, setUserRole] = useState("empleado"); // publico, usuario, empleado, admin
   const navigate = useNavigate();
 
   const toggleTheme = () => {
@@ -29,7 +29,7 @@ const Navbar = () => {
             </Link>
           </div>
           <div className="navbar-text">
-            <h1 className="navbar-title">Taller Herber</h1>
+            <h1 className="navbar-title">Taller Heber</h1>
           </div>
         </div>
         <div className="navbar-text">
@@ -60,7 +60,8 @@ const Navbar = () => {
                 <li><Link to="/aprobacioncitas" className="navbar-link">Aprobación Citas</Link></li>
                 <li><Link to="/asignacioncita" className="navbar-link">Asignación Cita</Link></li>
                 <li><Link to="/consultacitas" className="navbar-link">Consulta Citas</Link></li>
-                <li><Link to="/registroreparaciones" className="navbar-link">Registro Reparaciones</Link></li>
+                <li><Link to="/citasCanceladas" className="navbar-link">Citas Canceladas</Link></li>
+                <li><Link to="/ConsultasReparaciones" className="navbar-link">Consultas reparaciones</Link></li>
               </>
             )}
             {userRole === "admin" && (
@@ -70,6 +71,7 @@ const Navbar = () => {
                 <li><Link to="/crudservicios" className="navbar-link">Servicios</Link></li>
                 <li><Link to="/datosestadisticos" className="navbar-link">Datos Estadísticos</Link></li>
                 <li><Link to="/gestionfinanciera" className="navbar-link">Gestión Financiera</Link></li>
+                <li><Link to="/crudReparaciones" className="navbar-link">Crud Reparaciones</Link></li>
               </>
             )}
           </ul>
@@ -85,3 +87,4 @@ const Navbar = () => {
 };
 
 export default Navbar;
+
