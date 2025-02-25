@@ -69,6 +69,15 @@ export const getAllServices = async () => {
     }
 }
 
+export const getServiceById = async (id) => {
+    try {
+        const response = await api.get(`/admin/service/${id}`);
+        return response.data;
+    } catch (error) {
+        return handleError(error, 'getServiceById')
+    }
+}
+
 export const getAllVehicleTypes = async () => {
     try {
         const response = await api.get('/admin/all-vehicletypes');
