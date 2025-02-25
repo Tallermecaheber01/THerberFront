@@ -61,7 +61,7 @@ const Navbar = () => {
                 <li><Link to="/asignacioncita" className="navbar-link">Asignación Cita</Link></li>
                 <li><Link to="/consultacitas" className="navbar-link">Consulta Citas</Link></li>
                 <li><Link to="/citasCanceladas" className="navbar-link">Citas Canceladas</Link></li>
-                <li><Link to="/ConsultasReparaciones" className="navbar-link">Consultas reparaciones</Link></li>
+                <li><Link to="/consultasreparaciones" className="navbar-link">Consultas reparaciones</Link></li>
               </>
             )}
             {userRole === "admin" && (
