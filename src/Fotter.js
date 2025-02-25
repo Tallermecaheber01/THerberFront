@@ -28,13 +28,13 @@ function Footer() {
             <h3 className="subtitlefooter">Navegación</h3>
             <ul>
               <li>
-                <a href="PoliticaDePrivacidad" className="navbar-link">Política de Privacidad</a>
+                <a href="politicadeprivacidad" className="navbar-link">Política de Privacidad</a>
               </li>
               <li>
-                <a href="TerminosYCondiciones" className="navbar-link">Términos y Condiciones</a>
+                <a href="terminosycondiciones" className="navbar-link">Términos y Condiciones</a>
               </li>
               <li>
-                <a href="AcercaDe" className="navbar-link">Acerca De</a>
+                <a href="acercade" className="navbar-link">Acerca De</a>
               </li>
             </ul>
           </div>

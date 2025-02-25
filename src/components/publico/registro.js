@@ -157,7 +157,7 @@ function Registro() {
       toast.success("¡Código de verificación enviado!");
 
       setTimeout(() => {
-        navigate('/ValidacionCuenta', { state: { userData } });
+        navigate('/validacioncuenta', { state: { userData } });
       }, 5000);
 
     } catch (error) {
