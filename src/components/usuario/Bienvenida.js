@@ -73,6 +73,7 @@ function Bienvenida() {
 
             <div className="">
               <h2 className="detalle-descripcion">Información del Usuario</h2>
+              <p className='detalle-descripcion'><strong>Rol:</strong> {usuario.rol}</p>
               <p className='detalle-descripcion'><strong>Nombre:</strong> {usuario.nombre}</p>
               <p className='detalle-descripcion'><strong>Apellido Paterno:</strong> {usuario.apellido_paterno}</p>
               <p className='detalle-descripcion'><strong>Apellido Materno:</strong> {usuario.apellido_materno}</p>
