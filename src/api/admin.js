@@ -69,6 +69,7 @@ export const getAllServices = async () => {
     }
 }
 
+
 export const getAllVehicleTypes = async () => {
     try {
         const response = await api.get('/admin/all-vehicletypes');

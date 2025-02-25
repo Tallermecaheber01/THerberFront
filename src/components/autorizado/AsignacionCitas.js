@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import Breadcrumbs from "../Breadcrumbs";
 
-// Componente principal para asignar citas
 function AsignacionCita() {
-  // Estado inicial con la lista de clientes y sus respectivos autos (cada auto tiene una marca y modelos)
+  // Datos fijos
   const [clientes] = useState([
     { 
       id: 1, 
@@ -31,68 +30,57 @@ function AsignacionCita() {
     }
   ]);
 
-  // Lista de empleados disponibles
   const empleados = [
     { id: 1, nombre: 'Pedro' },
     { id: 2, nombre: 'Pablo' },
     { id: 3, nombre: 'Matias' },
   ];
 
-  // Lista de servicios disponibles (solo se maneja el nombre, sin costo inicial)
   const serviciosDisponibles = [
     { nombre: 'Cambio de aceite' },
     { nombre: 'Cambio de llantas' },
     { nombre: 'Revisión general' },
   ];
 
-  // Rutas para el componente Breadcrumbs (muestra la ruta de navegación)
   const breadcrumbPaths = [
     { name: "Inicio", link: "/" },
     { name: "Asignar cita", link: "/asignacioncita" },
   ];
 
-  // Estados para la búsqueda y selección de cliente
-  const [busquedaCliente, setBusquedaCliente] = useState(''); // Texto ingresado para buscar cliente
-  const [clienteSeleccionado, setClienteSeleccionado] = useState(null); // Cliente que se selecciona
-
-  // Estados para la selección de auto (marca y modelo) del cliente seleccionado
-  const [selectedMarca, setSelectedMarca] = useState(''); // Marca seleccionada
-  const [selectedModelo, setSelectedModelo] = useState(''); // Modelo seleccionado
-
-  // Estados para la búsqueda y asignación de servicios
-  const [busquedaServicio, setBusquedaServicio] = useState(''); // Texto para buscar servicio
-  const [servicioCosto, setServicioCosto] = useState(''); // Costo ingresado para el servicio
-  const [serviciosSeleccionados, setServiciosSeleccionados] = useState([]); // Lista de servicios agregados a la cita
-
-  // Otros estados para el formulario de la cita
-  const [empleadoSeleccionado, setEmpleadoSeleccionado] = useState(''); // Empleado asignado a la cita
-  const [fecha, setFecha] = useState(''); // Fecha de la cita
-  const [hora, setHora] = useState(''); // Hora de la cita
-  const [extraAmount, setExtraAmount] = useState(''); // Cantidad extra que se puede sumar o restar al costo total
-  const [totalCosto, setTotalCosto] = useState(0); // Costo total acumulado de los servicios
-
-  // Filtrar clientes según el término de búsqueda (por nombre o ID)
+  // Estados de búsqueda y selección
+  const [busquedaCliente, setBusquedaCliente] = useState('');
   const clientesFiltrados = clientes.filter(
     (cliente) =>
       cliente.nombre.toLowerCase().includes(busquedaCliente.toLowerCase()) ||
       cliente.id.toString().includes(busquedaCliente)
   );
+  const [clienteSeleccionado, setClienteSeleccionado] = useState(null);
 
-  // Filtrar servicios disponibles según el término ingresado
-  const serviciosFiltrados = serviciosDisponibles.filter((servicio) =>
-    servicio.nombre.toLowerCase().includes(busquedaServicio.toLowerCase())
-  );
+  // Selección de auto
+  const [selectedMarca, setSelectedMarca] = useState('');
+  const [selectedModelo, setSelectedModelo] = useState('');
 
-  // Función para seleccionar un cliente de la lista filtrada
+  // Estados para servicios
+  const [busquedaServicio, setBusquedaServicio] = useState('');
+  const [servicioCosto, setServicioCosto] = useState('');
+  const [serviciosSeleccionados, setServiciosSeleccionados] = useState([]);
+  
+  // Estados para el formulario de cita
+  const [empleadoSeleccionado, setEmpleadoSeleccionado] = useState('');
+  const [fecha, setFecha] = useState('');
+  const [hora, setHora] = useState('');
+  const [extraAmount, setExtraAmount] = useState('');
+  const [totalCosto, setTotalCosto] = useState(0);
+
+
+  // Función para seleccionar cliente
   const handleSeleccionarCliente = (cliente) => {
-    setClienteSeleccionado(cliente); // Guarda el cliente seleccionado
-    setBusquedaCliente(''); // Limpia el input de búsqueda
-    // Al cambiar de cliente, reinicia la selección de marca y modelo
+    setClienteSeleccionado(cliente);
+    setBusquedaCliente('');
     setSelectedMarca('');
     setSelectedModelo('');
   };
 
-  // Función para eliminar el cliente seleccionado y reiniciar campos asociados
   const handleEliminarCliente = (e) => {
     e.preventDefault();
     setClienteSeleccionado(null);
@@ -100,72 +88,54 @@ function AsignacionCita() {
     setSelectedModelo('');
   };
 
-  // Función para agregar un servicio a la lista de servicios seleccionados
-  // Incluye validaciones para evitar entradas incorrectas o duplicadas
+  // Función para agregar servicio
   const handleAgregarServicio = (e) => {
     e.preventDefault();
-
-    // Validar que se haya ingresado un servicio
     if (!busquedaServicio) {
-      alert('Por favor, seleccione un servicio de la lista.');
       return;
     }
-
-    // Verifica que el servicio ingresado exista en la lista de servicios disponibles
+    // Validación contra inyección SQL para el input de servicio
+    if (!isInputSecure(busquedaServicio)) {
+      return;
+    }
     const servicioValido = serviciosDisponibles.find(
       (s) => s.nombre.toLowerCase() === busquedaServicio.toLowerCase()
     );
     if (!servicioValido) {
-      alert('El servicio ingresado no existe. Seleccione un servicio válido de la lista.');
       return;
     }
-
-    // Evitar duplicados: verifica si el servicio ya fue agregado
     const servicioDuplicado = serviciosSeleccionados.some(
       (s) => s.nombre.toLowerCase() === busquedaServicio.toLowerCase()
     );
     if (servicioDuplicado) {
-      alert('El servicio ya ha sido agregado.');
       return;
     }
-
-    // Convierte el costo ingresado a número y valida su integridad
     const costo = parseFloat(servicioCosto);
     if (isNaN(costo)) {
-      alert('Ingrese un costo válido.');
       return;
     }
     if (costo < 0) {
-      alert('El costo no puede ser negativo.');
       return;
     }
-
-    // Agrega el servicio con su costo a la lista de servicios seleccionados
     setServiciosSeleccionados((prev) => [
       ...prev,
       { nombre: busquedaServicio, costo },
     ]);
-    // Actualiza el costo total sumando el costo del nuevo servicio
     setTotalCosto((prev) => prev + costo);
-    // Reinicia los inputs de búsqueda y costo para el servicio
     setBusquedaServicio('');
     setServicioCosto('');
   };
 
-  // Función para quitar un servicio de la lista y actualizar el costo total
   const handleQuitarServicio = (servicio) => {
-    // Elimina el servicio de la lista
     setServiciosSeleccionados((prev) =>
       prev.filter((s) => s !== servicio)
     );
-    // Resta el costo del servicio removido del total, asegurándose que no sea negativo
     setTotalCosto((prev) => {
       const nuevoTotal = prev - servicio.costo;
       return nuevoTotal < 0 ? 0 : nuevoTotal;
     });
   };
 
-  // Función para sumar un monto extra al costo total
   const handleSumarExtra = (e) => {
     e.preventDefault();
     const extra = parseFloat(extraAmount);
@@ -180,7 +150,6 @@ function AsignacionCita() {
     setTotalCosto((prev) => prev + extra);
   };
 
-  // Función para restar un monto extra del costo total
   const handleRestarExtra = (e) => {
     e.preventDefault();
     const extra = parseFloat(extraAmount);
@@ -195,26 +164,7 @@ function AsignacionCita() {
     setTotalCosto((prev) => (prev - extra < 0 ? 0 : prev - extra));
   };
 
-  // Función para asignar la cita, valida que todos los campos necesarios estén completos
-  const handleAsignarCita = (e) => {
-    e.preventDefault();
-    if (
-      !clienteSeleccionado ||
-      !empleadoSeleccionado ||
-      !fecha ||
-      !hora ||
-      serviciosSeleccionados.length === 0
-    ) {
-      alert('Por favor, complete todos los campos antes de asignar la cita.');
-      return;
-    }
-    // Simulación de asignación de la cita (aquí se podría integrar con backend)
-    alert('Cita asignada con éxito.');
-    // Limpia todos los campos del formulario tras asignar la cita
-    limpiarCampos();
-  };
-
-  // Función para reiniciar todos los campos y estados del formulario
+  // Función para limpiar el formulario
   const limpiarCampos = () => {
     setClienteSeleccionado(null);
     setBusquedaCliente('');
@@ -228,9 +178,66 @@ function AsignacionCita() {
     setServiciosSeleccionados([]);
     setExtraAmount('');
     setTotalCosto(0);
+    setFormErrors({});
   };
 
-  // Función para cancelar la operación y limpiar los campos
+  // Estado para errores en el formulario de asignación
+  const [formErrors, setFormErrors] = useState({});
+
+  // Función para prevenir caracteres potencialmente peligrosos (simula validación contra inyecciones SQL)
+  const isInputSecure = (value) => {
+    return (
+      !value.includes("'") &&
+      !value.includes('"') &&
+      !value.includes(";") &&
+      !value.includes("--") &&
+      !value.includes("/*") &&
+      !value.includes("*/")
+    );
+  };
+
+  // Función de validación: revisa que se hayan completado todos los campos requeridos
+  const validateAsignacion = () => {
+    const errors = {};
+    if (!clienteSeleccionado) errors.cliente = "Debe seleccionar un cliente.";
+    if (clienteSeleccionado && clienteSeleccionado.cars && clienteSeleccionado.cars.length > 0) {
+      if (!selectedMarca) errors.marca = "Debe seleccionar la marca del auto.";
+      if (selectedMarca) {
+        const car = clienteSeleccionado.cars.find((car) => car.marca === selectedMarca);
+        if (car && !selectedModelo) errors.modelo = "Debe seleccionar un modelo.";
+      }
+    }
+    if (!empleadoSeleccionado) errors.empleado = "Debe seleccionar un empleado.";
+    if (empleadoSeleccionado && !isInputSecure(empleadoSeleccionado))
+      errors.empleado = "El empleado seleccionado contiene caracteres no permitidos.";
+    if (!fecha) errors.fecha = "Debe seleccionar una fecha.";
+    if (!hora) errors.hora = "Debe seleccionar una hora.";
+    if (serviciosSeleccionados.length === 0) errors.servicios = "Debe agregar al menos un servicio.";
+    return errors;
+  };
+
+  // Estado para mostrar el modal de confirmación de asignación
+  const [showConfirmAssignModal, setShowConfirmAssignModal] = useState(false);
+
+  // Función para intentar asignar la cita (valida y muestra modal de confirmación)
+  const handleAsignarCita = (e) => {
+    e.preventDefault();
+    const errors = validateAsignacion();
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      return;
+    }
+    setFormErrors({});
+    setShowConfirmAssignModal(true);
+  };
+
+  
+  const confirmAsignacion = () => {
+    limpiarCampos();
+    setShowConfirmAssignModal(false);
+  };
+
+  // Función para cancelar la operación
   const handleCancelar = (e) => {
     e.preventDefault();
     limpiarCampos();
@@ -238,19 +245,17 @@ function AsignacionCita() {
 
   return (
     <div>
-      {/* Componente de navegación con la ruta actual */}
       <Breadcrumbs paths={breadcrumbPaths} />
       <div className="citasContainer">
         <form className="citasForm">
           <div className="flex-1">
             <h1 className="form-title">Asignar Cita</h1>
 
-            {/* Sección para la búsqueda y selección de cliente */}
+            {/* Búsqueda y selección de cliente */}
             <div className="form-group">
               <label htmlFor="busquedaCliente" className="form-label">
                 Buscar Cliente por Nombre o ID
               </label>
-              {/* Si no hay cliente seleccionado, se muestra el input de búsqueda */}
               {!clienteSeleccionado && (
                 <input
                   id="busquedaCliente"
@@ -260,7 +265,6 @@ function AsignacionCita() {
                   placeholder="Escriba el nombre o ID del cliente"
                 />
               )}
-              {/* Muestra los resultados filtrados mientras se escribe en el input */}
               {!clienteSeleccionado &&
                 busquedaCliente &&
                 clientesFiltrados.map((cliente) => (
@@ -272,14 +276,19 @@ function AsignacionCita() {
                     {cliente.nombre} (ID: {cliente.id})
                   </div>
                 ))}
-              {/* Si ya se seleccionó un cliente, se muestra su información y opción para cambiarlo */}
+              {formErrors.cliente && !clienteSeleccionado && (
+                <p className="text-red-500 text-xs mt-1">{formErrors.cliente}</p>
+              )}
               {clienteSeleccionado && (
                 <div>
                   <span className="cita-subtitle">
                     Cliente Seleccionado: {clienteSeleccionado.nombre}
                   </span>
                   <div className="mt-2">
-                    <button className="btn-cancelar" onClick={(e) => { e.preventDefault(); handleEliminarCliente(e); }}>
+                    <button
+                      className="btn-cancelar"
+                      onClick={(e) => { e.preventDefault(); handleEliminarCliente(e); }}
+                    >
                       Cambiar Cliente
                     </button>
                   </div>
@@ -287,34 +296,38 @@ function AsignacionCita() {
               )}
             </div>
 
-            {/* Sección para la selección de marca y modelo del auto (solo si hay cliente seleccionado) */}
+            {/* Selección de auto */}
             {clienteSeleccionado && clienteSeleccionado.cars && (
               <>
                 <div className="form-group">
-                  <label htmlFor="marcaSelect" className="form-label">Marca:</label>
+                  <label htmlFor="marcaSelect" className="form-label">
+                    Marca:
+                  </label>
                   <select
                     id="marcaSelect"
                     className="form-input"
                     value={selectedMarca}
                     onChange={(e) => { 
                       setSelectedMarca(e.target.value); 
-                      // Al cambiar la marca, se reinicia la selección de modelo
                       setSelectedModelo(''); 
                     }}
                   >
                     <option value="">Selecciona una marca</option>
-                    {/* Lista de marcas disponibles según el cliente seleccionado */}
                     {clienteSeleccionado.cars.map((car) => (
                       <option key={car.marca} value={car.marca}>
                         {car.marca}
                       </option>
                     ))}
                   </select>
+                  {formErrors.marca && (
+                    <p className="text-red-500 text-xs mt-1">{formErrors.marca}</p>
+                  )}
                 </div>
-                {/* Si se ha seleccionado una marca, se muestra el select para elegir el modelo */}
                 {selectedMarca && (
                   <div className="form-group">
-                    <label htmlFor="modeloSelect" className="form-label">Modelo:</label>
+                    <label htmlFor="modeloSelect" className="form-label">
+                      Modelo:
+                    </label>
                     <select
                       id="modeloSelect"
                       className="form-input"
@@ -322,7 +335,6 @@ function AsignacionCita() {
                       onChange={(e) => setSelectedModelo(e.target.value)}
                     >
                       <option value="">Selecciona un modelo</option>
-                      {/* Se buscan los modelos correspondientes a la marca seleccionada */}
                       {clienteSeleccionado.cars
                         .find((car) => car.marca === selectedMarca)
                         .modelos.map((modelo, index) => (
@@ -331,12 +343,15 @@ function AsignacionCita() {
                           </option>
                         ))}
                     </select>
+                    {formErrors.modelo && (
+                      <p className="text-red-500 text-xs mt-1">{formErrors.modelo}</p>
+                    )}
                   </div>
                 )}
               </>
             )}
 
-            {/* Sección para seleccionar empleado, fecha y hora de la cita */}
+            {/* Selección de empleado, fecha y hora */}
             <div className="form-group">
               <label htmlFor="empleado" className="form-label">
                 Empleado
@@ -346,7 +361,7 @@ function AsignacionCita() {
                 className="form-input"
                 value={empleadoSeleccionado}
                 onChange={(e) => setEmpleadoSeleccionado(e.target.value)}
-                disabled={!clienteSeleccionado}  // Solo habilitado si hay cliente seleccionado
+                disabled={!clienteSeleccionado}
               >
                 <option value="">Seleccione un empleado</option>
                 {empleados.map((empleado) => (
@@ -355,6 +370,9 @@ function AsignacionCita() {
                   </option>
                 ))}
               </select>
+              {formErrors.empleado && (
+                <p className="text-red-500 text-xs mt-1">{formErrors.empleado}</p>
+              )}
             </div>
             <div className="form-group">
               <label htmlFor="fecha" className="form-label">
@@ -368,6 +386,9 @@ function AsignacionCita() {
                 onChange={(e) => setFecha(e.target.value)}
                 disabled={!clienteSeleccionado}
               />
+              {formErrors.fecha && (
+                <p className="text-red-500 text-xs mt-1">{formErrors.fecha}</p>
+              )}
             </div>
             <div className="form-group">
               <label htmlFor="hora" className="form-label">
@@ -381,9 +402,12 @@ function AsignacionCita() {
                 onChange={(e) => setHora(e.target.value)}
                 disabled={!clienteSeleccionado}
               />
+              {formErrors.hora && (
+                <p className="text-red-500 text-xs mt-1">{formErrors.hora}</p>
+              )}
             </div>
 
-            {/* Sección para la búsqueda y selección de servicios */}
+            {/* Selección de servicios */}
             <div className="form-group">
               <label htmlFor="busquedaServicio" className="form-label">
                 Buscar Servicio
@@ -396,20 +420,21 @@ function AsignacionCita() {
                 placeholder="Escriba el nombre del servicio"
                 disabled={!clienteSeleccionado}
               />
-              {/* Muestra la lista filtrada de servicios mientras se ingresa texto */}
               {busquedaServicio &&
-                serviciosFiltrados.map((servicio, index) => (
-                  <div
-                    key={index}
-                    className="cursorPoint"
-                    onClick={() => setBusquedaServicio(servicio.nombre)}
-                  >
-                    {servicio.nombre}
-                  </div>
-                ))}
+                serviciosDisponibles
+                  .filter((servicio) =>
+                    servicio.nombre.toLowerCase().includes(busquedaServicio.toLowerCase())
+                  )
+                  .map((servicio, index) => (
+                    <div
+                      key={index}
+                      className="cursorPoint"
+                      onClick={() => setBusquedaServicio(servicio.nombre)}
+                    >
+                      {servicio.nombre}
+                    </div>
+                  ))}
             </div>
-
-            {/* Input para ingresar manualmente el costo del servicio seleccionado */}
             <div className="form-group">
               <label htmlFor="servicioCosto" className="form-label">
                 Costo del Servicio
@@ -424,7 +449,6 @@ function AsignacionCita() {
                 disabled={!clienteSeleccionado}
               />
             </div>
-            {/* Botón para agregar el servicio ingresado a la lista */}
             <div className="form-group">
               <button
                 className="btn-aceptar"
@@ -433,22 +457,23 @@ function AsignacionCita() {
               >
                 Agregar Servicio
               </button>
+              {formErrors.servicios && (
+                <p className="text-red-500 text-xs mt-1">{formErrors.servicios}</p>
+              )}
             </div>
           </div>
 
-          {/* Sección lateral para mostrar los servicios seleccionados y monto extra */}
+          {/* Sección lateral: servicios agregados, extra y total */}
           <div className="flex-1">
             <h2 className="cita-title">Servicios seleccionados</h2>
             <div>
               <ul>
-                {/* Mapea cada servicio agregado y lo muestra con su costo */}
                 {serviciosSeleccionados.map((servicio, index) => (
                   <li key={index} className="resumCita mb-4">
                     <span className="text-lg">
                       {servicio.nombre} - ${servicio.costo}
                     </span>
                     <div className="serviciosSelecc">
-                      {/* Botón para eliminar el servicio de la lista */}
                       <button
                         className="btn-cancelar flex justify-center"
                         onClick={() => handleQuitarServicio(servicio)}
@@ -460,7 +485,6 @@ function AsignacionCita() {
                 ))}
               </ul>
 
-              {/* Sección para sumar o restar un monto extra al costo total */}
               <div className="mt-8">
                 <div className="form-group">
                   <label htmlFor="extraAmount" className="form-label">
@@ -485,16 +509,12 @@ function AsignacionCita() {
                   </button>
                 </div>
               </div>
-
-              {/* Muestra el costo total acumulado */}
               <p className="cita-subtitle mt-2">Total: ${totalCosto}</p>
             </div>
             <div className="mt-6 flex gap-4">
-              {/* Botón para asignar la cita, que valida la integridad del formulario */}
               <button className="btn-aceptar" onClick={handleAsignarCita} disabled={!clienteSeleccionado}>
                 Asignar Cita
               </button>
-              {/* Botón para cancelar y limpiar el formulario */}
               <button className="btn-cancelar" onClick={handleCancelar}>
                 Cancelar
               </button>
@@ -502,6 +522,26 @@ function AsignacionCita() {
           </div>
         </form>
       </div>
+
+      {/* Modal de confirmación de asignación */}
+      {showConfirmAssignModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded shadow-lg w-80">
+            <h2 className="text-xl font-bold mb-4 text-yellow-500">Confirmar Asignación</h2>
+            <p className="mb-4 text-gray-700 dark:text-gray-300">
+              ¿Está seguro de asignar la cita para <strong>{clienteSeleccionado.nombre}</strong> al empleado <strong>{empleadoSeleccionado}</strong>, para el <strong>{fecha}</strong> a las <strong>{hora}</strong> con el total de <strong>${totalCosto}</strong>?
+            </p>
+            <div className="flex justify-end gap-4">
+              <button className="btn-aceptar" onClick={() => setShowConfirmAssignModal(false)}>
+                Cancelar
+              </button>
+              <button className="btn-cancelar" onClick={confirmAsignacion}>
+                Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

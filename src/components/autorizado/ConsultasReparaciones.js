@@ -383,7 +383,7 @@ function ConsultasReparaciones() {
             {filteredCitas.length > 0 ? (
               <div className="cardCitas grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredCitas.map((cita) => (
-                  <div key={cita.id} className="reparacion-card p-4 rounded-md">
+                  <div key={cita.id} className="reparacion-card p-4 rounded-md card-transition">
                     <div className="mb-1">
                       <span className="detalle-label">Cliente: </span>
                       <span className="detalle-costo">{cita.cliente}</span>

@@ -257,9 +257,9 @@ function ConsultarCitas() {
           <div className="mt-8">
             <h2 className="cita-title text-center">Citas Programadas</h2>
             {filteredCitas.length > 0 ? (
-              <div className="cardCitas grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="cardCitas grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 ">
                 {filteredCitas.map((cita) => (
-                  <div key={cita.id} className="reparacion-card">
+                  <div key={cita.id} className="reparacion-card card-transition">
                     <div className="mb-2">
                       <span className="detalle-label">Cliente: </span>
                       <span className="detalle-costo">{cita.cliente}</span>

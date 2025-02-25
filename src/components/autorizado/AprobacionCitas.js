@@ -2,11 +2,10 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Breadcrumbs from "../Breadcrumbs";
 
-// Componente para la aprobación y rechazo de citas pendientes
 function AprobacionesCitas() {
   const navigate = useNavigate();
 
-  // Estado inicial: lista de citas pendientes (cada cita tiene información relevante)
+  // Lista inicial de citas (pendientes)
   const [citas, setCitas] = useState([
     { 
       id: 1, 
@@ -34,29 +33,31 @@ function AprobacionesCitas() {
       cliente: 'María Gómez', 
       total: 0 
     },
-    // Se pueden agregar más citas según sea necesario
+    // Otras citas...
   ]);
 
-  // Estados para manejar la cita seleccionada y la información de aprobación/rechazo
-  const [selectedCita, setSelectedCita] = useState(null); // Cita actualmente seleccionada para ver detalles
-  const [total, setTotal] = useState(""); // Total ingresado al aprobar la cita
-  const [isRejectionMode, setIsRejectionMode] = useState(false); // Modo de rechazo activo
-  const [razonRechazo, setRazonRechazo] = useState(""); // Razón de rechazo de la cita
-  const [selectedEmpleado, setSelectedEmpleado] = useState(""); // Empleado asignado al aprobar la cita
+  // Estados para la cita seleccionada y sus campos de aprobación/rechazo
+  const [selectedCita, setSelectedCita] = useState(null);
+  const [total, setTotal] = useState("");
+  const [selectedEmpleado, setSelectedEmpleado] = useState("");
+  const [isRejectionMode, setIsRejectionMode] = useState(false);
+  const [razonRechazo, setRazonRechazo] = useState("");
 
-  // Estados para la búsqueda simple y filtros avanzados
+  // Estados para mensajes de error en los inputs de aprobación/rechazo
+  const [approvalErrors, setApprovalErrors] = useState({});
+
+  // Estado para mostrar el modal de confirmación de aprobación
+  const [showConfirmApproveModal, setShowConfirmApproveModal] = useState(false);
+
+  // Breadcrumbs estáticos y estados para filtros y búsqueda (más adelante)
   const staticBreadcrumbs = [
     { name: "Inicio", link: "/" },
     { name: "Aprobaciones de Citas", link: "/aprobacioncitas" }
   ];
-  const [filters, setFilters] = useState([{ type: "", value: "" }]); // Filtros avanzados (máximo 3)
-  const [searchQuery, setSearchQuery] = useState(""); // Consulta de búsqueda simple
-
-  // Opciones disponibles para los filtros avanzados
+  const [filters, setFilters] = useState([{ type: "", value: "" }]);
+  const [searchQuery, setSearchQuery] = useState("");
   const availableFilterTypes = ["marca", "cliente", "servicio"];
-  // Obtiene los tipos de filtro ya aplicados para evitar duplicados
   const appliedFilterTypes = filters.map((filter) => filter.type);
-  // Opciones específicas según el tipo de filtro
   const optionsByFilter = {
     marca: ["Toyota", "Ford", "Chevrolet", "Honda", "Nissan"],
     servicio: [
@@ -68,48 +69,35 @@ function AprobacionesCitas() {
     ]
   };
 
-  // Función para generar breadcrumbs dinámicos combinando los fijos con filtros activos
   const getDynamicBreadcrumbs = () => {
-    // Se filtran solo los filtros que tienen tipo y valor no vacío
     const activeFilters = filters.filter(
       (filter) => filter.type && filter.value.trim() !== ""
     );
-    // Se crea un breadcrumb por cada filtro activo
     const filterBreadcrumbs = activeFilters.map((filter) => ({
       name: `${filter.type}: ${filter.value}`,
       link: "#"
     }));
-    // Se combinan los breadcrumbs fijos con los dinámicos
     return [...staticBreadcrumbs, ...filterBreadcrumbs];
   };
 
-  // Maneja el clic en un breadcrumb, permitiendo regresar a un estado previo
   const handleBreadcrumbClick = (index) => {
-    // Si se hace clic en un breadcrumb fijo, se reinician filtros y búsqueda
     if (index < staticBreadcrumbs.length) {
       setFilters([{ type: "", value: "" }]);
       setSearchQuery("");
       navigate(staticBreadcrumbs[index].link);
     } else {
-      // Para breadcrumbs dinámicos, se actualizan los filtros hasta ese índice
       const filterIndex = index - staticBreadcrumbs.length;
-      setFilters((prevFilters) => prevFilters.slice(0, filterIndex + 1));
+      setFilters(filters.slice(0, filterIndex + 1));
     }
   };
 
-  // Actualiza el valor o tipo de un filtro en una posición específica
   const handleFilterChange = (index, field, value) => {
     const newFilters = [...filters];
-    newFilters[index] = {
-      ...newFilters[index],
-      [field]: value
-    };
-    // Si se cambia el tipo de filtro, se reinicia el valor
+    newFilters[index] = { ...newFilters[index], [field]: value };
     if (field === "type") newFilters[index].value = "";
     setFilters(newFilters);
   };
 
-  // Agrega un nuevo filtro si el último filtro tiene ambos campos completos y el total de filtros es menor a 3
   const handleAddFilter = () => {
     if (
       filters.length < 3 &&
@@ -120,52 +108,37 @@ function AprobacionesCitas() {
     }
   };
 
-  // Elimina un filtro específico de la lista de filtros
   const handleRemoveFilter = (index) => {
     const newFilters = filters.filter((_, i) => i !== index);
-    // Si se eliminan todos los filtros, se agrega uno vacío por defecto
     if (newFilters.length === 0) newFilters.push({ type: "", value: "" });
     setFilters(newFilters);
   };
 
-  // Filtra las citas según:
-  // 1. Que su estado sea "pendiente"
-  // 2. Que coincidan con la búsqueda simple (searchQuery)
-  // 3. Que cumplan con los filtros avanzados definidos
   const filteredCitas = citas.filter((cita) => {
     if (cita.estado !== "pendiente") return false;
-
-    // Verifica si la cita coincide con la búsqueda simple en alguno de sus campos
     const matchesSearch =
       searchQuery === "" ||
       Object.values(cita).some((value) => {
-        if (typeof value === "string") {
+        if (typeof value === "string")
           return value.toLowerCase().includes(searchQuery.toLowerCase());
-        } else if (Array.isArray(value)) {
+        else if (Array.isArray(value))
           return value.join(" ").toLowerCase().includes(searchQuery.toLowerCase());
-        }
         return false;
       });
-
-    // Verifica si la cita cumple todos los filtros avanzados aplicados
     const matchesFilters = filters.every((filter) => {
       if (!filter.type || !filter.value) return true;
       const field = filter.type.toLowerCase();
-      // Para el filtro "servicio", se evalúa el arreglo de servicios solicitados
       if (field === "servicio") {
         return (
           cita.serviciosSolicitados &&
           cita.serviciosSolicitados.join(" ").toLowerCase().includes(filter.value.toLowerCase())
         );
       }
-      // Para otros filtros, se compara directamente el campo de la cita
       return cita[field]?.toLowerCase().includes(filter.value.toLowerCase());
     });
-
     return matchesSearch && matchesFilters;
   });
 
-  // Efecto que reinicia la selección de cita si la cita seleccionada ya no está en la lista filtrada
   useEffect(() => {
     if (
       selectedCita &&
@@ -175,38 +148,72 @@ function AprobacionesCitas() {
     }
   }, [filteredCitas, selectedCita]);
 
-  // Función para seleccionar una cita de la lista (mostrando sus detalles para aprobación/rechazo)
   const handleSelectCita = (id) => {
     const cita = citas.find((c) => c.id === id);
     setSelectedCita(cita);
-    // Reinicia los estados de total, modo de rechazo, razón y empleado al seleccionar una nueva cita
     setTotal("");
+    setSelectedEmpleado("");
     setIsRejectionMode(false);
     setRazonRechazo("");
-    setSelectedEmpleado("");
+    setApprovalErrors({});
   };
 
-  // Función para cancelar la selección y reiniciar estados
   const handleCancelSelection = () => {
     setSelectedCita(null);
     setTotal("");
+    setSelectedEmpleado("");
     setIsRejectionMode(false);
     setRazonRechazo("");
-    setSelectedEmpleado("");
+    setApprovalErrors({});
   };
 
-  // Función para aprobar la cita:
-  // Valida que se haya ingresado un total y seleccionado un empleado,
-  // luego actualiza el estado de la cita a "aprobada" y asigna el total ingresado.
-  const handleApprove = () => {
+  // Función para prevenir inyecciones SQL en los textos
+  const isInputSecure = (value) => {
+    if (
+      value.includes("'") ||
+      value.includes('"') ||
+      value.includes(";") ||
+      value.includes("--") ||
+      value.includes("/*") ||
+      value.includes("*/")
+    ) {
+      return false;
+    }
+    return true;
+  };
+
+  // Función que se ejecuta al intentar aprobar la cita.
+  // Realiza validaciones para que el total sea un número positivo y se haya seleccionado un empleado,
+  // y verifica que los valores no contengan caracteres peligrosos.
+  const handleAttemptApprove = () => {
+    const errors = {};
     if (total.trim() === "") {
-      alert("Por favor, ingrese un total.");
+      errors.total = "El total es obligatorio.";
+    } else if (isNaN(total)) {
+      errors.total = "El total debe ser un número.";
+    } else if (parseFloat(total) < 0) {
+      errors.total = "El total no puede ser negativo.";
+    }
+    if (selectedEmpleado.trim() === "") {
+      errors.selectedEmpleado = "Debe seleccionar un empleado.";
+    }
+    // (Opcional) Validamos que los valores no tengan caracteres peligrosos
+    if (!isInputSecure(total)) {
+      errors.total = "El total contiene caracteres no permitidos.";
+    }
+    if (!isInputSecure(selectedEmpleado)) {
+      errors.selectedEmpleado = "El empleado seleccionado contiene caracteres no permitidos.";
+    }
+    if (Object.keys(errors).length > 0) {
+      setApprovalErrors(errors);
       return;
     }
-    if (selectedEmpleado === "") {
-      alert("Por favor, seleccione un empleado.");
-      return;
-    }
+    setApprovalErrors({});
+    setShowConfirmApproveModal(true);
+  };
+
+  // Al confirmar la aprobación en el modal, se actualiza la cita
+  const confirmApprove = () => {
     setCitas((prevCitas) =>
       prevCitas.map((cita) =>
         cita.id === selectedCita.id
@@ -214,22 +221,26 @@ function AprobacionesCitas() {
           : cita
       )
     );
-    alert(
-      `Cita ${selectedCita.referencia} aprobada asignando al empleado ${selectedEmpleado}.`
-    );
+    setShowConfirmApproveModal(false);
     setSelectedCita(null);
+    setTotal("");
+    setSelectedEmpleado("");
+    setApprovalErrors({});
   };
 
-  // Activa el modo de rechazo para la cita seleccionada
   const handleEnterRejection = () => {
     setIsRejectionMode(true);
+    setApprovalErrors({});
   };
 
-  // Confirma el rechazo de la cita:
-  // Valida que la razón de rechazo no sea solo numérica y actualiza el estado de la cita a "rechazada"
+  // En el rechazo se valida que la razón no sea solo numérica y que no contenga caracteres peligrosos
   const handleConfirmRejection = () => {
     if (razonRechazo.trim() !== "" && /^\d+$/.test(razonRechazo.trim())) {
-      alert("La razón de rechazo no puede contener solo números.");
+      setApprovalErrors({ razonRechazo: "La razón de rechazo no puede contener solo números." });
+      return;
+    }
+    if (!isInputSecure(razonRechazo)) {
+      setApprovalErrors({ razonRechazo: "La razón de rechazo contiene caracteres no permitidos." });
       return;
     }
     setCitas((prevCitas) =>
@@ -239,32 +250,26 @@ function AprobacionesCitas() {
           : cita
       )
     );
-    alert(
-      `Cita ${selectedCita.referencia} rechazada${
-        razonRechazo.trim() ? " por: " + razonRechazo : ""
-      }`
-    );
     setSelectedCita(null);
+    setApprovalErrors({});
   };
 
-  // Cancela el modo de rechazo, reiniciando el campo de razón de rechazo
   const handleCancelRejection = () => {
     setRazonRechazo("");
     setIsRejectionMode(false);
+    setApprovalErrors({});
   };
 
   return (
     <div>
-      {/* Renderiza los breadcrumbs dinámicos, pasando la función para manejar clics */}
       <Breadcrumbs
         paths={getDynamicBreadcrumbs()}
         onCrumbClick={handleBreadcrumbClick}
       />
 
       <div className="form-container">
-        {/* Área para la búsqueda simple y filtros avanzados */}
+        {/* Área de búsqueda simple y filtros avanzados */}
         <div className="max-w-screen-lg mx-auto flex flex-wrap items-center justify-end gap-4 mb-8">
-          {/* Muestra el input de búsqueda simple solo si no hay filtros avanzados activos */}
           {filters.length === 1 && filters[0].value.trim() === "" && (
             <input
               type="text"
@@ -274,14 +279,9 @@ function AprobacionesCitas() {
               className="form-input w-72"
             />
           )}
-          {/* Sección de filtros avanzados */}
           <div className="flex flex-col items-end space-y-6">
             {filters.map((filter, index) => (
-              <div
-                key={index}
-                className="flex flex-wrap gap-4 justify-end items-center"
-              >
-                {/* Select para elegir el tipo de filtro */}
+              <div key={index} className="flex flex-wrap gap-4 justify-end items-center">
                 <select
                   value={filter.type}
                   onChange={(e) =>
@@ -301,11 +301,8 @@ function AprobacionesCitas() {
                       </option>
                     ))}
                 </select>
-
-                {/* Dependiendo del tipo de filtro seleccionado, se muestra un input o select */}
-                {filter.type && (
-                  filter.type === "cliente" ? (
-                    // Input de texto para filtro de cliente
+                {filter.type &&
+                  (filter.type === "cliente" ? (
                     <input
                       type="text"
                       value={filter.value}
@@ -316,7 +313,6 @@ function AprobacionesCitas() {
                       placeholder="Escribe el cliente"
                     />
                   ) : (
-                    // Select para filtros con opciones predefinidas (marca, servicio)
                     <select
                       value={filter.value}
                       onChange={(e) =>
@@ -333,30 +329,23 @@ function AprobacionesCitas() {
                         </option>
                       ))}
                     </select>
-                  )
-                )}
-
-                {/* Botón para eliminar el filtro si hay más de uno */}
+                  ))}
                 {filters.length > 1 && (
                   <button
                     onClick={() => handleRemoveFilter(index)}
                     className="textError"
+                    type="button"
                   >
                     Eliminar
                   </button>
                 )}
               </div>
             ))}
-
-            {/* Botón para agregar un nuevo filtro si se cumple la condición */}
             {filters.length < 3 &&
               filters[filters.length - 1].type &&
               filters[filters.length - 1].value.trim() !== "" && (
                 <div className="w-full flex justify-end">
-                  <button
-                    onClick={handleAddFilter}
-                    className="button-yellow w-40"
-                  >
+                  <button onClick={handleAddFilter} className="button-yellow w-40">
                     Agregar Filtro
                   </button>
                 </div>
@@ -364,13 +353,13 @@ function AprobacionesCitas() {
           </div>
         </div>
 
-        {/* Listado de citas filtradas presentadas en forma de tarjetas */}
+        {/* Listado de citas en forma de tarjetas */}
         {!selectedCita && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredCitas.map((cita) => (
               <div
                 key={cita.id}
-                className="reparacion-card cursor-pointer"
+                className="reparacion-card cursor-pointer card-transition"
                 onClick={() => handleSelectCita(cita.id)}
               >
                 <h2 className="cita-title">{cita.referencia}</h2>
@@ -388,10 +377,9 @@ function AprobacionesCitas() {
           </div>
         )}
 
-        {/* Detalle de la cita seleccionada, con opciones para aprobar o rechazar */}
+        {/* Detalle de la cita seleccionada */}
         {selectedCita && (
           <div className="reparacion-card">
-            {/* Botón para cancelar la selección y volver al listado */}
             <div className="flex justify-end">
               <button
                 type="button"
@@ -401,7 +389,6 @@ function AprobacionesCitas() {
                 X
               </button>
             </div>
-            {/* Detalles de la cita */}
             <div className="detalle-descripcion">
               <h2 className="cita-title">{selectedCita.referencia}</h2>
               <p className="cita-subtitle">Modelo: {selectedCita.modelo}</p>
@@ -414,7 +401,7 @@ function AprobacionesCitas() {
                 Servicios solicitados: {selectedCita.serviciosSolicitados.join(", ")}
               </p>
             </div>
-            {/* Sección para aprobación (ingresar total y seleccionar empleado) o rechazo (razón de rechazo) */}
+            {/* Sección de aprobación o rechazo */}
             {!isRejectionMode && (
               <>
                 <div className="form-group">
@@ -429,6 +416,11 @@ function AprobacionesCitas() {
                     onChange={(e) => setTotal(e.target.value)}
                     placeholder="Ingrese total"
                   />
+                  {approvalErrors.total && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {approvalErrors.total}
+                    </p>
+                  )}
                 </div>
                 <div className="form-group">
                   <label htmlFor="empleado" className="form-label">
@@ -441,10 +433,15 @@ function AprobacionesCitas() {
                     onChange={(e) => setSelectedEmpleado(e.target.value)}
                   >
                     <option value="">Seleccione un trabajador</option>
-                    <option value="Trabajador 1">Pedro</option>
-                    <option value="Trabajador 2">Pablo</option>
-                    <option value="Trabajador 3">Matias</option>
+                    <option value="Pedro">Pedro</option>
+                    <option value="Pablo">Pablo</option>
+                    <option value="Matias">Matias</option>
                   </select>
+                  {approvalErrors.selectedEmpleado && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {approvalErrors.selectedEmpleado}
+                    </p>
+                  )}
                 </div>
               </>
             )}
@@ -461,9 +458,13 @@ function AprobacionesCitas() {
                   placeholder="Ingrese la razón del rechazo (no solo números)"
                   rows="4"
                 />
+                {approvalErrors.razonRechazo && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {approvalErrors.razonRechazo}
+                  </p>
+                )}
               </div>
             )}
-            {/* Botones para confirmar la acción: aprobar o rechazar */}
             <div className="flex gap-4 mt-4">
               {isRejectionMode ? (
                 <>
@@ -487,7 +488,7 @@ function AprobacionesCitas() {
                   <button
                     type="button"
                     className="btn-aceptar"
-                    onClick={handleApprove}
+                    onClick={handleAttemptApprove}
                   >
                     Aprobar Cita
                   </button>
@@ -504,9 +505,34 @@ function AprobacionesCitas() {
           </div>
         )}
       </div>
+
+      {/* Modal de confirmación para aprobar la cita */}
+      {showConfirmApproveModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded shadow-lg w-80">
+            <h2 className="text-xl font-bold mb-4 text-yellow-500">
+              Confirmación de Aprobación
+            </h2>
+            <p className="mb-4 text-gray-700 dark:text-gray-300">
+              ¿Está seguro de aprobar la cita con total de $
+              {total} y asignar al empleado {selectedEmpleado}?
+            </p>
+            <div className="flex justify-end gap-4">
+              <button
+                className="btn-aceptar"
+                onClick={() => setShowConfirmApproveModal(false)}
+              >
+                Cancelar
+              </button>
+              <button className="btn-cancelar" onClick={confirmApprove}>
+                Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 export default AprobacionesCitas;
-

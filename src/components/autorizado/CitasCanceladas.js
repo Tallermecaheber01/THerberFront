@@ -278,7 +278,7 @@ function CitasCanceladas() {
             {filteredCitas.length > 0 ? (
               <div className="cardCitas grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredCitas.map((cita) => (
-                  <div key={cita.id} className="reparacion-card">
+                  <div key={cita.id} className="reparacion-card card-transition">
                     {/* Muestra la información de cada cita cancelada */}
                     <div className="mb-2">
                       <span className="detalle-label">Cliente: </span>
