@@ -73,9 +73,9 @@ function HistorialReparaciones() {
         <div className="mt-8">
           <h2 className="cita-title text-center">Reparaciones Realizadas</h2>
           {reparacionesFiltradas.length > 0 ? (
-            <div className="cardCitas">
+            <div className="cardCitas ">
               {reparacionesFiltradas.map((reparacion, index) => (
-                <div key={index} className="reparacion-card">
+                <div key={index} className="reparacion-card card-transition">
                   <div className="mb-4">
                     <span className="detalle-label">ID Vehículo: </span>
                     <span className="detalle-costo">{reparacion.id}</span>

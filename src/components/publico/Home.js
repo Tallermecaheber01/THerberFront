@@ -1,12 +1,64 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Breadcrumbs from "../Breadcrumbs";
+import { getAllServices } from '../../api/admin';
 
 function Home() {
+  const [services, setServices] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   const breadcrumbPaths = [
-    { name: "Catalogo", link: "/consultaservicios" }, // Ruta al login
-    { name: "Inicio", link: "/" }, // Ruta al inicio
+    { name: "Catalogo", link: "/consultaservicios" },
+    { name: "Inicio", link: "/" },
   ];
+
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const data = await getAllServices();
+        setServices(data);
+      } catch (error) {
+        console.error('Error fetching services:', error);
+      }
+    };
+    fetchServices();
+  }, []);
+
+  // Función para avanzar al siguiente grupo de 3 tarjetas
+  const nextSlide = () => {
+    setCurrentIndex((prevIndex) => {
+      if (services.length <= 3) return 0;
+      if (prevIndex >= services.length - 3) {
+        return 0;
+      }
+      return prevIndex + 1;
+    });
+  };
+
+  // Función para retroceder al grupo anterior de 3 tarjetas
+  const prevSlide = () => {
+    setCurrentIndex((prevIndex) => {
+      if (services.length <= 3) return 0;
+      if (prevIndex === 0) {
+        return services.length - 3;
+      }
+      return prevIndex - 1;
+    });
+  };
+
+  // Auto slide cada 10 segundos
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentIndex(prevIndex => {
+        if (services.length <= 3) return 0;
+        if (prevIndex >= services.length - 3) {
+          return 0;
+        }
+        return prevIndex + 1;
+      });
+    }, 8000);
+
+    return () => clearInterval(interval);
+  }, [services]);
 
   return (
     <div>
@@ -21,57 +73,67 @@ function Home() {
           <h1 className="home-banner-title">Bienvenido a Taller Automotriz Heber</h1>
         </div>
       </section>
+
       <Breadcrumbs paths={breadcrumbPaths} />
+
       {/* Sección de Servicios */}
       <section className="services-section">
         <div className="services-container">
           <h2 className="services-title">Nuestros Servicios</h2>
-          <div className="services-grid">
-            {/* Servicio 1 */}
-            <div className="service-card">
-              <img
-                src="https://cdn-dljph.nitrocdn.com/PEQqQodxjemeogsAdkpwmiyJxAvbbXbv/assets/images/optimized/rev-4cd2b8f/servitechapp.com/wp-content/uploads/2023/03/MECANICOS-TALLER-980x653.jpg"
-                alt="Mantenimiento General"
-                className="service-card-img"
-              />
-              <div className="service-card-content">
-                <h3 className="service-card-title">Mantenimiento General</h3>
-                <p className="service-card-text">
-                  Ofrecemos servicios completos de mantenimiento para que tu vehículo siempre esté en óptimas condiciones.
-                </p>
-              </div>
-            </div>
+          {services.length > 0 ? (
+            <div className="carousel" style={{ position: 'relative' }}>
+              {/* Botón Anterior */}
+              <button
+                onClick={prevSlide}
+                className="absolute top-1/2 -translate-y-1/2 text-yellow-600 text-4xl hover:scale-125 transition-transform duration-300"
+                style={{
+                  left: '-1rem',
+                }}
+              >
+                &#8249;
+              </button>
 
-            {/* Servicio 2 */}
-            <div className="service-card">
-              <img
-                src="https://www.gadsoftware.com/wp-content/uploads/2024/01/sistemas-de-diagnostico-de-vehiculos-768x507.jpg"
-                alt="Diagnóstico Electrónico"
-                className="service-card-img"
-              />
-              <div className="service-card-content">
-                <h3 className="service-card-title">Diagnóstico Electrónico</h3>
-                <p className="service-card-text">
-                  Contamos con equipos de última tecnología para realizar diagnósticos precisos y eficientes.
-                </p>
+              {/* Contenedor de tarjetas */}
+              <div
+                className="carousel-container"
+                style={{
+                  display: 'flex',
+                  overflow: 'hidden',
+                  gap: '1rem',
+                }}
+              >
+                {services.slice(currentIndex, currentIndex + 3).map((service) => (
+                  <div
+                    key={service.id}
+                    className="service-card"
+                    style={{
+                      flex: '0 0 calc(33.33% - 1rem)',
+                    }}
+                  >
+                    <img
+                      src={service.imagen}
+                      alt={service.nombre}
+                      className="service-card-img"
+                    />
+                    <div className="service-card-content">
+                      <h3 className="service-card-title">{service.nombre}</h3>
+                      <p className="service-card-text">{service.descripcion}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
-            </div>
 
-            {/* Servicio 3 */}
-            <div className="service-card">
-              <img
-                src="https://aprende.com/wp-content/uploads/2024/02/reparacion-de-motores-diesel.webp"
-                alt="Reparación de Motor"
-                className="service-card-img"
-              />
-              <div className="service-card-content">
-                <h3 className="service-card-title">Reparación de Motor</h3>
-                <p className="service-card-text">
-                  Realizamos reparaciones completas y parciales de motores con garantías de calidad.
-                </p>
-              </div>
+              {/* Botón Siguiente */}
+              <button
+                onClick={nextSlide}
+                className="absolute right-0 top-1/2 -translate-y-1/2 text-yellow-600 text-4xl hover:scale-125 transition-transform duration-300"
+              >
+                &#8250;
+              </button>
             </div>
-          </div>
+          ) : (
+            <p className="no-resultados">No hay servicios disponibles.</p>
+          )}
         </div>
       </section>
     </div>

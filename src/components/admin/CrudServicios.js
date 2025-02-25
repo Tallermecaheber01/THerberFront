@@ -1,176 +1,156 @@
-import React, { useState, useRef, useEffect } from 'react';
-
-import { createBrand, createService, createVehicleType } from '../../api/admin';
-import { getAllServices, getAllBrands, getAllVehicleTypes } from '../../api/admin';
-import { updateService, updateBrand, updateVehicleType } from '../../api/admin';
-import { deleteService, deleteBrand, deleteVehicleType } from '../../api/admin';
+import React, { useState, useRef, useEffect } from "react";
+import { createBrand, createService, createVehicleType } from "../../api/admin";
+import { getAllServices, getAllBrands, getAllVehicleTypes } from "../../api/admin";
+import { updateService, updateBrand, updateVehicleType } from "../../api/admin";
+import { deleteService, deleteBrand, deleteVehicleType } from "../../api/admin";
 
 function CrudServicios() {
-  // Estado para almacenar la lista de servicios creados.
-  const [servicios, setServicios] = useState([]);
-
   const [services, setServices] = useState([]);
   const [brands, setBrands] = useState([]);
   const [vehicleTypes, setVehicleTypes] = useState([]);
   const [reload, setReload] = useState(false);
 
-
-
-  // Estado para almacenar los datos del formulario de servicio.
-  // Incluye nombre, descripción, arrays para tipos de vehículo y marcas seleccionadas, y la imagen.
   const [datosServicio, setDatosServicio] = useState({
-    nombre: '',
-    descripcion: '',
-    tipoVehiculo: [], // Aquí se guardarán los tipos de vehículo agregados
-    marcas: [],       // Aquí se guardarán las marcas agregadas
+    nombre: "",
+    descripcion: "",
+    tipoVehiculo: [],
+    marcas: [],
     imagen: null,
   });
 
-  // Estados para almacenar la opción actualmente seleccionada en cada <select>
-  // Estos estados permiten elegir una opción a la vez antes de agregarla al array.
-  const [selectedTipoVehiculo, setSelectedTipoVehiculo] = useState('');
-  const [selectedMarca, setSelectedMarca] = useState('');
-
-  // Estado para determinar si estamos en modo edición (actualizando un servicio existente)
+  const [selectedTipoVehiculo, setSelectedTipoVehiculo] = useState("");
+  const [selectedMarca, setSelectedMarca] = useState("");
   const [modoEdicion, setModoEdicion] = useState(false);
-  // Guarda el ID del servicio que se está editando
   const [idEdicion, setIdEdicion] = useState(null);
-
-  // Referencia al input de archivo para poder reiniciarlo después de subir una imagen
   const fileInputRef = useRef(null);
   const [editingTipoIndex, setEditingTipoIndex] = useState(null);
-  const [editingTipoValue, setEditingTipoValue] = useState('');
+  const [editingTipoValue, setEditingTipoValue] = useState("");
   const [editingMarcaIndex, setEditingMarcaIndex] = useState(null);
-  const [editingMarcaValue, setEditingMarcaValue] = useState('');
+  const [editingMarcaValue, setEditingMarcaValue] = useState("");
 
-  // Opciones disponibles para marcas y tipos de vehículo.
-  // Estos valores se muestran en los selects y pueden modificarse dinámicamente.
   const [marcasOptions, setMarcasOptions] = useState([
-    'Toyota',
-    'Honda',
-    'Ford',
-    'Chevrolet',
-    'Nissan',
-    'Otro',
+    "Toyota",
+    "Honda",
+    "Ford",
+    "Chevrolet",
+    "Nissan",
+    "Otro",
   ]);
   const [tipoVehiculoOptions, setTipoVehiculoOptions] = useState([
-    'Automóvil',
-    'Camioneta',
-    'Motocicleta',
-    'Otro',
+    "Automóvil",
+    "Camioneta",
+    "Motocicleta",
+    "Otro",
   ]);
+
+  // Estados para los modales de confirmación (ya definidos en tu código)
+  const [showConfirmEditModal, setShowConfirmEditModal] = useState(false);
+  const [serviceToEdit, setServiceToEdit] = useState(null);
+  const [showConfirmDeleteModal, setShowConfirmDeleteModal] = useState(false);
+  const [serviceToDelete, setServiceToDelete] = useState(null);
+
+  // Nuevo estado para almacenar errores del formulario
+  const [formErrors, setFormErrors] = useState({});
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const servicesData = await getAllServices();
-        console.log("Servicios obtenidos:", servicesData);
         setServices(servicesData);
 
         const brandsData = await getAllBrands();
-        console.log('Marcas obtenidas:', brandsData);
         setBrands(brandsData);
 
         const vehiclesData = await getAllVehicleTypes();
-        console.log("Tipos de vehiculos obtenidos:", vehiclesData);
         setVehicleTypes(vehiclesData);
       } catch (error) {
-        console.error("Error al obtener los servicios:", error);
+        console.error("Error al obtener datos:", error);
       }
     };
     fetchData();
-  }, [reload])
+  }, [reload]);
 
-  // Estados para controlar la visibilidad de formularios emergentes para agregar nuevas opciones
-  // (por si se requiere agregar una marca o tipo que no esté en la lista)
   const [showMarcaForm, setShowMarcaForm] = useState(false);
-  const [newMarca, setNewMarca] = useState('');
+  const [newMarca, setNewMarca] = useState("");
 
   const [showTipoForm, setShowTipoForm] = useState(false);
-  const [newTipo, setNewTipo] = useState('');
+  const [newTipo, setNewTipo] = useState("");
 
-  // Función para manejar cambios en los inputs de texto y el input file (imagen)
+  // Validación para evitar caracteres potencialmente peligrosos
+  const isInputSeguro = (value) => {
+    if (
+      value.includes("'") ||
+      value.includes('"') ||
+      value.includes(";") ||
+      value.includes("--") ||
+      value.includes("/*") ||
+      value.includes("*/")
+    ) {
+      return false;
+    }
+    return true;
+  };
+
   const handleChange = (e) => {
     const { name, value, files } = e.target;
-    // Si el input es de tipo "file" (imagen)
-    if (name === 'imagen') {
+    if (name === "nombre" || name === "descripcion") {
+      if (!isInputSeguro(value)) {
+        alert(`Caracteres no permitidos en el campo ${name}`);
+        return;
+      }
+    }
+    if (name === "imagen") {
       if (files[0]) {
         const archivo = files[0];
-        // Validación: se permite solo imágenes con extensión .jpg y tipo image/jpeg
         if (
-          !archivo.name.toLowerCase().endsWith('.jpg') ||
-          archivo.type !== 'image/jpeg'
+          !archivo.name.toLowerCase().endsWith(".jpg") ||
+          archivo.type !== "image/jpeg"
         ) {
-          alert('Solo se permiten imágenes en formato .jpg');
-          e.target.value = ''; // Se limpia el valor del input
+          alert("Solo se permiten imágenes en formato .jpg");
+          e.target.value = "";
           setDatosServicio({ ...datosServicio, imagen: null });
           return;
         }
-        // Se guarda el archivo en el estado
         setDatosServicio({ ...datosServicio, imagen: archivo });
       } else {
         setDatosServicio({ ...datosServicio, imagen: null });
       }
     } else {
-      // Validación: el campo "nombre" no debe contener números
-      if (name === 'nombre' && /\d/.test(value)) {
-        alert(`El campo ${name} no puede contener números.`);
-        return;
-      }
-      // Se actualiza el estado con el nuevo valor para el input
       setDatosServicio({ ...datosServicio, [name]: value });
     }
   };
 
-  // Función para agregar un tipo de vehículo a la lista de tipos seleccionados.
-  // Se usa el valor actualmente seleccionado en el select.
   const agregarTipoVehiculo = () => {
-    console.log("Tipo seleccionado antes de agregar:", selectedTipoVehiculo);
-    console.log("Tipos de vehículo actuales en estado:", datosServicio.tipoVehiculo);
-    const vehicle = vehicleTypes.find(v => v.id === parseInt(selectedTipoVehiculo, 10));
-
-    if (!vehicle) {
-      console.log("No se encontró el tipo de vehículo.");
-      return;
+    const vehicle = vehicleTypes.find(
+      (v) => v.id === parseInt(selectedTipoVehiculo, 10)
+    );
+    if (vehicle) {
+      if (!datosServicio.tipoVehiculo.includes(vehicle.nombre)) {
+        setDatosServicio((prev) => ({
+          ...prev,
+          tipoVehiculo: [...prev.tipoVehiculo, vehicle.nombre],
+        }));
+      } else {
+        alert("Este tipo de vehículo ya ha sido seleccionado.");
+      }
     }
-
-    console.log("Hola", vehicle.nombre);
-
-    // Verifica si el ID ya está en la lista
-    if (!datosServicio.tipoVehiculo.includes(vehicle.id)) {
-      console.log("Estado actualizado con el nuevo tipo:", [
-        ...datosServicio.tipoVehiculo,
-        vehicle.nombre,
-      ]);
-
-      setDatosServicio((prev) => ({
-        ...prev,
-        tipoVehiculo: [...prev.tipoVehiculo, vehicle.nombre], // Guarda solo el ID
-      }));
-    }
-
-    // Se reinicia el valor del select
-    setSelectedTipoVehiculo('');
+    setSelectedTipoVehiculo("");
   };
 
   const agregarTipoVehiculoAPI = async (newTipo) => {
     const vehicleData = { nombre: newTipo };
 
     try {
-      // Llamada a la API para agregar el tipo de vehículo
       const response = await createVehicleType(vehicleData);
       console.log("Nuevo tipo de vehículo agregado:", response);
-
       const vehiclesData = await getAllVehicleTypes();
       setVehicleTypes(vehiclesData);
     } catch (error) {
-      console.error('Error al agregar tipo de vehículo:', error);
+      console.error("Error al agregar tipo de vehículo:", error);
       alert("Ocurrió un error al intentar agregar el tipo de vehículo.");
     }
   };
 
-
-  // Función para eliminar un tipo de vehículo ya agregado.
   const eliminarTipoVehiculo = (tipo) => {
     setDatosServicio((prev) => ({
       ...prev,
@@ -178,69 +158,54 @@ function CrudServicios() {
     }));
   };
 
-  // Función para iniciar la edición de un tipo
   const handleEditTipo = (index) => {
     setEditingTipoIndex(index);
     setEditingTipoValue(vehicleTypes[index].nombre);
   };
 
-  // Función para guardar el cambio en un tipo
   const handleSaveTipo = async (index) => {
     try {
       const vehicleId = vehicleTypes[index].id;
       const updateVehiculo = { nombre: editingTipoValue };
       const response = await updateVehicleType(vehicleId, updateVehiculo);
-      console.log('Tipo de vehiculo actualizado:', response);
+      console.log("Tipo de vehículo actualizado:", response);
       const vehiclesData = await getAllVehicleTypes();
       setVehicleTypes(vehiclesData);
 
       setEditingTipoIndex(null);
-      setEditingTipoValue('');
+      setEditingTipoValue("");
     } catch (error) {
-      console.error('Error al guardar el tipo de vehiculo:', error);
-      alert('Ocurrió un error al intentar guardar el tipo de vehiculo.');
+      console.error("Error al guardar el tipo de vehículo:", error);
+      alert("Ocurrió un error al intentar guardar el tipo de vehículo.");
     }
   };
 
-  // Función para eliminar un tipo
   const handleDeleteTipo = async (index) => {
     try {
       const vehicleId = vehicleTypes[index].id;
       const response = await deleteVehicleType(vehicleId);
-      console.log('Tipo de vehiculo eliminado', response);
+      console.log("Tipo de vehículo eliminado", response);
       const vehiclesData = await getAllVehicleTypes();
       setVehicleTypes(vehiclesData);
-
     } catch (error) {
-      console.error('Error al eliminar el tipo de vehiculo:', error);
-      alert('Ocurrió un error al intentar eliminar el tipo de vehiculo.');
+      console.error("Error al eliminar el tipo de vehículo:", error);
+      alert("Ocurrió un error al intentar eliminar el tipo de vehículo.");
     }
   };
 
-  // Función para agregar una marca a la lista de marcas seleccionadas.
   const agregarMarca = () => {
-    console.log("Marca seleccionada antes de agregar:", selectedMarca);
-    console.log("Marcas actuales en estado:", datosServicio.marcas);
-    const brand = brands.find(v => v.id === parseInt(selectedMarca, 10));
-
-    if (!brand) {
-      console.log("No se encontro ninguna marca")
+    const brand = brands.find((v) => v.id === parseInt(selectedMarca, 10));
+    if (brand) {
+      if (!datosServicio.marcas.includes(brand.nombre)) {
+        setDatosServicio((prev) => ({
+          ...prev,
+          marcas: [...prev.marcas, brand.nombre],
+        }));
+      } else {
+        alert("Esta marca ya ha sido seleccionada.");
+      }
     }
-    console.log("Hola marca:", brand.nombre)
-    if (!datosServicio.marcas.includes(brand.id)) {
-      console.log("Estado actualizado con la nueva marca:", [
-        ...datosServicio.marcas,
-        brand.nombre,
-      ])
-
-      setDatosServicio((prev) => ({
-        ...prev,
-        marcas: [...prev.marcas, brand.nombre],
-      }))
-    }
-
-    // Se reinicia el select de marcas
-    setSelectedMarca('');
+    setSelectedMarca("");
   };
 
   const agregarMarcaAPI = async (newMarca) => {
@@ -249,176 +214,146 @@ function CrudServicios() {
     try {
       const response = await createBrand(brandData);
       console.log("Nueva marca:", response);
-      // Obtener las marcas nuevamente
       const brandsData = await getAllBrands();
-      setBrands(brandsData);  // Actualiza el estado con las nuevas marcas
+      setBrands(brandsData);
     } catch (error) {
-      console.log('Error al agregar tipo de vehiculo:', error);
-      alert("Ocussio un error al intentar agregar el tipo de vehículo.");
+      alert("Ocurrió un error al intentar agregar la marca.");
     }
-  }
-  // Función para eliminar una marca ya agregada.
-  const eliminarMarca = (marca) => {
+  };
 
+  const eliminarMarca = (marca) => {
     setDatosServicio((prev) => ({
       ...prev,
       marcas: prev.marcas.filter((item) => item !== marca),
     }));
   };
 
-  const handleEditMarca = (index) => {
-    setEditingMarcaIndex(index);
-    setEditingMarcaValue(brands[index].nombre);
-  };
-
-  // Función para guardar el cambio en una marca
   const handleSaveMarca = async (index) => {
     try {
       const brandId = brands[index].id;
       const updateMarca = { nombre: editingMarcaValue };
       const response = await updateBrand(brandId, updateMarca);
-      console.log('Marca actualizada:', response);
+      console.log("Marca actualizada:", response);
       const brandsData = await getAllBrands();
-      setBrands(brandsData);  // Actualiza el estado con las nuevas marcas
-      // Restablecemos los valores de edición
+      setBrands(brandsData);
       setEditingMarcaIndex(null);
-      setEditingMarcaValue('');
+      setEditingMarcaValue("");
     } catch (error) {
-      console.error('Error al guardar la marca:', error);
-      alert('Ocurrió un error al intentar guardar la marca.');
+      console.error("Error al guardar la marca:", error);
+      alert("Ocurrió un error al intentar guardar la marca.");
     }
   };
 
-  // Función para eliminar una marca
   const handleDeleteMarca = async (index) => {
     try {
       const brandId = brands[index].id;
       const response = await deleteBrand(brandId);
-      console.log("Marca eliminada:", response)
+      console.log("Marca eliminada:", response);
       const brandsData = await getAllBrands();
-      setBrands(brandsData);  // Actualiza el estado con las nuevas marcas
+      setBrands(brandsData);
     } catch (error) {
-      console.error('Error al eliminar la marca:', error);
-      alert('Ocurrió un error al intentar eliminar la marca.');
+      console.error("Error al eliminar la marca:", error);
+      alert("Ocurrió un error al intentar eliminar la marca.");
     }
   };
 
-  // Función para manejar el submit del formulario.
-  // Se encarga de subir la imagen a Cloudinary (si es necesario) y almacenar el servicio.
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    let imagenUrl = datosServicio.imagen;
+    // Validación del formulario: se muestran mensajes de error en línea
+    const errors = {};
+    if (!datosServicio.nombre.trim()) {
+      errors.nombre = "El nombre del servicio es obligatorio.";
+    }
+    if (!datosServicio.descripcion.trim()) {
+      errors.descripcion = "La descripción es obligatoria.";
+    }
+    if (datosServicio.tipoVehiculo.length === 0) {
+      errors.tipoVehiculo = "Debe seleccionar al menos un tipo de vehículo.";
+    }
+    if (datosServicio.marcas.length === 0) {
+      errors.marcas = "Debe seleccionar al menos una marca.";
+    }
+    if (!datosServicio.imagen) {
+      errors.imagen = "Debe subir una imagen en formato .jpg.";
+    }
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      return;
+    }
+    setFormErrors({});
 
-    // Si la imagen es un objeto File, se procede a subirla a Cloudinary
+    let imagenUrl = datosServicio.imagen;
     if (datosServicio.imagen && datosServicio.imagen instanceof File) {
       const formData = new FormData();
-      formData.append('file', datosServicio.imagen);
-      formData.append('upload_preset', 'taller_heber_servicios'); // Reemplaza con tu upload_preset
+      formData.append("file", datosServicio.imagen);
+      formData.append("upload_preset", "taller_heber_servicios");
 
       try {
         const response = await fetch(
-          'https://api.cloudinary.com/v1_1/dtcjmtiwy/image/upload', // Reemplaza con tu cloud name
+          "https://api.cloudinary.com/v1_1/dtcjmtiwy/image/upload",
           {
-            method: 'POST',
+            method: "POST",
             body: formData,
           }
         );
         const data = await response.json();
-        // Se obtiene la URL segura de la imagen subida
         imagenUrl = data.secure_url;
       } catch (error) {
-        console.error('Error al subir imagen:', error);
+        console.error("Error al subir imagen:", error);
       }
     }
-
-    // Si no hay imagen, se muestra una alerta y se detiene el proceso
     if (!imagenUrl) {
-      alert('Debe agregar una imagen en formato .jpg.');
+      // Este caso no debería pasar ya que se valida previamente
+      setFormErrors((prev) => ({
+        ...prev,
+        imagen: "Debe subir una imagen en formato .jpg.",
+      }));
       return;
     }
-
-    // Se crea el objeto "servicio" con todos los datos del formulario.
-    // Si es edición, se conserva el ID; de lo contrario se genera uno nuevo.
-    const nuevoServicio = {
-      ...datosServicio,
-      tipoVehiculo: [...datosServicio.tipoVehiculo],
-      marcas: [...datosServicio.marcas],
-      imagen: imagenUrl,
-      id: modoEdicion ? idEdicion : Date.now(),
-    };
 
     const service = {
       nombre: datosServicio.nombre,
       descripcion: datosServicio.descripcion,
       tipoVehiculo: [...datosServicio.tipoVehiculo],
       marcas: [...datosServicio.marcas],
-      imagen: imagenUrl
-    }
+      imagen: imagenUrl,
+    };
 
-
-    // Si estamos en modo edición, se actualiza el servicio existente.
-    // Caso contrario, se agrega el nuevo servicio a la lista.
     try {
       let response;
       if (modoEdicion) {
-        console.log("Este es el id", idEdicion)
         response = await updateService(idEdicion, service);
-        console.log(response)
-
-        // Actualizar el estado con la información editada
         setServices((prevServices) =>
           prevServices.map((s) => (s.id === idEdicion ? response : s))
         );
-
-        /*setServicios(
-          servicios.map((s) => (s.id === idEdicion ? nuevoServicio : s))
-        );*/
         setModoEdicion(false);
         setIdEdicion(null);
       } else {
-        //setServicios([...servicios, nuevoServicio]);
         response = await createService(service);
         setServices((prevServices) => [...prevServices, response]);
       }
-      setReload(prev => !prev);
-      console.log(response)
+      setReload((prev) => !prev);
 
-      // Se imprime en consola el ID y la URL de la imagen (útil para debugging)
-
-      console.log('Datos de la imagen');
-      console.log('ID:', nuevoServicio.id);
-      console.log('URL Imagen:', imagenUrl);
-
-      // Se limpia el formulario y se reinician los estados auxiliares
       setDatosServicio({
-        nombre: '',
-        descripcion: '',
+        nombre: "",
+        descripcion: "",
         tipoVehiculo: [],
         marcas: [],
         imagen: null,
       });
-
-      setSelectedTipoVehiculo('');
-      setSelectedMarca('');
-      // Se reinicia el input file (para poder volver a subir otra imagen)
+      setSelectedTipoVehiculo("");
+      setSelectedMarca("");
       if (fileInputRef.current) {
-        fileInputRef.current.value = '';
+        fileInputRef.current.value = "";
       }
     } catch (error) {
-      console.error('Error en el manejo del servicio:', error);
+      console.error("Error en el manejo del servicio:", error);
     }
-
-
-
-
   };
 
-  // Función para iniciar la edición de un servicio.
-  // Se carga la información del servicio en el formulario y se activa el modo edición.
+  // Función para iniciar el modo edición (se invoca tras confirmar en el modal)
   const editarServicio = (servicio) => {
-    console.log("Estas editando")
-    console.log(servicio.id)
     setModoEdicion(true);
     setIdEdicion(servicio.id);
     setDatosServicio({
@@ -426,14 +361,12 @@ function CrudServicios() {
       descripcion: servicio.descripcion,
       tipoVehiculo: servicio.tipoVehiculo,
       marcas: servicio.marcas,
-      imagen: servicio.imagen, // En este caso, la imagen ya es una URL
+      imagen: servicio.imagen,
     });
   };
 
-  // Función para eliminar un servicio de la lista.
+  // Función para eliminar el servicio (se llama tras confirmar en el modal)
   const eliminarServicio = async (id) => {
-    const confimar = window.confirm("Estas seguro de que quieres eliminar este servicio?");
-    if (!confimar) return;
     try {
       await deleteService(id);
       setServices((prevServices) => prevServices.filter((s) => s.id !== id));
@@ -443,18 +376,14 @@ function CrudServicios() {
   };
 
   return (
-    <div className="container mx-auto p-4">
-      {/* Título principal de la sección */}
+    <div className="container mx-auto p-4 relative">
       <h1 className="form-title mb-4">Administrar Servicios</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Sección del formulario para agregar/editar servicios */}
         <div>
           <form onSubmit={handleSubmit} className="form-card">
-            {/* Título del formulario, que cambia según el modo (agregar o editar) */}
             <h2 className="form-title mb-4">
-              {modoEdicion ? 'Editar Servicio' : 'Agregar Servicio'}
+              {modoEdicion ? "Editar Servicio" : "Agregar Servicio"}
             </h2>
-            {/* Input para el nombre del servicio */}
             <div className="form-group">
               <label htmlFor="nombre" className="form-label">
                 Nombre del Servicio
@@ -468,8 +397,12 @@ function CrudServicios() {
                 onChange={handleChange}
                 required
               />
+              {formErrors.nombre && (
+                <p className="text-red-500 text-xs mt-1">
+                  {formErrors.nombre}
+                </p>
+              )}
             </div>
-            {/* Input para la descripción del servicio */}
             <div className="form-group">
               <label htmlFor="descripcion" className="form-label">
                 Descripción
@@ -482,12 +415,15 @@ function CrudServicios() {
                 onChange={handleChange}
                 required
               ></textarea>
+              {formErrors.descripcion && (
+                <p className="text-red-500 text-xs mt-1">
+                  {formErrors.descripcion}
+                </p>
+              )}
             </div>
-            {/* Sección para seleccionar el Tipo de Vehículo */}
             <div className="form-group">
               <label className="form-label">Tipo de Vehículo</label>
               <div className="flex items-center">
-                {/* Select de selección única para elegir un tipo */}
                 <select
                   value={selectedTipoVehiculo}
                   onChange={(e) => setSelectedTipoVehiculo(e.target.value)}
@@ -495,13 +431,11 @@ function CrudServicios() {
                 >
                   <option value="">Seleccione un tipo</option>
                   {vehicleTypes.map((tipo) => (
-                    <option key={tipo.id} value={tipo.id}> {/* Aquí accedes a tipo.id para el value y tipo.nombre para mostrar el nombre */}
+                    <option key={tipo.id} value={tipo.id}>
                       {tipo.nombre}
                     </option>
                   ))}
                 </select>
-
-                {/* Botón para agregar el tipo seleccionado al array */}
                 <button
                   type="button"
                   onClick={agregarTipoVehiculo}
@@ -510,27 +444,36 @@ function CrudServicios() {
                   Agregar
                 </button>
               </div>
-              {/* Muestra los tipos de vehículo agregados como "badges" con opción a eliminarlos */}
               <div className="mt-2">
                 {datosServicio.tipoVehiculo.map((tipoNombre, index) => {
-                  const tipo = vehicleTypes.find(v => v.nombre === tipoNombre);
+                  const tipo = vehicleTypes.find(
+                    (v) => v.nombre === tipoNombre
+                  );
                   return (
-                    <span key={index} className="inline-block bg-gray-200 rounded px-2 py-1 mr-2">
-                      {tipo ? tipo.nombre : "Desconocido"} {/* Muestra el nombre en lugar del ID */}
-                      <button type="button" onClick={() => eliminarTipoVehiculo(tipoNombre)}>
+                    <span
+                      key={index}
+                      className="inline-block bg-gray-200 rounded px-2 py-1 mr-2"
+                    >
+                      {tipo ? tipo.nombre : "Desconocido"}
+                      <button
+                        type="button"
+                        onClick={() => eliminarTipoVehiculo(tipoNombre)}
+                      >
                         x
                       </button>
                     </span>
                   );
                 })}
               </div>
-
+              {formErrors.tipoVehiculo && (
+                <p className="text-red-500 text-xs mt-1">
+                  {formErrors.tipoVehiculo}
+                </p>
+              )}
             </div>
-            {/* Sección para seleccionar las Marcas */}
             <div className="form-group">
               <label className="form-label">Marcas</label>
               <div className="flex items-center">
-                {/* Select de selección única para elegir una marca */}
                 <select
                   value={selectedMarca}
                   onChange={(e) => setSelectedMarca(e.target.value)}
@@ -543,7 +486,6 @@ function CrudServicios() {
                     </option>
                   ))}
                 </select>
-                {/* Botón para agregar la marca seleccionada */}
                 <button
                   type="button"
                   onClick={agregarMarca}
@@ -552,12 +494,14 @@ function CrudServicios() {
                   Agregar
                 </button>
               </div>
-              {/* Muestra las marcas agregadas con opción de eliminarlas */}
               <div className="mt-2">
                 {datosServicio.marcas.map((marcaNombre, index) => {
-                  const marca = brands.find(v => v.nombre === marcaNombre);
+                  const marca = brands.find((v) => v.nombre === marcaNombre);
                   return (
-                    <span key={index} className="inline-block bg-gray-200 rounded px-2 py-1 mr-2">
+                    <span
+                      key={index}
+                      className="inline-block bg-gray-200 rounded px-2 py-1 mr-2"
+                    >
                       {marca ? marca.nombre : "Desconocido"}
                       <button
                         type="button"
@@ -566,12 +510,15 @@ function CrudServicios() {
                         x
                       </button>
                     </span>
-                  )
-
+                  );
                 })}
               </div>
+              {formErrors.marcas && (
+                <p className="text-red-500 text-xs mt-1">
+                  {formErrors.marcas}
+                </p>
+              )}
             </div>
-            {/* Input para seleccionar la imagen del servicio */}
             <div className="form-group">
               <label htmlFor="imagen" className="form-label">
                 Imagen
@@ -585,31 +532,34 @@ function CrudServicios() {
                 accept=".jpg"
                 ref={fileInputRef}
               />
+              {formErrors.imagen && (
+                <p className="text-red-500 text-xs mt-1">
+                  {formErrors.imagen}
+                </p>
+              )}
             </div>
-            {/* Botones para enviar el formulario o cancelar la edición */}
             <div className="flex gap-2">
               <button type="submit" className="btn-aceptar">
-                {modoEdicion ? 'Guardar Cambios' : 'Agregar Servicio'}
+                {modoEdicion ? "Guardar Cambios" : "Agregar Servicio"}
               </button>
               {modoEdicion && (
                 <button
                   type="button"
                   className="btn-cancelar"
                   onClick={() => {
-                    // Reinicia el modo edición y limpia el formulario
                     setModoEdicion(false);
                     setIdEdicion(null);
                     setDatosServicio({
-                      nombre: '',
-                      descripcion: '',
+                      nombre: "",
+                      descripcion: "",
                       tipoVehiculo: [],
                       marcas: [],
                       imagen: null,
                     });
-                    setSelectedTipoVehiculo('');
-                    setSelectedMarca('');
+                    setSelectedTipoVehiculo("");
+                    setSelectedMarca("");
                     if (fileInputRef.current) {
-                      fileInputRef.current.value = '';
+                      fileInputRef.current.value = "";
                     }
                   }}
                 >
@@ -618,10 +568,8 @@ function CrudServicios() {
               )}
             </div>
           </form>
-          {/* Sección para mostrar formularios emergentes para agregar nuevas opciones a los selects */}
           {(!showTipoForm && !showMarcaForm) ? (
             <div className="flex gap-2 mt-2">
-              {/* Botón para mostrar formulario de agregar un nuevo Tipo de Vehículo */}
               <button
                 type="button"
                 className="btn-aceptar w-auto text-sm py-2 px-1"
@@ -629,7 +577,6 @@ function CrudServicios() {
               >
                 Agregar Tipo de Vehículo
               </button>
-              {/* Botón para mostrar formulario de agregar una nueva Marca */}
               <button
                 type="button"
                 className="btn-aceptar w-auto text-sm py-2 px-1"
@@ -640,7 +587,6 @@ function CrudServicios() {
             </div>
           ) : (
             <div className="mt-4">
-              {/* Formulario emergente para agregar un nuevo Tipo de Vehículo */}
               {showTipoForm && (
                 <div className="mt-2 p-2 border rounded w-96">
                   <div className="form-group">
@@ -661,17 +607,15 @@ function CrudServicios() {
                       type="button"
                       className="btn-aceptar w-auto"
                       onClick={() => {
-                        agregarTipoVehiculoAPI(newTipo)
+                        agregarTipoVehiculoAPI(newTipo);
                         if (newTipo.trim()) {
-                          // Se agrega el nuevo tipo a las opciones disponibles
-
                           setTipoVehiculoOptions([
                             ...tipoVehiculoOptions,
                             newTipo.trim(),
                           ]);
-                          setNewTipo('');
+                          setNewTipo("");
                         } else {
-                          alert('Ingrese un tipo válido');
+                          alert("Ingrese un tipo válido");
                         }
                       }}
                     >
@@ -681,7 +625,7 @@ function CrudServicios() {
                       type="button"
                       className="btn-cancelar w-auto"
                       onClick={() => {
-                        setNewTipo('');
+                        setNewTipo("");
                         setShowTipoForm(false);
                       }}
                     >
@@ -691,15 +635,19 @@ function CrudServicios() {
                   <div className="mt-4">
                     <h4 className="detalle-label">Tipos de Vehículo Disponibles</h4>
                     {vehicleTypes.map((tipo, index) => (
-                      <div key={index} className="service-card-text flex items-center justify-between my-1">
+                      <div
+                        key={index}
+                        className="service-card-text flex items-center justify-between my-1"
+                      >
                         {editingTipoIndex === index ? (
                           <>
-                            {/* Contenedor con ancho fijo para el input en modo edición */}
                             <div className="w-40">
                               <input
                                 type="text"
                                 value={editingTipoValue}
-                                onChange={(e) => setEditingTipoValue(e.target.value)}
+                                onChange={(e) =>
+                                  setEditingTipoValue(e.target.value)
+                                }
                                 className="form-input w-full"
                               />
                             </div>
@@ -722,7 +670,6 @@ function CrudServicios() {
                           </>
                         ) : (
                           <>
-                            {/* Contenedor con ancho fijo para el texto */}
                             <span className="w-40">{tipo.nombre}</span>
                             <div className="flex gap-2">
                               <button
@@ -745,10 +692,8 @@ function CrudServicios() {
                       </div>
                     ))}
                   </div>
-
                 </div>
               )}
-              {/* Formulario emergente para agregar una nueva Marca */}
               {showMarcaForm && (
                 <div className="mt-2 p-2 border rounded w-96">
                   <div className="form-group">
@@ -771,11 +716,10 @@ function CrudServicios() {
                       onClick={() => {
                         agregarMarcaAPI(newMarca);
                         if (newMarca.trim()) {
-                          // Se agrega la nueva marca a las opciones disponibles
                           setMarcasOptions([...marcasOptions, newMarca.trim()]);
-                          setNewMarca('');
+                          setNewMarca("");
                         } else {
-                          alert('Ingrese una marca válida');
+                          alert("Ingrese una marca válida");
                         }
                       }}
                     >
@@ -785,27 +729,30 @@ function CrudServicios() {
                       type="button"
                       className="btn-cancelar w-auto"
                       onClick={() => {
-                        setNewMarca('');
+                        setNewMarca("");
                         setShowMarcaForm(false);
                       }}
                     >
                       Cerrar
                     </button>
                   </div>
-                  {/* Aquí se muestra la lista de marcas con opción para editar y eliminar */}
                   <div className="mt-4">
                     <h4 className="detalle-label">Marcas Disponibles</h4>
                     {brands.length > 0 ? (
                       brands.map((marca, index) => (
-                        <div key={marca.id} className="service-card-text flex items-center justify-between my-1">
+                        <div
+                          key={marca.id}
+                          className="service-card-text flex items-center justify-between my-1"
+                        >
                           {editingMarcaIndex === index ? (
                             <>
-                              {/* Contenedor con ancho fijo para el input en modo edición */}
                               <div className="w-40">
                                 <input
                                   type="text"
                                   value={editingMarcaValue}
-                                  onChange={(e) => setEditingMarcaValue(e.target.value)}
+                                  onChange={(e) =>
+                                    setEditingMarcaValue(e.target.value)
+                                  }
                                   className="form-input w-full"
                                 />
                               </div>
@@ -828,13 +775,15 @@ function CrudServicios() {
                             </>
                           ) : (
                             <>
-                              {/* Contenedor con ancho fijo para el texto */}
-                              <span className="w-40">{marca.nombre}</span> {/* Aquí se accede a 'nombre' */}
+                              <span className="w-40">{marca.nombre}</span>
                               <div className="flex gap-2">
                                 <button
                                   type="button"
                                   className="btn-aceptar w-20"
-                                  onClick={() => handleEditMarca(index)}
+                                  onClick={() => {
+                                    setServiceToEdit(marca);
+                                    setEditingMarcaIndex(index);
+                                  }}
                                 >
                                   Editar
                                 </button>
@@ -851,16 +800,14 @@ function CrudServicios() {
                         </div>
                       ))
                     ) : (
-                      <div>No hay marcas disponibles</div> // Mensaje si no hay marcas
+                      <div>No hay marcas disponibles</div>
                     )}
                   </div>
-
                 </div>
               )}
             </div>
           )}
         </div>
-        {/* Sección para visualizar la lista de servicios creados */}
         <div>
           <h2 className="services-title mb-4">Servicios</h2>
           {services.length === 0 ? (
@@ -868,9 +815,8 @@ function CrudServicios() {
           ) : (
             <div className="space-y-4">
               {services.map((servicio) => (
-                <div key={servicio.id} className="service-card p-4">
+                <div key={servicio.id} className="service-card p-4 card-transition">
                   <div className="flex items-center">
-                    {/* Muestra la imagen del servicio, si existe */}
                     {servicio.imagen && (
                       <img
                         src={servicio.imagen}
@@ -881,27 +827,35 @@ function CrudServicios() {
                     <div>
                       <h3 className="service-card-title">{servicio.nombre}</h3>
                       <p className="service-card-text">{servicio.descripcion}</p>
-                      {/* Se unen los tipos de vehículo y marcas con comas para mostrarlos */}
                       <p className="service-card-text">
-                        <span className="detalle-label">Tipo:</span>{' '}
-                        {Array.isArray(servicio.tipoVehiculo) ? servicio.tipoVehiculo.join(', ') : 'No especificado'}
+                        <span className="detalle-label">Tipo:</span>{" "}
+                        {Array.isArray(servicio.tipoVehiculo)
+                          ? servicio.tipoVehiculo.join(", ")
+                          : "No especificado"}
                       </p>
                       <p className="service-card-text">
-                        <span className="detalle-label">Marcas:</span>{' '}
-                        {Array.isArray(servicio.marcas) ? servicio.marcas.join(', ') : 'No especificado'}
+                        <span className="detalle-label">Marcas:</span>{" "}
+                        {Array.isArray(servicio.marcas)
+                          ? servicio.marcas.join(", ")
+                          : "No especificado"}
                       </p>
                     </div>
                   </div>
-                  {/* Botones para editar o eliminar el servicio */}
                   <div className="mt-2 flex gap-2">
                     <button
-                      onClick={() => editarServicio(servicio)}
+                      onClick={() => {
+                        setServiceToEdit(servicio);
+                        setShowConfirmEditModal(true);
+                      }}
                       className="button-yellow"
                     >
                       Editar
                     </button>
                     <button
-                      onClick={() => eliminarServicio(servicio.id)}
+                      onClick={() => {
+                        setServiceToDelete(servicio);
+                        setShowConfirmDeleteModal(true);
+                      }}
                       className="btn-cancelar"
                     >
                       Eliminar
@@ -913,9 +867,70 @@ function CrudServicios() {
           )}
         </div>
       </div>
+
+      {/* Modal de confirmación para editar */}
+      {showConfirmEditModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded shadow-lg w-80">
+            <h2 className="text-xl font-bold mb-4 text-yellow-500">
+              Confirmación de Edición
+            </h2>
+            <p className="mb-4 text-gray-700 dark:text-gray-300">
+              ¿Estás seguro de que deseas editar este servicio?
+            </p>
+            <div className="flex justify-end gap-4">
+              <button
+                className="btn-aceptar"
+                onClick={() => {
+                  setShowConfirmEditModal(false);
+                  editarServicio(serviceToEdit);
+                }}
+              >
+                Confirmar
+              </button>
+              <button
+                className="btn-cancelar"
+                onClick={() => setShowConfirmEditModal(false)}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de confirmación para eliminar */}
+      {showConfirmDeleteModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded shadow-lg w-80">
+            <h2 className="text-xl font-bold mb-4 text-yellow-500">
+              Confirmación de Eliminación
+            </h2>
+            <p className="mb-4 text-gray-700 dark:text-gray-300">
+              ¿Estás seguro de que deseas eliminar este servicio?
+            </p>
+            <div className="flex justify-end gap-4">
+              <button
+                className="btn-aceptar"
+                onClick={() => {
+                  setShowConfirmDeleteModal(false);
+                  eliminarServicio(serviceToDelete.id);
+                }}
+              >
+                Confirmar
+              </button>
+              <button
+                className="btn-cancelar"
+                onClick={() => setShowConfirmDeleteModal(false)}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 export default CrudServicios;
-

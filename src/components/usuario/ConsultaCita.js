@@ -292,7 +292,7 @@ function Consulta_cita() {
           {/* Listado de citas filtradas */}
           <div className="services-grid">
             {filteredCitas.map((cita) => (
-              <div key={cita.id} className="service-card">
+              <div key={cita.id} className="service-card card-transition">
                 <div className="service-card-content">
                   <h3 className="service-card-title">{cita.trabajador}</h3>
                   <p className="service-card-text">Horario: {cita.horario}</p>

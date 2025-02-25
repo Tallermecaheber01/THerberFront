@@ -9,7 +9,6 @@ function CrudReparacionesAdmin() {
   ];
 
   // Estado inicial de las reparaciones (citas)
-  // Estos datos simulados serán reemplazados por la respuesta de una API en el backend
   const [citas, setCitas] = useState([
     {
       id: 1,
@@ -21,8 +20,8 @@ function CrudReparacionesAdmin() {
       marca: "Toyota",
       modelo: "Corolla 2019",
       comentario: "",
-      empleado: "Ana Torres", // Indica el empleado que realizó la reparación
-      fechaGuardado: "2025-01-04" // Fecha en que se guardó la reparación
+      empleado: "Ana Torres",
+      fechaGuardado: "2025-01-04"
     },
     {
       id: 2,
@@ -53,7 +52,6 @@ function CrudReparacionesAdmin() {
   ]);
 
   // Estados para la edición de una reparación seleccionada
-  // Estos estados controlan el formulario de edición, que luego se enviaría al backend
   const [citaSeleccionada, setCitaSeleccionada] = useState(null);
   const [comentario, setComentario] = useState("");
   const [extra, setExtra] = useState(0);
@@ -62,18 +60,19 @@ function CrudReparacionesAdmin() {
   const [tempServices, setTempServices] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
 
-  // Estado para filtros de búsqueda. Se ha agregado el filtro "empleado"
+  // Estado para filtros de búsqueda
   const availableFilterTypes = ["cliente", "servicio", "marca", "modelo", "costo", "empleado"];
   const [filters, setFilters] = useState([{ type: "", value: "" }]);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Estados para el modal de eliminación
-  // En una implementación real, al confirmar la eliminación se debería hacer una llamada al backend
+  // Estado para el modal de eliminación
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
 
-  // Lista de servicios permitidos para autocompletar.
-  // El backend debe validar que el servicio recibido esté en esta lista
+  // NUEVO: Estado para el modal de confirmación de edición
+  const [showEditModal, setShowEditModal] = useState(false);
+
+  // Lista de servicios permitidos para autocompletar
   const allowedServices = [
     "Cambio de aceite",
     "Revisión general",
@@ -83,22 +82,17 @@ function CrudReparacionesAdmin() {
   ];
 
   // FUNCIONES PARA LA EDICIÓN DE REPARACIÓN
-
-  // Abre el formulario de edición cargando los datos de la reparación seleccionada.
-  // En producción, se podría obtener más información del backend si es necesario.
   const handleEditarReparacion = (cita) => {
     setCitaSeleccionada(cita);
     setComentario(cita.comentario || "");
     setExtra(0);
-    setTempCost(cita.costo);
-    // Se separan los servicios por saltos de línea para trabajarlos individualmente
     const serviciosIniciales = cita.servicio ? cita.servicio.split("\n") : [];
+    setTempCost(cita.costo);
     setTempServices(serviciosIniciales);
     setServiciosExtra("");
     setSuggestions([]);
   };
 
-  // Funciones para ajustar el costo de la reparación agregando o restando un valor extra
   const handleSumarExtra = () => {
     const extraVal = parseFloat(extra) || 0;
     setTempCost((prevCost) => prevCost + extraVal);
@@ -114,8 +108,6 @@ function CrudReparacionesAdmin() {
     setExtra(0);
   };
 
-  // Maneja el cambio en el campo de servicio extra y muestra sugerencias basadas en allowedServices.
-  // El backend también debería validar este campo.
   const handleServicioExtraChange = (e) => {
     const inputValue = e.target.value;
     setServiciosExtra(inputValue);
@@ -129,14 +121,11 @@ function CrudReparacionesAdmin() {
     }
   };
 
-  // Al seleccionar una sugerencia, se establece el servicio extra
   const handleSelectSuggestion = (suggestion) => {
     setServiciosExtra(suggestion);
     setSuggestions([]);
   };
 
-  // Agrega un servicio extra a la lista de servicios de la reparación en edición.
-  // Se validan duplicados y servicios no permitidos.
   const handleAgregarServicio = () => {
     const serviceTrimmed = serviciosExtra.trim();
     if (serviceTrimmed === "") return;
@@ -153,13 +142,11 @@ function CrudReparacionesAdmin() {
     setSuggestions([]);
   };
 
-  // Permite quitar un servicio extra de la lista
   const handleQuitarServicio = (servicio) => {
     setTempServices((prev) => prev.filter((s) => s !== servicio));
   };
 
-  // Guarda los cambios en la reparación.
-  // Aquí es donde se actualizaría el registro mediante una llamada PUT/PATCH a la API del backend.
+  // Función que guarda los cambios en la reparación
   const handleGuardarReparacion = () => {
     if (!citaSeleccionada) return;
     const serviciosFinales = tempServices.join("\n");
@@ -169,7 +156,6 @@ function CrudReparacionesAdmin() {
       costo: tempCost,
       servicio: serviciosFinales
     };
-    // Actualiza el estado local. En el backend, se debería actualizar la base de datos.
     const nuevasCitas = citas.map((c) =>
       c.id === citaSeleccionada.id ? citaActualizada : c
     );
@@ -177,7 +163,12 @@ function CrudReparacionesAdmin() {
     cerrarFormulario();
   };
 
-  // Reinicia el formulario de edición
+  // NUEVA: Función que se invoca al confirmar la edición desde el modal
+  const confirmEdit = () => {
+    handleGuardarReparacion();
+    setShowEditModal(false);
+  };
+
   const cerrarFormulario = () => {
     setCitaSeleccionada(null);
     setComentario("");
@@ -193,17 +184,12 @@ function CrudReparacionesAdmin() {
     cerrarFormulario();
   };
 
-  // FUNCIONES PARA LA ELIMINACIÓN CON MODAL PERSONALIZADO
-
-  // Abre el modal de confirmación de eliminación y guarda la reparación a eliminar
+  // FUNCIONES PARA LA ELIMINACIÓN CON MODAL
   const handleEliminarReparacion = (cita) => {
     setDeleteTarget(cita);
     setShowDeleteModal(true);
   };
 
-  // Confirma la eliminación.
-  // Aquí se debería realizar una llamada DELETE al backend para eliminar el registro.
-  // Además, si la reparación eliminada está siendo editada, se cierra el formulario.
   const confirmDelete = () => {
     setCitas((prevCitas) => prevCitas.filter((cita) => cita.id !== deleteTarget.id));
     if (citaSeleccionada && citaSeleccionada.id === deleteTarget.id) {
@@ -213,17 +199,14 @@ function CrudReparacionesAdmin() {
     setDeleteTarget(null);
   };
 
-  // Cancela la eliminación y cierra el modal
   const cancelDelete = () => {
     setShowDeleteModal(false);
     setDeleteTarget(null);
   };
 
-  // Función de utilidad para normalizar cadenas (útil para búsquedas sin sensibilidad a mayúsculas)
   const normalizeStr = (str) =>
     str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
-  // Genera breadcrumbs dinámicos a partir de los filtros activos
   const getDynamicBreadcrumbs = () => {
     const activeFilters = filters.filter(
       (filter) => filter.type.trim() !== "" && filter.value.trim() !== ""
@@ -241,7 +224,6 @@ function CrudReparacionesAdmin() {
 
   const dynamicBreadcrumbs = getDynamicBreadcrumbs();
 
-  // Maneja la navegación a través de los breadcrumbs
   const handleBreadcrumbClick = (index) => {
     if (index < staticBreadcrumbs.length) {
       setFilters([{ type: "", value: "" }]);
@@ -252,7 +234,6 @@ function CrudReparacionesAdmin() {
     }
   };
 
-  // Funciones para manejar los filtros de búsqueda avanzados
   const handleFilterChange = (index, field, value) => {
     const newFilters = [...filters];
     newFilters[index] = { ...newFilters[index], [field]: value };
@@ -275,8 +256,6 @@ function CrudReparacionesAdmin() {
     setFilters(newFilters);
   };
 
-  // Filtra las reparaciones según la búsqueda y los filtros aplicados.
-  // En una aplicación real, el backend podría procesar estos filtros y devolver los registros pertinentes.
   const filteredCitas = citas.filter((cita) => {
     const matchesSearch =
       searchQuery === "" ||
@@ -359,7 +338,7 @@ function CrudReparacionesAdmin() {
             {filteredCitas.length > 0 ? (
               <div className="cardCitas grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredCitas.map((cita) => (
-                  <div key={cita.id} className="reparacion-card p-4 rounded-md">
+                  <div key={cita.id} className="reparacion-card p-4 rounded-md card-transition">
                     <div className="mb-1">
                       <span className="detalle-label">Cliente: </span>
                       <span className="detalle-costo">{cita.cliente}</span>
@@ -412,7 +391,6 @@ function CrudReparacionesAdmin() {
                         <span className="detalle-costo">{cita.fechaGuardado}</span>
                       </div>
                     )}
-                    {/* Botones para editar y eliminar la reparación */}
                     <button
                       type="button"
                       className="btn-aceptar w-full mt-2"
@@ -436,7 +414,7 @@ function CrudReparacionesAdmin() {
               </p>
             )}
           </div>
- 
+
           {/* Formulario de edición de reparación */}
           {citaSeleccionada && (
             <div className="mt-8">
@@ -527,7 +505,8 @@ function CrudReparacionesAdmin() {
                 </div>
               </div>
               <div className="flex gap-2 justify-center mt-2">
-                <button type="button" className="btn-aceptar mt-2" onClick={handleGuardarReparacion}>
+                {/* En lugar de guardar directamente, se abre el modal de confirmación */}
+                <button type="button" className="btn-aceptar mt-2" onClick={() => setShowEditModal(true)}>
                   Guardar
                 </button>
                 <button type="button" className="btn-cancelar mt-2" onClick={handleCancelar}>
@@ -539,24 +518,17 @@ function CrudReparacionesAdmin() {
         </form>
       </div>
 
-      {/* Modal de confirmación de eliminación personalizado */}
+      {/* Modal de confirmación de eliminación */}
       {showDeleteModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white p-6 rounded shadow-md max-w-sm w-full">
-            {/* Títulos y textos con colores personalizados.
-                Aquí se ha indicado "Confirmar Eliminación" en amarillo, y
-                los textos "cliente" y "empleado" en amarillo, mientras el resto del texto es blanco.
-                Para lograr estos estilos, se pueden usar clases CSS personalizadas.
-            */}
             <h3 className="text-lg font-semibold mb-4 text-yellow-500">
               Confirmar Eliminación
             </h3>
             <p className="mb-4">
-              <span className="text-white">¿Está seguro de eliminar la reparación de </span>
-              <strong className="text-yellow-500">{deleteTarget?.cliente}</strong>
-              <span className="text-white"> realizada por </span>
-              <strong className="text-yellow-500">{deleteTarget?.empleado}</strong>
-              <span className="text-white">?</span>
+              ¿Está seguro de eliminar la reparación de{" "}
+              <strong className="text-yellow-500">{deleteTarget?.cliente}</strong> realizada por{" "}
+              <strong className="text-yellow-500">{deleteTarget?.empleado}</strong>?
             </p>
             <div className="flex justify-end gap-2">
               <button className="btn-aceptar" onClick={cancelDelete}>
@@ -569,9 +541,32 @@ function CrudReparacionesAdmin() {
           </div>
         </div>
       )}
+
+      {/* Modal de confirmación de edición */}
+      {showEditModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded shadow-md max-w-sm w-full">
+            <h3 className="text-lg font-semibold mb-4 text-yellow-500">
+              Confirmación de Edición
+            </h3>
+            <p className="mb-4">
+              ¿Está seguro de guardar los cambios en la reparación de{" "}
+              <strong className="text-yellow-500">{citaSeleccionada?.cliente}</strong> realizada por{" "}
+              <strong className="text-yellow-500">{citaSeleccionada?.empleado}</strong>?
+            </p>
+            <div className="flex justify-end gap-2">
+              <button className="btn-aceptar" onClick={confirmEdit}>
+                Guardar
+              </button>
+              <button className="btn-cancelar" onClick={() => setShowEditModal(false)}>
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 export default CrudReparacionesAdmin;
-

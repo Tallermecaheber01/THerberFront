@@ -69,7 +69,7 @@ const AppRoutes = () => {
       <Route path="historialreparaciones" element={<HistorialReparaciones />} />
       <Route path="nuevovehiculo" element={<NuevoVehiculo />} />
       <Route path="agregarcita" element={<AgregarCita />} />
-      <Route path="cambiarC¿cita" element={<CambiarCita />} />
+      <Route path="cambiarcita" element={<CambiarCita />} />
 
       <Route path="Bienvenida" element={<Bienvenida/>} />
 
