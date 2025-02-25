@@ -140,12 +140,12 @@ function CrudServicios() {
     if (!datosServicio.tipoVehiculo.includes(vehicle.id)) {
       console.log("Estado actualizado con el nuevo tipo:", [
         ...datosServicio.tipoVehiculo,
-        vehicle.id,
+        vehicle.nombre,
       ]);
 
       setDatosServicio((prev) => ({
         ...prev,
-        tipoVehiculo: [...prev.tipoVehiculo, vehicle.id], // Guarda solo el ID
+        tipoVehiculo: [...prev.tipoVehiculo, vehicle.nombre], // Guarda solo el ID
       }));
     }
 
@@ -207,7 +207,7 @@ function CrudServicios() {
     try {
       const vehicleId = vehicleTypes[index].id;
       const response = await deleteVehicleType(vehicleId);
-      console.log('Tipo de vehiculo eliminado');
+      console.log('Tipo de vehiculo eliminado', response);
       const vehiclesData = await getAllVehicleTypes();
       setVehicleTypes(vehiclesData);
 
@@ -230,12 +230,12 @@ function CrudServicios() {
     if (!datosServicio.marcas.includes(brand.id)) {
       console.log("Estado actualizado con la nueva marca:", [
         ...datosServicio.marcas,
-        brand.id,
+        brand.nombre,
       ])
 
       setDatosServicio((prev) => ({
         ...prev,
-        marcas: [...prev.marcas, brand.id],
+        marcas: [...prev.marcas, brand.nombre],
       }))
     }
 
@@ -512,12 +512,12 @@ function CrudServicios() {
               </div>
               {/* Muestra los tipos de vehículo agregados como "badges" con opción a eliminarlos */}
               <div className="mt-2">
-                {datosServicio.tipoVehiculo.map((tipoId, index) => {
-                  const tipo = vehicleTypes.find(v => v.id === tipoId);
+                {datosServicio.tipoVehiculo.map((tipoNombre, index) => {
+                  const tipo = vehicleTypes.find(v => v.nombre === tipoNombre);
                   return (
                     <span key={index} className="inline-block bg-gray-200 rounded px-2 py-1 mr-2">
                       {tipo ? tipo.nombre : "Desconocido"} {/* Muestra el nombre en lugar del ID */}
-                      <button type="button" onClick={() => eliminarTipoVehiculo(tipoId)}>
+                      <button type="button" onClick={() => eliminarTipoVehiculo(tipoNombre)}>
                         x
                       </button>
                     </span>
@@ -554,14 +554,14 @@ function CrudServicios() {
               </div>
               {/* Muestra las marcas agregadas con opción de eliminarlas */}
               <div className="mt-2">
-                {datosServicio.marcas.map((marcaId, index) => {
-                  const marca = brands.find(v => v.id === marcaId);
+                {datosServicio.marcas.map((marcaNombre, index) => {
+                  const marca = brands.find(v => v.nombre === marcaNombre);
                   return (
                     <span key={index} className="inline-block bg-gray-200 rounded px-2 py-1 mr-2">
                       {marca ? marca.nombre : "Desconocido"}
                       <button
                         type="button"
-                        onClick={() => eliminarMarca(marcaId)}
+                        onClick={() => eliminarMarca(marcaNombre)}
                       >
                         x
                       </button>
