@@ -1,17 +1,40 @@
 import React, { useState } from "react";
 import Breadcrumbs from "../Breadcrumbs";
 
+// Componente genérico de Modal de Confirmación
+const ConfirmationModal = ({ title, message, onConfirm, onCancel }) => {
+  return (
+    <div className="modal-overlay fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div className="modal-content bg-white p-6 rounded shadow-lg max-w-sm w-full">
+        <h3 className="text-xl font-semibold mb-4">{title}</h3>
+        <p className="mb-6">{message}</p>
+        <div className="flex justify-end gap-4">
+        <button
+            onClick={onConfirm}
+            className="btn-aceptar"
+          >
+            Confirmar
+          </button>
+          <button
+            onClick={onCancel}
+            className="btn-cancelar "
+          >
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 function ConsultarCitas() {
   // Breadcrumbs fijos para la navegación de la aplicación.
-  // Estos se usan para indicar la ruta de navegación en la interfaz.
   const staticBreadcrumbs = [
     { name: "Inicio", link: "/" },
     { name: "Consultar Citas", link: "/consultarcitas" }
   ];
 
-  // Datos de ejemplo de las citas (simulados para este componente).
-  // Cada objeto "cita" contiene información relevante que el backend debería conocer,
-  // como el cliente, servicio, fecha, hora, costo y detalles del vehículo (marca y modelo).
+  // Datos de ejemplo de las citas.
   const [citas] = useState([
     {
       id: 1,
@@ -45,15 +68,15 @@ function ConsultarCitas() {
     }
   ]);
 
-  // Estados para manejar los filtros avanzados y la búsqueda básica.
-  // "filters" es un arreglo de objetos donde cada objeto tiene un "type" (el campo a filtrar)
-  // y un "value" (el valor de búsqueda para ese campo).
-  // "searchQuery" es el término de búsqueda general que se aplica a todas las propiedades de una cita.
+  // Estados para filtros y búsqueda básica.
   const [filters, setFilters] = useState([{ type: "", value: "" }]);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Lista de tipos de filtro disponibles que se mostrarán en el select.
-  // Estos corresponden a los campos de una cita.
+  // Estados para controlar los modales de confirmación
+  const [selectedCitaForFinalize, setSelectedCitaForFinalize] = useState(null);
+  const [isFinishModalOpen, setIsFinishModalOpen] = useState(false);
+  const [isExtraRepairModalOpen, setIsExtraRepairModalOpen] = useState(false);
+
   const availableFilterTypes = [
     "cliente",
     "servicio",
@@ -62,19 +85,16 @@ function ConsultarCitas() {
     "costo"
   ];
 
-  // Función de utilidad para normalizar cadenas:
-  // Elimina acentos y convierte la cadena a minúsculas para que las búsquedas sean insensibles a mayúsculas/minúsculas y acentos.
+  // Función para normalizar cadenas (insensible a mayúsculas, minúsculas y acentos)
   const normalizeStr = (str) =>
     str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
-  // Genera breadcrumbs dinámicos combinando los breadcrumbs fijos con los filtros activos.
-  // Esto permite al usuario ver y eliminar filtros aplicados.
+  // Genera breadcrumbs dinámicos combinando los fijos y los filtros activos.
   const getDynamicBreadcrumbs = () => {
     const activeFilters = filters.filter(
       (filter) => filter.type.trim() !== "" && filter.value.trim() !== ""
     );
     const filterBreadcrumbs = activeFilters.map((filter) => ({
-      // Se capitaliza el tipo y se muestra el valor para cada filtro.
       name:
         filter.type.charAt(0).toUpperCase() +
         filter.type.slice(1) +
@@ -87,9 +107,6 @@ function ConsultarCitas() {
 
   const dynamicBreadcrumbs = getDynamicBreadcrumbs();
 
-  // Al hacer clic en un breadcrumb, se reinician o eliminan filtros.
-  // Si se hace clic en un breadcrumb fijo, se limpian todos los filtros y la búsqueda.
-  // Si se hace clic en un breadcrumb dinámico (filtrado), se mantienen solo los filtros anteriores.
   const handleBreadcrumbClick = (index) => {
     if (index < staticBreadcrumbs.length) {
       setFilters([{ type: "", value: "" }]);
@@ -100,16 +117,14 @@ function ConsultarCitas() {
     }
   };
 
-  // Actualiza un filtro específico (ya sea su "type" o "value") en la posición dada.
-  // Esto permite modificar los criterios de filtrado en tiempo real.
+  // Actualiza un filtro específico.
   const handleFilterChange = (index, field, value) => {
     const newFilters = [...filters];
     newFilters[index] = { ...newFilters[index], [field]: value };
     setFilters(newFilters);
   };
 
-  // Agrega un nuevo filtro si el último filtro está completamente definido (ambos campos llenos).
-  // Se limita a un máximo de 3 filtros.
+  // Agrega un nuevo filtro si el último está completamente definido.
   const handleAddFilter = () => {
     if (
       filters.length < 3 &&
@@ -120,24 +135,20 @@ function ConsultarCitas() {
     }
   };
 
-  // Elimina un filtro en la posición especificada.
-  // Si se eliminan todos los filtros, se reinicia con un filtro vacío.
+  // Elimina un filtro.
   const handleRemoveFilter = (index) => {
     const newFilters = filters.filter((_, i) => i !== index);
     if (newFilters.length === 0) newFilters.push({ type: "", value: "" });
     setFilters(newFilters);
   };
 
-  // Filtra la lista de citas usando la búsqueda básica y los filtros avanzados.
-  // Se normalizan las cadenas para hacer las comparaciones de manera insensible.
+  // Filtra la lista de citas usando la búsqueda básica y filtros avanzados.
   const filteredCitas = citas.filter((cita) => {
-    // "matchesSearch" verifica si alguna propiedad de la cita contiene el término de búsqueda.
     const matchesSearch =
       searchQuery === "" ||
       Object.values(cita).some((val) =>
         normalizeStr(String(val)).includes(normalizeStr(searchQuery))
       );
-    // "matchesAdvanced" verifica cada filtro aplicado.
     const matchesAdvanced = filters.every((filter) => {
       if (filter.type.trim() === "" || filter.value.trim() === "") return true;
       const citaField = cita[filter.type.toLowerCase()];
@@ -149,25 +160,36 @@ function ConsultarCitas() {
     return matchesSearch && matchesAdvanced;
   });
 
-  // Función para finalizar el servicio de una cita.
-  // Se almacena la cita seleccionada en localStorage para que la próxima página
-  // (RegistroReparacion) pueda recuperarla y mostrar los detalles para su edición.
-  const handleFinalizarServicio = (citaSeleccionada) => {
-    localStorage.setItem("selectedCita", JSON.stringify(citaSeleccionada));
-    window.location.href = "/registroreparaciones";
+  // Abre el modal de confirmación para finalizar el servicio.
+  const handleFinalizarServicioClick = (citaSeleccionada) => {
+    setSelectedCitaForFinalize(citaSeleccionada);
+    setIsFinishModalOpen(true);
   };
 
-  // Función para registrar una reparación extra (sin cita previa).
-  // Elimina cualquier cita almacenada en localStorage y redirige a la página de registro,
-  // donde se mostrará un mensaje indicando que no se ha seleccionado una cita.
-  const handleReparacionExtra = () => {
+  // Función que se ejecuta al confirmar la finalización del servicio.
+  const confirmFinalizarServicio = () => {
+    if (selectedCitaForFinalize) {
+      localStorage.setItem(
+        "selectedCita",
+        JSON.stringify(selectedCitaForFinalize)
+      );
+      window.location.href = "/registroreparaciones";
+    }
+  };
+
+  // Abre el modal de confirmación para registrar una reparación extra.
+  const handleReparacionExtraClick = () => {
+    setIsExtraRepairModalOpen(true);
+  };
+
+  // Función que se ejecuta al confirmar el registro de reparación extra.
+  const confirmReparacionExtra = () => {
     localStorage.removeItem("selectedCita");
     window.location.href = "/registroreparaciones";
   };
 
   return (
     <div>
-      {/* Se renderizan los breadcrumbs dinámicos con su manejador de clic */}
       <Breadcrumbs
         paths={dynamicBreadcrumbs}
         onCrumbClick={handleBreadcrumbClick}
@@ -175,9 +197,8 @@ function ConsultarCitas() {
       <div className="citasContainer">
         <form className="citasForm flex flex-col">
           <h1 className="form-title text-center">Consultar Citas Próximas</h1>
-          {/* Sección para la búsqueda básica y filtros avanzados */}
+          {/* Sección de búsqueda y filtros */}
           <div className="w-full flex flex-col items-end mb-4 gap-4">
-            {/* Si no hay filtros activos, se muestra el input de búsqueda */}
             {filters.length === 1 &&
               filters[0].type.trim() === "" &&
               filters[0].value.trim() === "" && (
@@ -192,7 +213,6 @@ function ConsultarCitas() {
             <div className="flex flex-col gap-4 items-end">
               {filters.map((filter, index) => (
                 <div key={index} className="flex gap-2 items-center">
-                  {/* Select para elegir el tipo de filtro */}
                   <select
                     value={filter.type}
                     onChange={(e) =>
@@ -203,7 +223,6 @@ function ConsultarCitas() {
                     <option value="">Selecciona tipo de filtro</option>
                     {availableFilterTypes
                       .filter((type) => {
-                        // Permite mantener el filtro si ya está seleccionado en este campo
                         if (filter.type === type) return true;
                         return !filters.some(
                           (f, i) => i !== index && f.type === type
@@ -215,8 +234,6 @@ function ConsultarCitas() {
                         </option>
                       ))}
                   </select>
-                  {/* Input para ingresar el valor del filtro.
-                      Si el tipo es "costo", se usa un input numérico. */}
                   <input
                     type={
                       filter.type.toLowerCase() === "costo" ? "number" : "text"
@@ -253,11 +270,11 @@ function ConsultarCitas() {
             </div>
           </div>
 
-          {/* Sección para mostrar el listado de citas filtradas */}
+          {/* Listado de citas filtradas */}
           <div className="mt-8">
             <h2 className="cita-title text-center">Citas Programadas</h2>
             {filteredCitas.length > 0 ? (
-              <div className="cardCitas grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 ">
+              <div className="cardCitas grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredCitas.map((cita) => (
                   <div key={cita.id} className="reparacion-card card-transition">
                     <div className="mb-2">
@@ -294,11 +311,11 @@ function ConsultarCitas() {
                         <span className="detalle-costo">{cita.modelo}</span>
                       </div>
                     )}
-                    {/* Botón que permite finalizar el servicio, almacenando la cita seleccionada para editarla en otra pantalla. */}
+                    {/* Botón que abre el modal de confirmación para finalizar el servicio */}
                     <button
                       type="button"
                       className="btn-aceptar w-full mt-2"
-                      onClick={() => handleFinalizarServicio(cita)}
+                      onClick={() => handleFinalizarServicioClick(cita)}
                     >
                       Finalizar Servicio
                     </button>
@@ -311,18 +328,57 @@ function ConsultarCitas() {
               </p>
             )}
           </div>
-          {/* Botón para registrar una reparación extra (sin cita previa) */}
+
+          {/* Botón para registrar una reparación extra (abre su modal de confirmación) */}
           <div className="mt-8 flex justify-center">
             <button
               type="button"
               className="btn-aceptar"
-              onClick={handleReparacionExtra}
+              onClick={handleReparacionExtraClick}
             >
               Registrar una Reparación Extra
             </button>
           </div>
         </form>
       </div>
+      {isFinishModalOpen && (
+        <ConfirmationModal
+          title={
+            <span className="text-yellow-500">
+              Confirmar Finalización del Servicio
+            </span>
+          }
+          message={
+            <>
+              ¿Estás seguro de finalizar el servicio para{' '}
+              <span className="text-yellow-500 font-bold">
+                {selectedCitaForFinalize?.cliente}
+              </span>
+              ?
+            </>
+          }
+          onConfirm={confirmFinalizarServicio}
+          onCancel={() => setIsFinishModalOpen(false)}
+        />
+      )}
+
+      
+      {isExtraRepairModalOpen && (
+        <ConfirmationModal
+          title={
+          <span className="text-yellow-500">
+          Confirmar la finalizacion de un servicio Extra
+          </span>
+          }
+          message={
+            <>
+            ¿Deseas registrar una reparación extra sin cita previa?
+            </>
+          }
+          onConfirm={confirmReparacionExtra}
+          onCancel={() => setIsExtraRepairModalOpen(false)}
+        />
+      )}
     </div>
   );
 }

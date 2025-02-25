@@ -1,16 +1,28 @@
 import React, { useState, useEffect } from "react";
 import Breadcrumbs from "../Breadcrumbs";
 
-// Este componente maneja el registro de una reparación. Puede operar en dos modos:
-// 1. Modo "Reparación Normal": cuando existe una cita previa (almacenada en localStorage)
-//    y se cargan datos automáticos de la cita.
-// 2. Modo "Reparación Extra": cuando no hay una cita seleccionada y se ingresan todos
-//    los datos manualmente (incluyendo la selección del cliente, marca y modelo).
-//
-// Este archivo está pensado para que el equipo de backend entienda qué datos se generan
-// y cómo se estructuran antes de ser enviados o almacenados.
-  
-// Datos simulados de clientes para el modo de Reparación Extra
+// Componente ConfirmationModal implementado inline
+const ConfirmationModal = ({ title, message, onConfirm, onCancel }) => {
+  return (
+    <div className="fixed inset-0 flex items-center justify-center z-50">
+      {/* Fondo semi-transparente que cierra el modal al hacer click */}
+      <div className="absolute inset-0 bg-black opacity-50" onClick={onCancel}></div>
+      <div className="bg-white p-6 rounded shadow-lg z-10 max-w-md w-full">
+        <h2 className="text-xl font-bold mb-4">{title}</h2>
+        <div className="mb-4">{message}</div>
+        <div className="flex justify-end gap-2">
+          <button className="btn-aceptar" onClick={onConfirm}>
+            Confirmar
+          </button>
+          <button className="btn-cancelar" onClick={onCancel}>
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const clientes = [
   {
     id: 1,
@@ -62,8 +74,7 @@ const clientes = [
 ];
 
 function RegistroReparacion() {
-  // Lista de servicios permitidos para reparación extra.
-  // El backend debe conocer que estos son los servicios válidos.
+  // Servicios permitidos para reparación extra
   const allowedServices = [
     "Cambio de aceite",
     "Revisión general",
@@ -72,16 +83,7 @@ function RegistroReparacion() {
     "Cambio de pastillas"
   ];
 
-  // Estados compartidos:
-  // - 'cita': almacena la cita existente (si se seleccionó una) en modo normal.
-  // - 'comentario': comentarios adicionales sobre la reparación.
-  // - 'extra': valor adicional para sumar/restar al costo.
-  // - 'serviciosExtra': campo de entrada para autocompletar servicios extra.
-  // - 'tempCost': costo acumulado de la reparación.
-  // - 'tempServices': arreglo temporal con los servicios agregados.
-  // - 'suggestions': sugerencias para autocompletar el servicio extra.
-  // - 'empleado': nombre del empleado asignado.
-  // - 'atencionDateTime': fecha y hora de atención (formateada para mostrar).
+  // Estados compartidos (para ambos modos)
   const [cita, setCita] = useState(null);
   const [comentario, setComentario] = useState("");
   const [extra, setExtra] = useState(0);
@@ -92,31 +94,29 @@ function RegistroReparacion() {
   const [empleado, setEmpleado] = useState("Pedro Pérez");
   const [atencionDateTime, setAtencionDateTime] = useState("");
 
-  // Estados exclusivos para el modo Reparación Extra (sin cita):
-  // - 'clientSearch': texto para buscar clientes.
-  // - 'filteredClients': lista de clientes filtrados según la búsqueda.
-  // - 'selectedClient': cliente seleccionado manualmente.
-  // - 'selectedMarca' y 'selectedModelo': marca y modelo del vehículo seleccionado.
+  // Estados exclusivos para el modo Reparación Extra
   const [clientSearch, setClientSearch] = useState("");
   const [filteredClients, setFilteredClients] = useState([]);
   const [selectedClient, setSelectedClient] = useState(null);
   const [selectedMarca, setSelectedMarca] = useState("");
   const [selectedModelo, setSelectedModelo] = useState("");
 
-  // Helper para formatear números (por ejemplo, agregar cero a la izquierda) en fechas y horas.
+  // Estados para errores y modales de confirmación
+  const [errors, setErrors] = useState({});
+  const [showNormalConfirmation, setShowNormalConfirmation] = useState(false);
+  const [showExtraConfirmation, setShowExtraConfirmation] = useState(false);
+
+  // Helper para formatear números en fechas y horas
   const pad = (num) => String(num).padStart(2, "0");
 
-  // Rutas fijas para la navegación (breadcrumbs).
+  // Rutas fijas para Breadcrumbs
   const breadcrumbPaths = [
     { name: "Inicio", link: "/" },
     { name: "Consulta citas", link: "/consultacitas" },
     { name: "Registro reparacion", link: "/registroreparaciones" },
   ];
 
-  // useEffect se ejecuta al montar el componente.
-  // Se intenta recuperar una cita almacenada en localStorage.
-  // Si existe, se activa el modo normal de reparación (cita existente) y se inicializan los campos con datos de la cita.
-  // Si no existe, se activa el modo extra, donde el usuario debe ingresar manualmente los datos.
+  // useEffect para cargar la cita si existe (modo Reparación Normal)
   useEffect(() => {
     const storedCita = localStorage.getItem("selectedCita");
     if (storedCita) {
@@ -124,26 +124,22 @@ function RegistroReparacion() {
       setCita(citaObj);
       setComentario(citaObj.comentario || "");
       setTempCost(parseFloat(citaObj.costo));
-      // Se separan los servicios ya asignados en la cita (si existen) en un arreglo.
       const serviciosIniciales = citaObj.servicio ? citaObj.servicio.split("\n") : [];
       setTempServices(serviciosIniciales);
       const ahora = new Date();
-      // Formato para mostrar la fecha y hora (por ejemplo: "05/01/2025 09:05")
       const formattedDateTime = `${pad(ahora.getDate())}/${pad(ahora.getMonth() + 1)}/${ahora.getFullYear()} ${pad(ahora.getHours())}:${pad(ahora.getMinutes())}`;
       setAtencionDateTime(formattedDateTime);
       setEmpleado("Pedro Pérez");
     } else {
-      // Modo Reparación Extra: sin cita previa.
+      // Modo Reparación Extra
       const ahora = new Date();
-      // Se utiliza el formato ISO (datetime-local) para que el input lo acepte.
       const formattedDateTime = `${ahora.getFullYear()}-${pad(ahora.getMonth() + 1)}-${pad(ahora.getDate())}T${pad(ahora.getHours())}:${pad(ahora.getMinutes())}`;
       setAtencionDateTime(formattedDateTime);
       setTempCost(0);
     }
   }, []);
 
-  // Funciones para actualizar el costo de reparación.
-  // 'handleSumarExtra' suma un valor extra al costo actual.
+  // Funciones para sumar/restar valores extras al costo
   const handleSumarExtra = () => {
     const extraVal = parseFloat(extra) || 0;
     const newCost = parseFloat(tempCost) + extraVal;
@@ -151,7 +147,6 @@ function RegistroReparacion() {
     setExtra(0);
   };
 
-  // 'handleRestarExtra' resta un valor extra del costo actual, sin permitir que el total sea negativo.
   const handleRestarExtra = () => {
     const extraVal = parseFloat(extra) || 0;
     let newCost = parseFloat(tempCost) - extraVal;
@@ -160,8 +155,7 @@ function RegistroReparacion() {
     setExtra(0);
   };
 
-  // Funciones para el autocompletado del servicio extra.
-  // 'handleServicioExtraChange' actualiza el campo y filtra las sugerencias basándose en la entrada del usuario.
+  // Función para manejar el autocompletado del servicio extra
   const handleServicioExtraChange = (e) => {
     const inputValue = e.target.value;
     setServiciosExtra(inputValue);
@@ -175,19 +169,11 @@ function RegistroReparacion() {
     }
   };
 
-  const handleQuitarServicio = (servicio) => {
-    setTempServices((prev) => prev.filter((s) => s !== servicio));
-  };
-
-  
-  // 'handleSelectSuggestion' establece la sugerencia seleccionada como el servicio extra.
   const handleSelectSuggestion = (suggestion) => {
     setServiciosExtra(suggestion);
     setSuggestions([]);
   };
 
-  // 'handleAgregarServicio' agrega el servicio extra al arreglo de servicios temporales.
-  // Valida que el servicio sea válido y no se haya agregado ya.
   const handleAgregarServicio = () => {
     const servicio = serviciosExtra.trim();
     if (servicio !== "" && allowedServices.includes(servicio)) {
@@ -195,24 +181,71 @@ function RegistroReparacion() {
         tempServices.includes(servicio) ||
         (cita && cita.servicio && cita.servicio.split("\n").includes(servicio))
       ) {
-        alert("El servicio ya ha sido agregado.");
+        setErrors((prev) => ({ ...prev, serviciosExtra: "El servicio ya ha sido agregado." }));
         return;
       }
       setTempServices((prev) => [...prev, servicio]);
       setServiciosExtra("");
       setSuggestions([]);
+      setErrors((prev) => ({ ...prev, serviciosExtra: "" }));
     } else {
-      alert("El servicio ingresado no es válido.");
+      setErrors((prev) => ({ ...prev, serviciosExtra: "El servicio ingresado no es válido." }));
     }
   };
 
-  // 'handleGuardarReparacion' simula la acción de guardar la reparación.
-  // Se arma un objeto 'reparacion' con todos los datos relevantes, que luego se imprime en consola.
-  // Para el modo normal se utilizan datos de la cita, y para el modo extra se requiere que el usuario seleccione cliente, marca y modelo.
-  const handleGuardarReparacion = () => {
+  const handleQuitarServicio = (servicio) => {
+    setTempServices((prev) => prev.filter((s) => s !== servicio));
+  };
+
+  // Prevención básica contra inyecciones SQL en textos
+  const containsSQLInjection = (input) => {
+    const pattern = /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|ALTER|CREATE|EXEC)\b)|(--)|(;)/i;
+    return pattern.test(input);
+  };
+
+  // Validación para modo Reparación Normal (cita existente)
+  const validateNormal = () => {
+    const newErrors = {};
+    if (!atencionDateTime) {
+      newErrors.atencionDateTime = "La fecha y hora de atención es requerida.";
+    }
+    if (tempServices.length === 0) {
+      newErrors.tempServices = "Debe agregarse al menos un servicio para poder guardar el registro.";
+    }
+    if (comentario && containsSQLInjection(comentario)) {
+      newErrors.comentario = "El comentario contiene caracteres inválidos.";
+    }
+    return newErrors;
+  };
+
+  // Validación para modo Reparación Extra (sin cita)
+  const validateExtra = () => {
+    const newErrors = {};
+    if (!selectedClient) {
+      newErrors.selectedClient = "Debe seleccionar un cliente.";
+    }
+    if (!selectedMarca) {
+      newErrors.selectedMarca = "Debe seleccionar una marca.";
+    }
+    if (!selectedModelo) {
+      newErrors.selectedModelo = "Debe seleccionar un modelo.";
+    }
+    if (!atencionDateTime) {
+      newErrors.atencionDateTime = "La fecha y hora de atención es requerida.";
+    }
+    if (tempServices.length === 0) {
+      newErrors.tempServices = "Debe agregarse al menos un servicio para poder guardar el registro.";
+    }
+    if (comentario && containsSQLInjection(comentario)) {
+      newErrors.comentario = "El comentario contiene caracteres inválidos.";
+    }
+    return newErrors;
+  };
+
+  // Función que guarda la reparación (se ejecuta tras confirmar en el modal)
+  const saveReparacion = () => {
     let reparacion;
     if (cita) {
-      // Modo Normal: se toma la cita existente y se actualiza con los nuevos datos.
       const serviciosFinales = tempServices.join("\n");
       reparacion = {
         ...cita,
@@ -223,19 +256,6 @@ function RegistroReparacion() {
         atencionDateTime
       };
     } else {
-      // Modo Extra: se requiere que el usuario ingrese manualmente cliente, marca y modelo.
-      if (!selectedClient) {
-        alert("Debes seleccionar un cliente.");
-        return;
-      }
-      if (!selectedMarca) {
-        alert("Debes seleccionar la marca del vehículo.");
-        return;
-      }
-      if (!selectedModelo) {
-        alert("Debes seleccionar el modelo del vehículo.");
-        return;
-      }
       const serviciosFinales = tempServices.join("\n");
       reparacion = {
         cliente: selectedClient.nombre,
@@ -248,20 +268,36 @@ function RegistroReparacion() {
         atencionDateTime
       };
     }
-    // Los datos de la reparación se envían al backend (aquí se simula con un console.log).
     console.log("Datos de la reparación guardados:", reparacion);
-    // Se elimina la cita almacenada en localStorage (si existe).
-    localStorage.removeItem("selectedCita");
-    alert("Reparación guardada.");
+    // Aquí se podrían mostrar mensajes de éxito inline
     cerrarFormulario();
   };
 
-  // 'handleCancelar' cierra el formulario sin guardar los cambios.
+  // Funciones para manejar el envío de cada formulario y mostrar el modal de confirmación
+  const handleSubmitNormal = () => {
+    const validationErrors = validateNormal();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+    setErrors({});
+    setShowNormalConfirmation(true);
+  };
+
+  const handleSubmitExtra = () => {
+    const validationErrors = validateExtra();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+    setErrors({});
+    setShowExtraConfirmation(true);
+  };
+
   const handleCancelar = () => {
     cerrarFormulario();
   };
 
-  // 'cerrarFormulario' reinicia todos los estados a sus valores iniciales.
   const cerrarFormulario = () => {
     setCita(null);
     setComentario("");
@@ -276,11 +312,12 @@ function RegistroReparacion() {
     setSelectedClient(null);
     setSelectedMarca("");
     setSelectedModelo("");
+    setErrors({});
   };
 
-  // --- Renderización del componente ---
-  // Si existe una cita, se renderiza el modo "Reparación Normal".
+  // Renderizado según el modo (Reparación Normal si existe una cita; Reparación Extra si no)
   if (cita) {
+    // Modo Reparación Normal
     return (
       <div>
         <Breadcrumbs paths={breadcrumbPaths} />
@@ -288,7 +325,7 @@ function RegistroReparacion() {
           <form className="citasForm flex flex-col">
             <h1 className="form-title text-center">Registro de Reparación</h1>
             <div className="reparacion-card mb-4">
-              {/* Campos automáticos (datos de la cita y del empleado) */}
+              {/* Datos automáticos */}
               <div className="mb-2">
                 <span className="detalle-label">Empleado: </span>
                 <span className="detalle-costo">{empleado}</span>
@@ -296,8 +333,10 @@ function RegistroReparacion() {
               <div className="mb-4">
                 <span className="detalle-label">Fecha y Hora de Atención: </span>
                 <span className="detalle-costo">{atencionDateTime}</span>
+                {errors.atencionDateTime && (
+                  <div className="text-red-500 text-xs">{errors.atencionDateTime}</div>
+                )}
               </div>
-              {/* Datos de la cita: cliente, servicio original, fecha y hora de la cita, y costo actual */}
               <div className="mb-2">
                 <span className="detalle-label">Cliente: </span>
                 <span className="detalle-costo">{cita.cliente}</span>
@@ -318,7 +357,7 @@ function RegistroReparacion() {
                 <span className="detalle-label">Costo Actual: </span>
                 <span className="detalle-costo">{`$${cita.costo}`}</span>
               </div>
-              {/* Formulario de edición de la reparación */}
+              {/* Comentario (opcional) */}
               <div className="mb-2">
                 <span className="detalle-label">Comentario: </span>
                 <textarea
@@ -327,8 +366,11 @@ function RegistroReparacion() {
                   onChange={(e) => setComentario(e.target.value)}
                   placeholder="Escribe un comentario sobre la reparación..."
                 />
+                {errors.comentario && (
+                  <div className="text-red-500 text-xs">{errors.comentario}</div>
+                )}
               </div>
-              {/* Sección para sumar o restar valores extra al costo */}
+              {/* Extra y ajuste de costo */}
               <div className="mb-2 flex flex-col sm:flex-row gap-2 items-center">
                 <div>
                   <span className="detalle-label">Extra: </span>
@@ -351,7 +393,7 @@ function RegistroReparacion() {
                   Restar
                 </button>
               </div>
-              {/* Sección para agregar un servicio extra mediante autocompletado */}
+              {/* Servicio Extra */}
               <div className="mb-2 flex flex-col sm:flex-row gap-2 items-center">
                 <div className="relative">
                   <span className="detalle-label">Servicio Extra: </span>
@@ -375,12 +417,15 @@ function RegistroReparacion() {
                       ))}
                     </div>
                   )}
+                  {errors.serviciosExtra && (
+                    <div className="text-red-500 text-xs">{errors.serviciosExtra}</div>
+                  )}
                 </div>
                 <button type="button" className="btn-aceptar mt-5" onClick={handleAgregarServicio}>
                   Añadir Servicio
                 </button>
               </div>
-              {/* Muestra la lista de servicios extra agregados con botón para quitarlos */}
+              {/* Lista de servicios agregados */}
               {tempServices.length > 0 && (
                 <div className="mb-2">
                   <span className="detalle-label">Servicios: </span>
@@ -398,17 +443,18 @@ function RegistroReparacion() {
                       </li>
                     ))}
                   </ul>
+                  {errors.tempServices && (
+                    <div className="text-red-500 text-xs">{errors.tempServices}</div>
+                  )}
                 </div>
               )}
-              {/* Muestra el costo final acumulado */}
               <div className="mb-2">
                 <span className="detalle-label">Total Final: </span>
                 <span className="detalle-costo">{`$${tempCost}`}</span>
               </div>
             </div>
-            {/* Botones para guardar o cancelar el registro */}
             <div className="flex gap-4 justify-center">
-              <button type="button" className="btn-aceptar" onClick={handleGuardarReparacion}>
+              <button type="button" className="btn-aceptar" onClick={handleSubmitNormal}>
                 Guardar
               </button>
               <button type="button" className="btn-cancelar" onClick={handleCancelar}>
@@ -417,18 +463,29 @@ function RegistroReparacion() {
             </div>
           </form>
         </div>
+        {/* Modal de confirmación para Reparación Normal */}
+        {showNormalConfirmation && (
+          <ConfirmationModal
+            title={<span className="text-yellow-500">Confirmación de Registro de Reparación</span>}
+            message={<>¿Está seguro de guardar el registro de reparación?</>}
+            onConfirm={() => {
+              saveReparacion();
+              setShowNormalConfirmation(false);
+            }}
+            onCancel={() => setShowNormalConfirmation(false)}
+          />
+        )}
       </div>
     );
   } else {
-    // Modo Reparación Extra: no existe una cita previa, por lo que el usuario debe ingresar todos los datos.
+    // Modo Reparación Extra
     return (
       <div>
         <Breadcrumbs paths={breadcrumbPaths} />
         <div className="form-container w-[680px] mx-auto">
           <form className="citasForm flex flex-col">
             <h1 className="form-title text-center mb-1">Registro de Reparación Extra</h1>
-
-            {/* Campo para ingresar Fecha y Hora de Atención */}
+            {/* Fecha y Hora de Atención */}
             <div className="">
               <label className="detalle-label" htmlFor="atencionDateTime">
                 Fecha y Hora de Atención:
@@ -440,9 +497,11 @@ function RegistroReparacion() {
                 value={atencionDateTime}
                 onChange={(e) => setAtencionDateTime(e.target.value)}
               />
+              {errors.atencionDateTime && (
+                <div className="text-red-500 text-xs">{errors.atencionDateTime}</div>
+              )}
             </div>
-
-            {/* Buscador de Cliente: filtra y muestra sugerencias */}
+            {/* Buscador de Cliente */}
             <div className="relative">
               <label className="detalle-label" htmlFor="clientSearch">
                 Buscar Cliente:
@@ -485,9 +544,11 @@ function RegistroReparacion() {
                   ))}
                 </div>
               )}
+              {errors.selectedClient && (
+                <div className="text-red-500 text-xs">{errors.selectedClient}</div>
+              )}
             </div>
-
-            {/* Si se ha seleccionado un cliente, se muestran los selects para elegir marca y modelo */}
+            {/* Selección de Marca y Modelo si se eligió un cliente */}
             {selectedClient && (
               <>
                 <div className="mb-1">
@@ -510,8 +571,10 @@ function RegistroReparacion() {
                       </option>
                     ))}
                   </select>
+                  {errors.selectedMarca && (
+                    <div className="text-red-500 text-xs">{errors.selectedMarca}</div>
+                  )}
                 </div>
-
                 {selectedMarca && (
                   <div className="mb-1">
                     <label className="detalle-label" htmlFor="modeloSelect">
@@ -532,12 +595,14 @@ function RegistroReparacion() {
                           </option>
                         ))}
                     </select>
+                    {errors.selectedModelo && (
+                      <div className="text-red-500 text-xs">{errors.selectedModelo}</div>
+                    )}
                   </div>
                 )}
               </>
             )}
-
-            {/* Formulario de reparación extra */}
+            {/* Comentario (opcional) */}
             <div className="mb-1">
               <span className="detalle-label">Comentario: </span>
               <textarea
@@ -546,34 +611,14 @@ function RegistroReparacion() {
                 onChange={(e) => setComentario(e.target.value)}
                 placeholder="Comentario..."
               />
+              {errors.comentario && (
+                <div className="text-red-500 text-xs">{errors.comentario}</div>
+              )}
             </div>
-
-            <div className="mb-1 flex flex-col sm:flex-row gap-1 items-center">
-              <div>
-                <span className="detalle-label">Extra: </span>
-                <input
-                  type="number"
-                  min="0"
-                  className="form-input w-full text-sm"
-                  value={extra}
-                  onChange={(e) => {
-                    const val = parseFloat(e.target.value) || 0;
-                    setExtra(val < 0 ? 0 : val);
-                  }}
-                  placeholder="Extra"
-                />
-              </div>
-              <button type="button" className="btn-aceptar mt-5" onClick={handleSumarExtra}>
-                Sumar
-              </button>
-              <button type="button" className="btn-cancelar mt-5" onClick={handleRestarExtra}>
-                Restar
-              </button>
-            </div>
-
+            {/* Servicio Extra y autocompletado */}
             <div className="mb-1 flex flex-col sm:flex-row gap-1 items-center">
               <div className="relative">
-                <span className="detalle-label">Servicio Extra: </span>
+                <span className="detalle-label">Añadir servicio: </span>
                 <input
                   type="text"
                   className="form-input w-full text-sm"
@@ -594,12 +639,38 @@ function RegistroReparacion() {
                     ))}
                   </div>
                 )}
+                {errors.serviciosExtra && (
+                  <div className="text-red-500 text-xs">{errors.serviciosExtra}</div>
+                )}
               </div>
               <button type="button" className="btn-aceptar mt-5" onClick={handleAgregarServicio}>
-                Añadir Servicio
+                Agregar
               </button>
             </div>
-
+            {/* Extra y ajuste de costo */}
+            <div className="mb-1 flex flex-col sm:flex-row gap-1 items-center">
+              <div>
+                <span className="detalle-label">Costo: </span>
+                <input
+                  type="number"
+                  min="0"
+                  className="form-input w-full text-sm"
+                  value={extra}
+                  onChange={(e) => {
+                    const val = parseFloat(e.target.value) || 0;
+                    setExtra(val < 0 ? 0 : val);
+                  }}
+                  placeholder="Extra"
+                />
+              </div>
+              <button type="button" className="btn-aceptar mt-5" onClick={handleSumarExtra}>
+                Sumar
+              </button>
+              <button type="button" className="btn-cancelar mt-5" onClick={handleRestarExtra}>
+                Restar
+              </button>
+            </div>
+            {/* Lista de servicios agregados */}
             {tempServices.length > 0 && (
               <div className="mb-1">
                 <span className="detalle-label">Servicios: </span>
@@ -617,16 +688,17 @@ function RegistroReparacion() {
                     </li>
                   ))}
                 </ul>
+                {errors.tempServices && (
+                  <div className="text-red-500 text-xs">{errors.tempServices}</div>
+                )}
               </div>
             )}
-
             <div className="mb-1">
               <span className="detalle-label">Total Final: </span>
               <span className="detalle-costo">{`$${tempCost}`}</span>
             </div>
-
             <div className="flex gap-2 justify-center">
-              <button type="button" className="btn-aceptar" onClick={handleGuardarReparacion}>
+              <button type="button" className="btn-aceptar" onClick={handleSubmitExtra}>
                 Guardar
               </button>
               <button type="button" className="btn-cancelar" onClick={handleCancelar}>
@@ -635,6 +707,18 @@ function RegistroReparacion() {
             </div>
           </form>
         </div>
+        {/* Modal de confirmación para Reparación Extra */}
+        {showExtraConfirmation && (
+          <ConfirmationModal
+            title={<span className="text-yellow-500">Confirmación de Registro de Reparación Extra</span>}
+            message={<>¿Está seguro de guardar el registro de reparación extra?</>}
+            onConfirm={() => {
+              saveReparacion();
+              setShowExtraConfirmation(false);
+            }}
+            onCancel={() => setShowExtraConfirmation(false)}
+          />
+        )}
       </div>
     );
   }

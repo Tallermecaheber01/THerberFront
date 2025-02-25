@@ -95,7 +95,6 @@ function CrudServicios() {
     const { name, value, files } = e.target;
     if (name === "nombre" || name === "descripcion") {
       if (!isInputSeguro(value)) {
-        alert(`Caracteres no permitidos en el campo ${name}`);
         return;
       }
     }
@@ -106,7 +105,6 @@ function CrudServicios() {
           !archivo.name.toLowerCase().endsWith(".jpg") ||
           archivo.type !== "image/jpeg"
         ) {
-          alert("Solo se permiten imágenes en formato .jpg");
           e.target.value = "";
           setDatosServicio({ ...datosServicio, imagen: null });
           return;
@@ -131,7 +129,6 @@ function CrudServicios() {
           tipoVehiculo: [...prev.tipoVehiculo, vehicle.nombre],
         }));
       } else {
-        alert("Este tipo de vehículo ya ha sido seleccionado.");
       }
     }
     setSelectedTipoVehiculo("");
@@ -142,12 +139,9 @@ function CrudServicios() {
 
     try {
       const response = await createVehicleType(vehicleData);
-      console.log("Nuevo tipo de vehículo agregado:", response);
       const vehiclesData = await getAllVehicleTypes();
       setVehicleTypes(vehiclesData);
     } catch (error) {
-      console.error("Error al agregar tipo de vehículo:", error);
-      alert("Ocurrió un error al intentar agregar el tipo de vehículo.");
     }
   };
 
@@ -175,8 +169,6 @@ function CrudServicios() {
       setEditingTipoIndex(null);
       setEditingTipoValue("");
     } catch (error) {
-      console.error("Error al guardar el tipo de vehículo:", error);
-      alert("Ocurrió un error al intentar guardar el tipo de vehículo.");
     }
   };
 
@@ -188,8 +180,6 @@ function CrudServicios() {
       const vehiclesData = await getAllVehicleTypes();
       setVehicleTypes(vehiclesData);
     } catch (error) {
-      console.error("Error al eliminar el tipo de vehículo:", error);
-      alert("Ocurrió un error al intentar eliminar el tipo de vehículo.");
     }
   };
 
@@ -202,7 +192,6 @@ function CrudServicios() {
           marcas: [...prev.marcas, brand.nombre],
         }));
       } else {
-        alert("Esta marca ya ha sido seleccionada.");
       }
     }
     setSelectedMarca("");
@@ -217,7 +206,6 @@ function CrudServicios() {
       const brandsData = await getAllBrands();
       setBrands(brandsData);
     } catch (error) {
-      alert("Ocurrió un error al intentar agregar la marca.");
     }
   };
 
@@ -239,8 +227,6 @@ function CrudServicios() {
       setEditingMarcaIndex(null);
       setEditingMarcaValue("");
     } catch (error) {
-      console.error("Error al guardar la marca:", error);
-      alert("Ocurrió un error al intentar guardar la marca.");
     }
   };
 
@@ -252,8 +238,6 @@ function CrudServicios() {
       const brandsData = await getAllBrands();
       setBrands(brandsData);
     } catch (error) {
-      console.error("Error al eliminar la marca:", error);
-      alert("Ocurrió un error al intentar eliminar la marca.");
     }
   };
 
@@ -614,9 +598,7 @@ function CrudServicios() {
                             newTipo.trim(),
                           ]);
                           setNewTipo("");
-                        } else {
-                          alert("Ingrese un tipo válido");
-                        }
+                        } 
                       }}
                     >
                       Agregar
@@ -718,9 +700,7 @@ function CrudServicios() {
                         if (newMarca.trim()) {
                           setMarcasOptions([...marcasOptions, newMarca.trim()]);
                           setNewMarca("");
-                        } else {
-                          alert("Ingrese una marca válida");
-                        }
+                        } 
                       }}
                     >
                       Agregar

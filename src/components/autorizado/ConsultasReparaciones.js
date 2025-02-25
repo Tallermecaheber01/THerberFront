@@ -1,23 +1,38 @@
 import React, { useState } from "react";
 import Breadcrumbs from "../Breadcrumbs";
 
+// Componente genérico de Modal de Confirmación
+
+const ConfirmationModal = ({ title, message, onConfirm, onCancel }) => {
+  return (
+    <div className="fixed inset-0 flex items-center justify-center z-50">
+      {/* Fondo semi-transparente que cierra el modal al hacer click */}
+      <div className="absolute inset-0 bg-black opacity-50" onClick={onCancel}></div>
+      <div className="bg-white p-6 rounded shadow-lg z-10 max-w-md w-full">
+        <h2 className="text-yellow-500 font-bold mb-4">{title}</h2>
+        <div className="mb-4">{message}</div>
+        <div className="flex justify-end gap-2">
+        <button className="btn-aceptar" onClick={onConfirm}>
+            Confirmar
+          </button>
+          <button className="btn-cancelar" onClick={onCancel}>
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
 function ConsultasReparaciones() {
-  // Breadcrumbs fijos para la navegación (ruta de la aplicación).
-  // Estos se utilizarán para mostrar la ruta y, en el backend, pueden usarse para saber de dónde proviene la acción.
+  // Breadcrumbs fijos para la navegación
   const staticBreadcrumbs = [
     { name: "Inicio", link: "/" },
     { name: "Reparaciones Realizadas", link: "/ConsultasReparaciones" }
   ];
 
-  // Datos de ejemplo de reparaciones.
-  // Cada objeto "cita" representa una reparación realizada y contiene:
-  // - id: Identificador único.
-  // - cliente: Nombre del cliente.
-  // - servicio: Servicio(s) realizados; en el backend se espera un string (posiblemente separado por saltos de línea).
-  // - fecha y hora: Datos temporales de la reparación.
-  // - costo: Valor actual del servicio.
-  // - marca y modelo: Información del vehículo.
-  // - comentario: Comentarios adicionales (para actualización o revisión).
+  // Datos de ejemplo de reparaciones
   const [citas, setCitas] = useState([
     {
       id: 1,
@@ -54,33 +69,30 @@ function ConsultasReparaciones() {
     }
   ]);
 
-  // Estados para el proceso de edición de una reparación.
-  // 'citaSeleccionada' guarda la reparación que se está editando.
-  // 'comentario' permite actualizar o agregar información adicional.
-  // 'extra' es el valor que se suma o resta al costo (puede ser usado para ajustar imprevistos).
-  // 'serviciosExtra' es el texto ingresado para autocompletar un servicio extra.
-  // 'tempCost' es el costo temporal modificado durante la edición.
-  // 'tempServices' almacena un arreglo de servicios extra agregados (estos se unirán en un string para enviarlos al backend).
-  // 'suggestions' contiene las sugerencias de autocompletado para el servicio extra.
+  // Estados para la edición de reparación
   const [citaSeleccionada, setCitaSeleccionada] = useState(null);
   const [comentario, setComentario] = useState("");
   const [extra, setExtra] = useState(0);
-  const [serviciosExtra, setServiciosExtra] = useState("");
   const [tempCost, setTempCost] = useState(0);
   const [tempServices, setTempServices] = useState([]);
+  const [serviciosExtra, setServiciosExtra] = useState("");
   const [suggestions, setSuggestions] = useState([]);
 
-  // Estados para la búsqueda básica y filtros avanzados.
-  // 'filters' es un arreglo de objetos con:
-  //    - type: el campo por el que se filtra (ejemplo: cliente, servicio, etc.).
-  //    - value: el valor a buscar en dicho campo.
-  // 'searchQuery' es el término de búsqueda general que se aplicará a todas las propiedades.
+  // Estados para errores en validación
+  const [commentError, setCommentError] = useState("");
+  const [serviceError, setServiceError] = useState("");
+
+  // Estados para los modales de confirmación
+  const [isEditConfirmModalOpen, setIsEditConfirmModalOpen] = useState(false);
+  const [pendingEditCita, setPendingEditCita] = useState(null);
+  const [isSaveConfirmModalOpen, setIsSaveConfirmModalOpen] = useState(false);
+
+  // Estados para búsqueda y filtros avanzados
   const [filters, setFilters] = useState([{ type: "", value: "" }]);
   const [searchQuery, setSearchQuery] = useState("");
   const availableFilterTypes = ["cliente", "servicio", "marca", "modelo", "costo"];
 
-  // Arreglo de servicios permitidos para autocompletar.
-  // El backend debe conocer esta lista para validar que se envían servicios válidos.
+  // Lista de servicios permitidos para autocompletar
   const allowedServices = [
     "Cambio de aceite",
     "Revisión general",
@@ -89,30 +101,53 @@ function ConsultasReparaciones() {
     "Cambio de pastillas"
   ];
 
-  // FUNCIONES PARA LA EDICIÓN DE REPARACIÓN
+  // Función para sanitizar inputs (prevención básica)
+  const sanitizeInput = (str) => {
+    if (typeof str !== "string") return str;
+    return str.replace(/['";<>]/g, "");
+  };
 
-  // Abre el formulario de edición y carga los datos de la reparación seleccionada.
-  // Esto permite que el backend reciba la reparación completa con las modificaciones realizadas.
+  // VALIDACIÓN DEL COMENTARIO
+  const handleCommentChange = (e) => {
+    const value = e.target.value;
+    // Se detectan caracteres no permitidos: comillas, punto y coma, menor y mayor.
+    const invalidChars = /[\'";<>]/;
+    if (invalidChars.test(value)) {
+      setCommentError("El comentario contiene caracteres no permitidos.");
+    } else {
+      setCommentError("");
+    }
+    setComentario(value);
+  };
+
+  // FUNCIONES PARA LA EDICIÓN
   const handleEditarReparacion = (cita) => {
     setCitaSeleccionada(cita);
     setComentario(cita.comentario || "");
     setExtra(0);
     setTempCost(cita.costo);
-    // Si existen servicios, se separan por saltos de línea para trabajar individualmente.
     const serviciosIniciales = cita.servicio ? cita.servicio.split("\n") : [];
     setTempServices(serviciosIniciales);
     setServiciosExtra("");
     setSuggestions([]);
+    setCommentError("");
+    setServiceError("");
   };
 
-  // Suma el valor 'extra' al costo actual de la reparación.
+  const confirmEditarReparacion = () => {
+    if (pendingEditCita) {
+      handleEditarReparacion(pendingEditCita);
+      setPendingEditCita(null);
+      setIsEditConfirmModalOpen(false);
+    }
+  };
+
   const handleSumarExtra = () => {
     const extraVal = parseFloat(extra) || 0;
     setTempCost((prevCost) => prevCost + extraVal);
     setExtra(0);
   };
 
-  // Resta el valor 'extra' del costo actual, sin permitir un costo negativo.
   const handleRestarExtra = () => {
     const extraVal = parseFloat(extra) || 0;
     setTempCost((prevCost) => {
@@ -122,13 +157,12 @@ function ConsultasReparaciones() {
     setExtra(0);
   };
 
-  // Actualiza el campo de servicio extra y filtra las sugerencias.
-  // Aquí se busca que el input muestre sugerencias con fondo blanco y del mismo tamaño que el input.
+  // MODIFICACIONES EN EL AGREGAR SERVICIO EXTRA
   const handleServicioExtraChange = (e) => {
     const inputValue = e.target.value;
+    setServiceError(""); // Limpia el error anterior
     setServiciosExtra(inputValue);
     if (inputValue.trim() !== "") {
-      // Se filtran las opciones permitidas (no se diferencia entre mayúsculas y minúsculas)
       const filtered = allowedServices.filter((service) =>
         service.toLowerCase().includes(inputValue.toLowerCase())
       );
@@ -138,51 +172,46 @@ function ConsultasReparaciones() {
     }
   };
 
-  // Al seleccionar una sugerencia, se establece el servicio extra y se limpian las sugerencias.
   const handleSelectSuggestion = (suggestion) => {
     setServiciosExtra(suggestion);
     setSuggestions([]);
   };
 
-  // Agrega el servicio extra ingresado al arreglo temporal.
-  // Se valida que el servicio sea exactamente uno de los permitidos y que no se repita.
-  // En el backend, este arreglo se unirá (por ejemplo, usando "\n") para formar el campo 'servicio'.
   const handleAgregarServicio = () => {
     const serviceTrimmed = serviciosExtra.trim();
     if (serviceTrimmed === "") return;
     if (!allowedServices.includes(serviceTrimmed)) {
-      alert("El servicio ingresado no es válido.");
+      setServiceError("El servicio ingresado no es válido.");
       return;
     }
     if (tempServices.includes(serviceTrimmed)) {
-      alert("El servicio ya ha sido agregado.");
+      setServiceError("El servicio ya ha sido agregado.");
       return;
     }
     setTempServices((prev) => [...prev, serviceTrimmed]);
     setServiciosExtra("");
     setSuggestions([]);
+    setServiceError("");
   };
 
-  // Elimina un servicio del arreglo temporal.
-  // Esta acción se reflejará en la edición de la reparación y se enviará al backend.
   const handleQuitarServicio = (servicio) => {
     setTempServices((prev) => prev.filter((s) => s !== servicio));
   };
 
-  // Guarda la reparación editada.
-  // Se arma un objeto 'citaActualizada' con los campos:
-  // - comentario, costo actualizado y servicio (los servicios extra se unen en un string separado por "\n").
-  // Este objeto se actualizará en la lista de reparaciones y, eventualmente, se enviará al backend.
   const handleGuardarReparacion = () => {
     if (!citaSeleccionada) return;
-    const serviciosFinales = tempServices.join("\n");
+    // Se sanitiza el comentario antes de guardar
+    const sanitizedComentario = sanitizeInput(comentario);
+    const sanitizedTempServices = tempServices.map((s) => sanitizeInput(s));
+    const serviciosFinales = sanitizedTempServices.join("\n");
+
     const citaActualizada = {
       ...citaSeleccionada,
-      comentario,
+      comentario: sanitizedComentario,
       costo: tempCost,
       servicio: serviciosFinales
     };
-    // Se actualiza el estado de 'citas' reemplazando la reparación editada.
+
     const nuevasCitas = citas.map((c) =>
       c.id === citaSeleccionada.id ? citaActualizada : c
     );
@@ -190,7 +219,6 @@ function ConsultasReparaciones() {
     cerrarFormulario();
   };
 
-  // Reinicia el formulario de edición, limpiando todos los campos.
   const cerrarFormulario = () => {
     setCitaSeleccionada(null);
     setComentario("");
@@ -199,22 +227,33 @@ function ConsultasReparaciones() {
     setTempCost(0);
     setTempServices([]);
     setSuggestions([]);
+    setCommentError("");
+    setServiceError("");
   };
 
-  // Función para cancelar la edición (evita comportamiento por defecto del form).
   const handleCancelar = (e) => {
     e.preventDefault();
     cerrarFormulario();
   };
 
-  // UTILIDADES Y FUNCIONES PARA FILTROS Y BÚSQUEDA
+  // CONFIRMACIÓN AL GUARDAR
+  const handleGuardarButtonClick = () => {
+    if (tempServices.length === 0) {
+      setServiceError("Debe agregar al menos un servicio.");
+      return;
+    }
+    setIsSaveConfirmModalOpen(true);
+  };
 
-  // Normaliza las cadenas (quita acentos y convierte a minúsculas) para comparaciones insensibles.
+  const confirmGuardarReparacion = () => {
+    handleGuardarReparacion();
+    setIsSaveConfirmModalOpen(false);
+  };
+
+  // FILTROS Y BÚSQUEDA
   const normalizeStr = (str) =>
     str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
-  // Genera los breadcrumbs dinámicos combinando los fijos con los filtros activos.
-  // Cada breadcrumb dinámico muestra el tipo de filtro (capitalizado) y su valor.
   const getDynamicBreadcrumbs = () => {
     const activeFilters = filters.filter(
       (filter) => filter.type.trim() !== "" && filter.value.trim() !== ""
@@ -232,8 +271,6 @@ function ConsultasReparaciones() {
 
   const dynamicBreadcrumbs = getDynamicBreadcrumbs();
 
-  // Al hacer clic en un breadcrumb, se reinician o eliminan filtros.
-  // Si se hace clic en un breadcrumb fijo, se limpian todos los filtros y la búsqueda.
   const handleBreadcrumbClick = (index) => {
     if (index < staticBreadcrumbs.length) {
       setFilters([{ type: "", value: "" }]);
@@ -244,15 +281,12 @@ function ConsultasReparaciones() {
     }
   };
 
-  // Actualiza un filtro específico (tipo o valor) en el índice dado.
-  // Esto permite que el backend entienda cómo se filtran las reparaciones.
   const handleFilterChange = (index, field, value) => {
     const newFilters = [...filters];
     newFilters[index] = { ...newFilters[index], [field]: value };
     setFilters(newFilters);
   };
 
-  // Agrega un nuevo filtro si el último filtro está completamente definido (máximo 3 filtros).
   const handleAddFilter = () => {
     if (
       filters.length < 3 &&
@@ -263,17 +297,12 @@ function ConsultasReparaciones() {
     }
   };
 
-  // Elimina un filtro en la posición indicada.
-  // Si se eliminan todos los filtros, se deja uno vacío para reiniciar la búsqueda.
   const handleRemoveFilter = (index) => {
     const newFilters = filters.filter((_, i) => i !== index);
     if (newFilters.length === 0) newFilters.push({ type: "", value: "" });
     setFilters(newFilters);
   };
 
-  // Filtrado de reparaciones: se aplica la búsqueda general (searchQuery) y los filtros avanzados.
-  // Cada reparación se evalúa para ver si contiene el término de búsqueda en alguno de sus campos,
-  // y si cumple con los criterios de cada filtro activo.
   const filteredCitas = citas.filter((cita) => {
     const matchesSearch =
       searchQuery === "" ||
@@ -284,27 +313,18 @@ function ConsultasReparaciones() {
       if (filter.type.trim() === "" || filter.value.trim() === "") return true;
       const citaField = cita[filter.type.toLowerCase()];
       if (!citaField) return false;
-      return normalizeStr(String(citaField)).includes(
-        normalizeStr(filter.value)
-      );
+      return normalizeStr(String(citaField)).includes(normalizeStr(filter.value));
     });
     return matchesSearch && matchesAdvanced;
   });
 
   return (
     <div>
-      {/* Se renderizan los breadcrumbs dinámicos.
-          Estos breadcrumbs ayudan a visualizar los filtros aplicados,
-          lo cual es útil para el backend al saber qué criterios se usan en la consulta. */}
       <Breadcrumbs paths={dynamicBreadcrumbs} onCrumbClick={handleBreadcrumbClick} />
       <div className="citasContainer">
         <form className="citasForm flex flex-col">
           <h1 className="form-title text-center">Reparaciones Realizadas</h1>
-           
-          {/* Sección de búsqueda y filtros.
-              La búsqueda general se aplica sobre todas las propiedades de la reparación.
-              Los filtros avanzados permiten afinar la búsqueda por campos específicos.
-              Estos criterios se pueden enviar al backend para consultas más precisas. */}
+          {/* Búsqueda y filtros */}
           <div className="w-full flex flex-col items-end mb-4 gap-4">
             {filters.length === 1 &&
               filters[0].type.trim() === "" &&
@@ -330,11 +350,8 @@ function ConsultasReparaciones() {
                     <option value="">Selecciona tipo de filtro</option>
                     {availableFilterTypes
                       .filter((type) => {
-                        // Se evita seleccionar el mismo filtro dos veces
                         if (filter.type === type) return true;
-                        return !filters.some(
-                          (f, i) => i !== index && f.type === type
-                        );
+                        return !filters.some((f, i) => i !== index && f.type === type);
                       })
                       .map((type) => (
                         <option key={type} value={type}>
@@ -375,10 +392,8 @@ function ConsultasReparaciones() {
                 )}
             </div>
           </div>
- 
-          {/* Listado de reparaciones filtradas.
-              Aquí se muestran los datos que se enviarán al backend en caso de editar o consultar reparaciones.
-              Cada reparación incluye información clave (cliente, servicio, fecha, hora, costo, vehículo). */}
+
+          {/* Listado de reparaciones filtradas */}
           <div className="mt-8">
             {filteredCitas.length > 0 ? (
               <div className="cardCitas grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -427,7 +442,10 @@ function ConsultasReparaciones() {
                     <button
                       type="button"
                       className="btn-aceptar w-full mt-2"
-                      onClick={() => handleEditarReparacion(cita)}
+                      onClick={() => {
+                        setPendingEditCita(cita);
+                        setIsEditConfirmModalOpen(true);
+                      }}
                     >
                       Editar Reparación
                     </button>
@@ -440,14 +458,8 @@ function ConsultasReparaciones() {
               </p>
             )}
           </div>
- 
-          {/* Formulario de edición (visible al seleccionar una reparación).
-              En este formulario se permite:
-              - Actualizar el costo (incluyendo suma/resta de un valor extra).
-              - Agregar un comentario.
-              - Agregar servicios extra mediante autocompletado.
-              - Eliminar servicios extra (cada servicio extra tiene un botón "X" a su lado).
-              Los datos modificados se enviarán al backend cuando se guarde la reparación. */}
+
+          {/* Formulario de edición (visible al seleccionar una reparación) */}
           {citaSeleccionada && (
             <div className="mt-8">
               <h2 className="cita-title text-center">Editar Reparación</h2>
@@ -461,9 +473,12 @@ function ConsultasReparaciones() {
                   <textarea
                     className="form-input w-full"
                     value={comentario}
-                    onChange={(e) => setComentario(e.target.value)}
+                    onChange={handleCommentChange}
                     placeholder="Escribe un comentario sobre la reparación..."
                   />
+                  {commentError && (
+                    <span className="text-red-500 text-sm">{commentError}</span>
+                  )}
                 </div>
                 <div className="mb-1 flex flex-col sm:flex-row gap-1 items-center">
                   <div>
@@ -477,18 +492,10 @@ function ConsultasReparaciones() {
                       placeholder="Extra"
                     />
                   </div>
-                  <button
-                    type="button"
-                    className="btn-aceptar mt-5"
-                    onClick={handleSumarExtra}
-                  >
+                  <button type="button" className="btn-aceptar mt-5" onClick={handleSumarExtra}>
                     Sumar
                   </button>
-                  <button
-                    type="button"
-                    className="btn-cancelar mt-5"
-                    onClick={handleRestarExtra}
-                  >
+                  <button type="button" className="btn-cancelar mt-5" onClick={handleRestarExtra}>
                     Restar
                   </button>
                 </div>
@@ -502,7 +509,6 @@ function ConsultasReparaciones() {
                       onChange={handleServicioExtraChange}
                       placeholder="Ej: Afinación"
                     />
-                    {/* Contenedor de sugerencias con fondo blanco y borde gris, del mismo ancho que el input */}
                     {suggestions.length > 0 && (
                       <div className="absolute z-10 bg-white border border-gray-300 w-48 text-black">
                         {suggestions.map((sug, idx) => (
@@ -517,26 +523,19 @@ function ConsultasReparaciones() {
                       </div>
                     )}
                   </div>
-                  <button
-                    type="button"
-                    className="btn-aceptar mt-5"
-                    onClick={handleAgregarServicio}
-                  >
+                  <button type="button" className="btn-aceptar mt-5" onClick={handleAgregarServicio}>
                     Añadir Servicio
                   </button>
                 </div>
+                {serviceError && (
+                  <span className="text-red-500 text-sm">{serviceError}</span>
+                )}
                 {tempServices.length > 0 && (
                   <div className="mb-1">
                     <span className="detalle-label">Servicios: </span>
-                    {/* Lista de servicios extra agregados.
-                        Cada servicio se muestra junto a un botón "X" para eliminarlo.
-                        La estructura se envía al backend como parte del campo 'servicio' */}
                     <ul className="detalle-costo">
                       {tempServices.map((serv, idx) => (
-                        <li
-                          key={idx}
-                          className="grid grid-cols-[1fr_20px] items-center gap-1 px-2 rounded"
-                        >
+                        <li key={idx} className="grid grid-cols-[1fr_20px] items-center gap-1 px-2 rounded">
                           <span>{serv}</span>
                           <button
                             className="btn-cancelar text-xs flex justify-center items-center"
@@ -558,15 +557,11 @@ function ConsultasReparaciones() {
                 <button
                   type="button"
                   className="btn-aceptar mt-2"
-                  onClick={handleGuardarReparacion}
+                  onClick={handleGuardarButtonClick}
                 >
                   Guardar
                 </button>
-                <button
-                  type="button"
-                  className="btn-cancelar mt-2"
-                  onClick={handleCancelar}
-                >
+                <button type="button" className="btn-cancelar mt-2" onClick={handleCancelar}>
                   Cancelar
                 </button>
               </div>
@@ -574,6 +569,30 @@ function ConsultasReparaciones() {
           )}
         </form>
       </div>
+
+      {/* Modal de confirmación para editar reparación */}
+      {isEditConfirmModalOpen && pendingEditCita && (
+        <ConfirmationModal
+          title="Confirmar Edición"
+          message={`¿Está seguro de que desea editar la reparación de ${pendingEditCita.cliente}?`}
+          onConfirm={confirmEditarReparacion}
+          onCancel={() => {
+            setIsEditConfirmModalOpen(false);
+            setPendingEditCita(null);
+          }}
+        />
+      )}
+
+      {/* Modal de confirmación para guardar edición */}
+      {isSaveConfirmModalOpen && (
+        <ConfirmationModal
+          title="Confirmar Guardado"
+          message="¿Está seguro de que desea guardar los cambios de la reparación?"
+          onConfirm={confirmGuardarReparacion}
+          onCancel={() => setIsSaveConfirmModalOpen(false)}
+        />
+      )}
+
     </div>
   );
 }

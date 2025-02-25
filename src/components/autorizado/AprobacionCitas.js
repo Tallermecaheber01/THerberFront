@@ -510,7 +510,7 @@ function AprobacionesCitas() {
       {showConfirmApproveModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="bg-white dark:bg-gray-800 p-6 rounded shadow-lg w-80">
-            <h2 className="text-xl font-bold mb-4 text-yellow-500">
+            <h2 className="text-xl  mb-4 text-yellow-500">
               Confirmación de Aprobación
             </h2>
             <p className="mb-4 text-gray-700 dark:text-gray-300">

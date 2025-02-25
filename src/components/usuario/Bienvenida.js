@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { jwtDecode } from 'jwt-decode'; // Asegúrate de usar la importación correcta
+import { jwtDecode } from 'jwt-decode'; 
 import { getRole, getUserInfo } from '../../api/client';
 import { useNavigate } from 'react-router-dom';
 
@@ -15,28 +15,27 @@ function Bienvenida() {
     if (!cookie) {
       return null; // No se encontró el token
     }
-    // Asegúrate de que el valor de la cookie esté correctamente separado
     const token = cookie.split('=')[1];
-    return token ? decodeURIComponent(token) : null; // Decodificar el token en caso de que contenga caracteres especiales
+    return token ? decodeURIComponent(token) : null;
   };
 
   useEffect(() => {
     const token = getTokenFromCookies(); // Obtener el token desde la cookie
     if (!token) {
-      console.log('No se encontró token de autenticación,prueba otra vez');
+      console.log('No se encontró token de autenticación, prueba otra vez');
       navigate('/login'); // Redirige al inicio de sesión si no hay token
       return;
     }
 
     try {
       // Decodificar el token JWT
-      const decodedToken = jwtDecode(token); // Usar jwtDecode para decodificar el token
-      console.log('Contenido del token:', decodedToken); // Mostrar todo el token decodificado
+      const decodedToken = jwtDecode(token);
+      console.log('Contenido del token:', decodedToken);
 
-      //Extraer el id del usuario desde el token´
+      // Extraer el id del usuario desde el token
       const { userId } = decodedToken;
 
-      //Llamar a la funcion para obtener la informacion del usuario
+      // Llamar a la función para obtener la información del usuario
       getUserInfo(userId, navigate)
         .then((data) => {
           if (data) {
@@ -58,7 +57,7 @@ function Bienvenida() {
       console.error('Error al decodificar el token:', error);
       setLoading(false);
     }
-  }, []);
+  }, [navigate]);
 
   if (loading) {
     return <div>Cargando...</div>;
@@ -104,6 +103,5 @@ function Bienvenida() {
     </div>
   );
 }
-
 
 export default Bienvenida;
