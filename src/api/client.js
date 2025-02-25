@@ -1,3 +1,4 @@
+import axios from "axios";
 import api from "./axios";
 
 export const getUserInfo = async (id) => {
@@ -14,3 +15,13 @@ export const getUserInfo = async (id) => {
         throw error;
     }
 };
+
+export const getRole = async (id) => {
+    try {
+        const response = await api.get(`/client/${id}/role`);
+        return response.data;
+    } catch (error) {
+        console.error('Error inesperado:', error);
+        alert('Ocurrió un error inesperado.');
+    }
+}

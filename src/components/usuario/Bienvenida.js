@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { jwtDecode } from 'jwt-decode'; // Asegúrate de usar la importación correcta
-import { getUserInfo } from '../../api/client';
+import { getRole, getUserInfo } from '../../api/client';
 import { useNavigate } from 'react-router-dom';
 
 function Bienvenida() {
+  const [rol, setRol] = useState(null);
   const [usuario, setUsuario] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -41,6 +42,12 @@ function Bienvenida() {
           if (data) {
             setUsuario(data);
             setLoading(false);
+            console.log(data);
+
+            getRole(userId).then((role)=>{
+              setRol(role);
+              console.log('Rol del usuario:',role)
+            })
           }
         })
         .catch((error) => {
