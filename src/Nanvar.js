@@ -1,8 +1,8 @@
-import React, { useContext, useState, useRef, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { FiLogOut } from "react-icons/fi";
-import { AuthContext } from "./components/AuthContext"; // Ajusta la ruta según tu estructura
-import "./stylos.css";  
+import React, { useContext, useState, useRef, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { FiLogOut } from 'react-icons/fi';
+import { AuthContext } from './components/AuthContext'; // Ajusta la ruta según tu estructura
+import './stylos.css';
 
 const Navbar = () => {
   const { auth, setAuth } = useContext(AuthContext);
@@ -21,15 +21,16 @@ const Navbar = () => {
         setIsDropdownClicked(false);
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const handleLogout = () => {
     // Eliminamos la cookie de autenticación
-    document.cookie = "authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    setAuth({ user: null, role: "publico" });
-    navigate("/");
+    document.cookie =
+      'authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    setAuth({ user: null, role: 'publico' });
+    navigate('/');
   };
 
   return (
@@ -50,12 +51,14 @@ const Navbar = () => {
           </div>
         </div>
         <div className="navbar-text">
-          <p className="navbar-subtitle">Expertos en motor, aliados de tu motor</p>
+          <p className="navbar-subtitle">
+            Expertos en motor, aliados de tu motor
+          </p>
         </div>
         <div className="navbar-nav">
           <ul className="navbar-list">
             {/* Rutas para usuarios "publico" */}
-            {auth?.role === "publico" && (
+            {auth?.role === 'publico' && (
               <>
                 <li>
                   <Link to="/registro" className="navbar-link">
@@ -76,7 +79,7 @@ const Navbar = () => {
             )}
 
             {/* Rutas para usuarios con rol "client" */}
-            {auth?.role === "client" && (
+            {auth?.role === 'client' && (
               <>
                 <li>
                   <Link to="/atencioncliente" className="navbar-link">
@@ -107,7 +110,7 @@ const Navbar = () => {
             )}
 
             {/* Rutas para usuarios con rol "empleado" */}
-            {auth?.role === "empleado" && (
+            {auth?.role === 'empleado' && (
               <>
                 {/* Dropdown de "Citas" */}
                 <li className="relative" ref={dropdownRef}>
@@ -136,22 +139,34 @@ const Navbar = () => {
                       }}
                     >
                       <li>
-                        <Link to="/aprobacioncitas" className="navbar-dropdown-text">
+                        <Link
+                          to="/aprobacioncitas"
+                          className="navbar-dropdown-text"
+                        >
                           Aprobación Citas
                         </Link>
                       </li>
                       <li>
-                        <Link to="/asignacioncita" className="navbar-dropdown-text">
+                        <Link
+                          to="/asignacioncita"
+                          className="navbar-dropdown-text"
+                        >
                           Asignación Cita
                         </Link>
                       </li>
                       <li>
-                        <Link to="/consultacitas" className="navbar-dropdown-text">
+                        <Link
+                          to="/consultacitas"
+                          className="navbar-dropdown-text"
+                        >
                           Consulta Citas
                         </Link>
                       </li>
                       <li>
-                        <Link to="/citasCanceladas" className="navbar-dropdown-text">
+                        <Link
+                          to="/citasCanceladas"
+                          className="navbar-dropdown-text"
+                        >
                           Citas Canceladas
                         </Link>
                       </li>
@@ -167,7 +182,7 @@ const Navbar = () => {
             )}
 
             {/* Rutas para usuarios con rol "admin" */}
-            {auth?.role === "admin" && (
+            {auth?.role === 'admin' && (
               <>
                 <li>
                   <Link to="/analisisrendimiento" className="navbar-link">
@@ -204,7 +219,7 @@ const Navbar = () => {
           </ul>
 
           {/* Botón de logout visible para usuarios autenticados */}
-          {auth?.role !== "publico" && (
+          {auth?.role !== 'publico' && (
             <button onClick={handleLogout} className="logout-button">
               <FiLogOut className="text-red-500 w-6 h-6 cursor-pointer stroke-[2] transition-transform transform hover:scale-125 hover:text-red-700" />
             </button>

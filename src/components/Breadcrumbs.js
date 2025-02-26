@@ -27,7 +27,10 @@ const Breadcrumbs = ({ paths, onCrumbClick }) => {
                 </Link>
               ) : (
                 // Último breadcrumb, normalmente no es clickable
-                <span onClick={handleClick} className="text-gray-500 dark:text-gray-500">
+                <span
+                  onClick={handleClick}
+                  className="text-gray-500 dark:text-gray-500"
+                >
                   {path.name}
                 </span>
               )}

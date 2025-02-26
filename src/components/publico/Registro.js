@@ -3,17 +3,16 @@ import { FiXCircle, FiEye, FiEyeOff, FiCheckCircle } from 'react-icons/fi';
 import { ToastContainer, toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import 'react-toastify/dist/ReactToastify.css';
-import { registerUser, sendVerificationCode2 } from '../../api/users';
-import Breadcrumbs from "../Breadcrumbs";
+import { sendVerificationCode2 } from '../../api/users';
+import Breadcrumbs from '../Breadcrumbs';
 
 function Registro() {
   const navigate = useNavigate();
   const breadcrumbPaths = [
-    { name: "Inicio", link: "/" },
-    { name: "Registro", link: "/registro" },
+    { name: 'Inicio', link: '/' },
+    { name: 'Registro', link: '/registro' },
   ];
 
-  // Referencias para campos de formulario
   const nombreReg = useRef(null);
   const apellidoPaternoReg = useRef(null);
   const apellidoMaternoReg = useRef(null);
@@ -22,15 +21,11 @@ function Registro() {
   const contrasenaReg = useRef(null);
   const confirmacionContrasenaReg = useRef(null);
 
-  // Estados
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  // Para mostrar/ocultar el bloque de requisitos de contraseña
   const [showRequirements, setShowRequirements] = useState(false);
 
-  // Estados para checks de la contraseña
   const [passwordChecks, setPasswordChecks] = useState({
     minLength: false,
     upperCase: false,
@@ -40,7 +35,7 @@ function Registro() {
     noSequence: false,
   });
 
-  // Función genérica para validar un campo (sin la barra de fortaleza)
+  // Función para validar los campos
   const validateInput = (name, value) => {
     switch (name) {
       case 'nombre':
@@ -51,8 +46,15 @@ function Registro() {
         }
         break;
       case 'correo':
-        if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(value) || value.length < 12 || value.length > 60) {
+        if (
+          !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(value) ||
+          value.length < 12 ||
+          value.length > 60
+        ) {
           return 'Correo no válido (12-60 caracteres y @)';
+        }
+        if (/['";]/.test(value)) {
+          return 'El correo no puede contener caracteres especiales.';
         }
         break;
       case 'telefono':
@@ -71,9 +73,7 @@ function Registro() {
     return '';
   };
 
-  /**
-   * Verifica cada requisito individualmente y devuelve un objeto con booleans
-   */
+  // Función para verificar los requisitos de la contraseña
   const getPasswordChecks = (password) => {
     return {
       minLength: password.length >= 8 && password.length <= 20,
@@ -85,36 +85,32 @@ function Registro() {
     };
   };
 
-  // Maneja la validación al perder el foco
+  // Manejar el evento onBlur para validar los campos
   const handleBlur = (e) => {
     const { name, value } = e.target;
     const error = validateInput(name, value.trim());
     setErrors((prev) => ({ ...prev, [name]: error }));
   };
 
-  // Maneja la validación mientras se escribe
+  // Manejar el evento onChange para actualizar los estados
   const handleChange = (e) => {
     const { name, value } = e.target;
 
     if (name === 'contrasena') {
-      // Muestra el bloque de requisitos en cuanto se empieza a escribir
       if (!showRequirements && value.length > 0) {
         setShowRequirements(true);
       }
-
-      // Obtenemos checks y los guardamos en el estado
       const checks = getPasswordChecks(value);
       setPasswordChecks(checks);
     }
 
-    // Validación en tiempo real para el correo (si lo deseas)
     if (name === 'correo') {
       const error = validateInput(name, value.trim());
       setErrors((prev) => ({ ...prev, [name]: error }));
     }
   };
 
-  // Limpia los campos
+  // Manejar el botón de cancelar
   const handleCancelar = () => {
     nombreReg.current.value = '';
     apellidoPaternoReg.current.value = '';
@@ -135,7 +131,7 @@ function Registro() {
     });
   };
 
-  // Alterna la visibilidad de la contraseña
+  // Mostrar/ocultar contraseña
   const togglePasswordVisibility = (type) => {
     if (type === 'password') {
       setShowPassword(!showPassword);
@@ -144,11 +140,10 @@ function Registro() {
     }
   };
 
-  // Maneja el envío del formulario
+  // Manejar el envío del formulario
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validación previa de todos los campos
     const fields = [
       'nombre',
       'apellidoPaterno',
@@ -171,7 +166,6 @@ function Registro() {
       return;
     }
 
-    // Datos del usuario
     const userData = {
       nombre: nombreReg.current.value,
       apellido_paterno: apellidoPaternoReg.current.value,
@@ -182,23 +176,20 @@ function Registro() {
     };
 
     try {
-      // Enviar código de verificación
       await sendVerificationCode2(userData.correo);
-      toast.success("¡Código de verificación enviado!");
+      toast.success('¡Código de verificación enviado!');
 
       setTimeout(() => {
         navigate('/validacioncuenta', { state: { userData } });
       }, 3000);
-
     } catch (error) {
-      toast.error("Error al registrar cuenta", {
-        position: "top-right",
+      toast.error('Error al registrar cuenta', {
+        position: 'top-right',
         autoClose: 3000,
       });
     }
   };
 
-  // Calcula si se han cumplido todos los requisitos
   const totalChecks = Object.values(passwordChecks).filter(Boolean).length;
   const allChecksSatisfied = totalChecks === 6;
 
@@ -220,11 +211,13 @@ function Registro() {
                   name={field}
                   placeholder={`Ingresa tu ${field}`}
                   className="form-input"
-                  ref={{
-                    nombre: nombreReg,
-                    apellidoPaterno: apellidoPaternoReg,
-                    apellidoMaterno: apellidoMaternoReg,
-                  }[field]}
+                  ref={
+                    {
+                      nombre: nombreReg,
+                      apellidoPaterno: apellidoPaternoReg,
+                      apellidoMaterno: apellidoMaternoReg,
+                    }[field]
+                  }
                   onBlur={handleBlur}
                 />
                 {errors[field] && (
@@ -237,7 +230,9 @@ function Registro() {
             ))}
 
             <div className="form-group">
-              <label htmlFor="correo" className="form-label">Correo Electrónico</label>
+              <label htmlFor="correo" className="form-label">
+                Correo Electrónico
+              </label>
               <input
                 type="email"
                 id="correo"
@@ -257,7 +252,9 @@ function Registro() {
             </div>
 
             <div className="form-group">
-              <label htmlFor="telefono" className="form-label">Teléfono</label>
+              <label htmlFor="telefono" className="form-label">
+                Teléfono
+              </label>
               <input
                 type="tel"
                 id="telefono"
@@ -275,9 +272,10 @@ function Registro() {
               )}
             </div>
 
-            {/* CONTRASEÑA */}
             <div className="form-group relative">
-              <label htmlFor="contrasena" className="form-label">Contraseña</label>
+              <label htmlFor="contrasena" className="form-label">
+                Contraseña
+              </label>
               <input
                 type={showPassword ? 'text' : 'password'}
                 id="contrasena"
@@ -293,7 +291,11 @@ function Registro() {
                 onClick={() => togglePasswordVisibility('password')}
                 className="absolute right-3 top-9"
               >
-                {showPassword ? <FiEyeOff className="iconoVer" /> : <FiEye className="iconoVer" />}
+                {showPassword ? (
+                  <FiEyeOff className="iconoVer" />
+                ) : (
+                  <FiEye className="iconoVer" />
+                )}
               </button>
               {errors.contrasena && (
                 <p className="textError">
@@ -301,68 +303,72 @@ function Registro() {
                   {errors.contrasena}
                 </p>
               )}
-
-              {/* Lista de requisitos: se muestra si el usuario comenzó a escribir y
-                  todavía NO se cumplen todos los requisitos */}
-             {showRequirements && !allChecksSatisfied && (
-              <div className="requirements-list">
-                <ul className="list-none p-0 m-0">
-                  <li className="flex items-center gap-2">
-                    {passwordChecks.minLength ? (
-                      <FiCheckCircle className='iconoCorrect'/>
-                    ) : (
-                      <FiXCircle className="iconoError" />
-                    )}
-                    <span className="white-text">Mínimo 8 caracteres (máx. 20)</span>
-                  </li>
-                  <li className="flex items-center gap-2 ">
-                    {passwordChecks.upperCase ? (
-                      <FiCheckCircle className='iconoCorrect'/>
-                    ) : (
-                      <FiXCircle className="iconoError" />
-                    )}
-                    <span className="white-text">Al menos una mayúscula</span>
-                  </li>
-                  <li className="flex items-center gap-2 ">
-                    {passwordChecks.lowerCase ? (
-                      <FiCheckCircle className='iconoCorrect'/>
-                    ) : (
-                      <FiXCircle className="iconoError" />
-                    )}
-                    <span className="white-text">Al menos una minúscula</span>
-                  </li>
-                  <li className="flex items-center gap-2 ">
-                    {passwordChecks.number ? (
-                      <FiCheckCircle className='iconoCorrect'/>
-                    ) : (
-                      <FiXCircle className="iconoError" />
-                    )}
-                    <span className="white-text">Al menos un número</span>
-                  </li>
-                  <li className="flex items-center gap-2 ">
-                    {passwordChecks.specialChar ? (
-                      <FiCheckCircle className='iconoCorrect'/>
-                    ) : (
-                      <FiXCircle className="iconoError" />
-                    )}
-                    <span className="white-text">Al menos un carácter especial (!@#$%^&*)</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    {passwordChecks.noSequence ? (
-                      <FiCheckCircle className='iconoCorrect'/>
-                    ) : (
-                      <FiXCircle className="iconoError" />
-                    )}
-                    <span className="white-text">Sin secuencias obvias como "12345" o "abcd"</span>
-                  </li>
-                </ul>
-              </div>
-            )}
+              {showRequirements && !allChecksSatisfied && (
+                <div className="requirements-list">
+                  <ul className="list-none p-0 m-0">
+                    <li className="flex items-center gap-2">
+                      {passwordChecks.minLength ? (
+                        <FiCheckCircle className="iconoCorrect" />
+                      ) : (
+                        <FiXCircle className="iconoError" />
+                      )}
+                      <span className="white-text">
+                        Mínimo 8 caracteres (máx. 20)
+                      </span>
+                    </li>
+                    <li className="flex items-center gap-2 ">
+                      {passwordChecks.upperCase ? (
+                        <FiCheckCircle className="iconoCorrect" />
+                      ) : (
+                        <FiXCircle className="iconoError" />
+                      )}
+                      <span className="white-text">Al menos una mayúscula</span>
+                    </li>
+                    <li className="flex items-center gap-2 ">
+                      {passwordChecks.lowerCase ? (
+                        <FiCheckCircle className="iconoCorrect" />
+                      ) : (
+                        <FiXCircle className="iconoError" />
+                      )}
+                      <span className="white-text">Al menos una minúscula</span>
+                    </li>
+                    <li className="flex items-center gap-2 ">
+                      {passwordChecks.number ? (
+                        <FiCheckCircle className="iconoCorrect" />
+                      ) : (
+                        <FiXCircle className="iconoError" />
+                      )}
+                      <span className="white-text">Al menos un número</span>
+                    </li>
+                    <li className="flex items-center gap-2 ">
+                      {passwordChecks.specialChar ? (
+                        <FiCheckCircle className="iconoCorrect" />
+                      ) : (
+                        <FiXCircle className="iconoError" />
+                      )}
+                      <span className="white-text">
+                        Al menos un carácter especial (!@#$%^&*)
+                      </span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      {passwordChecks.noSequence ? (
+                        <FiCheckCircle className="iconoCorrect" />
+                      ) : (
+                        <FiXCircle className="iconoError" />
+                      )}
+                      <span className="white-text">
+                        Sin secuencias obvias como "12345" o "abcd"
+                      </span>
+                    </li>
+                  </ul>
+                </div>
+              )}
             </div>
 
-            {/* CONFIRMAR CONTRASEÑA */}
             <div className="form-group relative">
-              <label htmlFor="confirmacionContrasena" className="form-label">Confirmar Contraseña</label>
+              <label htmlFor="confirmacionContrasena" className="form-label">
+                Confirmar Contraseña
+              </label>
               <input
                 type={showConfirmPassword ? 'text' : 'password'}
                 id="confirmacionContrasena"
@@ -377,7 +383,11 @@ function Registro() {
                 onClick={() => togglePasswordVisibility('confirm')}
                 className="absolute right-3 top-9"
               >
-                {showConfirmPassword ? <FiEyeOff className="iconoVer" /> : <FiEye className="iconoVer" />}
+                {showConfirmPassword ? (
+                  <FiEyeOff className="iconoVer" />
+                ) : (
+                  <FiEye className="iconoVer" />
+                )}
               </button>
               {errors.confirmacionContrasena && (
                 <p className="textError">
@@ -388,8 +398,16 @@ function Registro() {
             </div>
 
             <div className="form-group flex gap-4 mt-4">
-              <button type="submit" className="btn-aceptar">Aceptar</button>
-              <button type="button" className="btn-cancelar" onClick={handleCancelar}>Cancelar</button>
+              <button type="submit" className="btn-aceptar">
+                Aceptar
+              </button>
+              <button
+                type="button"
+                className="btn-cancelar"
+                onClick={handleCancelar}
+              >
+                Cancelar
+              </button>
             </div>
           </form>
         </div>

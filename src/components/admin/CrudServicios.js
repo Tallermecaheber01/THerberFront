@@ -1,8 +1,12 @@
-import React, { useState, useRef, useEffect } from "react";
-import { createBrand, createService, createVehicleType } from "../../api/admin";
-import { getAllServices, getAllBrands, getAllVehicleTypes } from "../../api/admin";
-import { updateService, updateBrand, updateVehicleType } from "../../api/admin";
-import { deleteService, deleteBrand, deleteVehicleType } from "../../api/admin";
+import React, { useState, useRef, useEffect } from 'react';
+import { createBrand, createService, createVehicleType } from '../../api/admin';
+import {
+  getAllServices,
+  getAllBrands,
+  getAllVehicleTypes,
+} from '../../api/admin';
+import { updateService, updateBrand, updateVehicleType } from '../../api/admin';
+import { deleteService, deleteBrand, deleteVehicleType } from '../../api/admin';
 
 function CrudServicios() {
   const [services, setServices] = useState([]);
@@ -11,39 +15,38 @@ function CrudServicios() {
   const [reload, setReload] = useState(false);
 
   const [datosServicio, setDatosServicio] = useState({
-    nombre: "",
-    descripcion: "",
+    nombre: '',
+    descripcion: '',
     tipoVehiculo: [],
     marcas: [],
     imagen: null,
   });
 
-  const [selectedTipoVehiculo, setSelectedTipoVehiculo] = useState("");
-  const [selectedMarca, setSelectedMarca] = useState("");
+  const [selectedTipoVehiculo, setSelectedTipoVehiculo] = useState('');
+  const [selectedMarca, setSelectedMarca] = useState('');
   const [modoEdicion, setModoEdicion] = useState(false);
   const [idEdicion, setIdEdicion] = useState(null);
   const fileInputRef = useRef(null);
   const [editingTipoIndex, setEditingTipoIndex] = useState(null);
-  const [editingTipoValue, setEditingTipoValue] = useState("");
+  const [editingTipoValue, setEditingTipoValue] = useState('');
   const [editingMarcaIndex, setEditingMarcaIndex] = useState(null);
-  const [editingMarcaValue, setEditingMarcaValue] = useState("");
+  const [editingMarcaValue, setEditingMarcaValue] = useState('');
 
   const [marcasOptions, setMarcasOptions] = useState([
-    "Toyota",
-    "Honda",
-    "Ford",
-    "Chevrolet",
-    "Nissan",
-    "Otro",
+    'Toyota',
+    'Honda',
+    'Ford',
+    'Chevrolet',
+    'Nissan',
+    'Otro',
   ]);
   const [tipoVehiculoOptions, setTipoVehiculoOptions] = useState([
-    "Automóvil",
-    "Camioneta",
-    "Motocicleta",
-    "Otro",
+    'Automóvil',
+    'Camioneta',
+    'Motocicleta',
+    'Otro',
   ]);
 
-  // Estados para los modales de confirmación (ya definidos en tu código)
   const [showConfirmEditModal, setShowConfirmEditModal] = useState(false);
   const [serviceToEdit, setServiceToEdit] = useState(null);
   const [showConfirmDeleteModal, setShowConfirmDeleteModal] = useState(false);
@@ -64,27 +67,27 @@ function CrudServicios() {
         const vehiclesData = await getAllVehicleTypes();
         setVehicleTypes(vehiclesData);
       } catch (error) {
-        console.error("Error al obtener datos:", error);
+        console.error('Error al obtener datos:', error);
       }
     };
     fetchData();
   }, [reload]);
 
   const [showMarcaForm, setShowMarcaForm] = useState(false);
-  const [newMarca, setNewMarca] = useState("");
+  const [newMarca, setNewMarca] = useState('');
 
   const [showTipoForm, setShowTipoForm] = useState(false);
-  const [newTipo, setNewTipo] = useState("");
+  const [newTipo, setNewTipo] = useState('');
 
   // Validación para evitar caracteres potencialmente peligrosos
   const isInputSeguro = (value) => {
     if (
       value.includes("'") ||
       value.includes('"') ||
-      value.includes(";") ||
-      value.includes("--") ||
-      value.includes("/*") ||
-      value.includes("*/")
+      value.includes(';') ||
+      value.includes('--') ||
+      value.includes('/*') ||
+      value.includes('*/')
     ) {
       return false;
     }
@@ -93,19 +96,19 @@ function CrudServicios() {
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
-    if (name === "nombre" || name === "descripcion") {
+    if (name === 'nombre' || name === 'descripcion') {
       if (!isInputSeguro(value)) {
         return;
       }
     }
-    if (name === "imagen") {
+    if (name === 'imagen') {
       if (files[0]) {
         const archivo = files[0];
         if (
-          !archivo.name.toLowerCase().endsWith(".jpg") ||
-          archivo.type !== "image/jpeg"
+          !archivo.name.toLowerCase().endsWith('.jpg') ||
+          archivo.type !== 'image/jpeg'
         ) {
-          e.target.value = "";
+          e.target.value = '';
           setDatosServicio({ ...datosServicio, imagen: null });
           return;
         }
@@ -131,18 +134,16 @@ function CrudServicios() {
       } else {
       }
     }
-    setSelectedTipoVehiculo("");
+    setSelectedTipoVehiculo('');
   };
 
   const agregarTipoVehiculoAPI = async (newTipo) => {
     const vehicleData = { nombre: newTipo };
 
     try {
-      const response = await createVehicleType(vehicleData);
       const vehiclesData = await getAllVehicleTypes();
       setVehicleTypes(vehiclesData);
-    } catch (error) {
-    }
+    } catch (error) {}
   };
 
   const eliminarTipoVehiculo = (tipo) => {
@@ -162,25 +163,23 @@ function CrudServicios() {
       const vehicleId = vehicleTypes[index].id;
       const updateVehiculo = { nombre: editingTipoValue };
       const response = await updateVehicleType(vehicleId, updateVehiculo);
-      console.log("Tipo de vehículo actualizado:", response);
+      console.log('Tipo de vehículo actualizado:', response);
       const vehiclesData = await getAllVehicleTypes();
       setVehicleTypes(vehiclesData);
 
       setEditingTipoIndex(null);
-      setEditingTipoValue("");
-    } catch (error) {
-    }
+      setEditingTipoValue('');
+    } catch (error) {}
   };
 
   const handleDeleteTipo = async (index) => {
     try {
       const vehicleId = vehicleTypes[index].id;
       const response = await deleteVehicleType(vehicleId);
-      console.log("Tipo de vehículo eliminado", response);
+      console.log('Tipo de vehículo eliminado', response);
       const vehiclesData = await getAllVehicleTypes();
       setVehicleTypes(vehiclesData);
-    } catch (error) {
-    }
+    } catch (error) {}
   };
 
   const agregarMarca = () => {
@@ -194,7 +193,7 @@ function CrudServicios() {
       } else {
       }
     }
-    setSelectedMarca("");
+    setSelectedMarca('');
   };
 
   const agregarMarcaAPI = async (newMarca) => {
@@ -202,11 +201,10 @@ function CrudServicios() {
 
     try {
       const response = await createBrand(brandData);
-      console.log("Nueva marca:", response);
+      console.log('Nueva marca:', response);
       const brandsData = await getAllBrands();
       setBrands(brandsData);
-    } catch (error) {
-    }
+    } catch (error) {}
   };
 
   const eliminarMarca = (marca) => {
@@ -221,24 +219,22 @@ function CrudServicios() {
       const brandId = brands[index].id;
       const updateMarca = { nombre: editingMarcaValue };
       const response = await updateBrand(brandId, updateMarca);
-      console.log("Marca actualizada:", response);
+      console.log('Marca actualizada:', response);
       const brandsData = await getAllBrands();
       setBrands(brandsData);
       setEditingMarcaIndex(null);
-      setEditingMarcaValue("");
-    } catch (error) {
-    }
+      setEditingMarcaValue('');
+    } catch (error) {}
   };
 
   const handleDeleteMarca = async (index) => {
     try {
       const brandId = brands[index].id;
       const response = await deleteBrand(brandId);
-      console.log("Marca eliminada:", response);
+      console.log('Marca eliminada:', response);
       const brandsData = await getAllBrands();
       setBrands(brandsData);
-    } catch (error) {
-    }
+    } catch (error) {}
   };
 
   const handleSubmit = async (e) => {
@@ -247,19 +243,19 @@ function CrudServicios() {
     // Validación del formulario: se muestran mensajes de error en línea
     const errors = {};
     if (!datosServicio.nombre.trim()) {
-      errors.nombre = "El nombre del servicio es obligatorio.";
+      errors.nombre = 'El nombre del servicio es obligatorio.';
     }
     if (!datosServicio.descripcion.trim()) {
-      errors.descripcion = "La descripción es obligatoria.";
+      errors.descripcion = 'La descripción es obligatoria.';
     }
     if (datosServicio.tipoVehiculo.length === 0) {
-      errors.tipoVehiculo = "Debe seleccionar al menos un tipo de vehículo.";
+      errors.tipoVehiculo = 'Debe seleccionar al menos un tipo de vehículo.';
     }
     if (datosServicio.marcas.length === 0) {
-      errors.marcas = "Debe seleccionar al menos una marca.";
+      errors.marcas = 'Debe seleccionar al menos una marca.';
     }
     if (!datosServicio.imagen) {
-      errors.imagen = "Debe subir una imagen en formato .jpg.";
+      errors.imagen = 'Debe subir una imagen en formato .jpg.';
     }
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
@@ -270,28 +266,28 @@ function CrudServicios() {
     let imagenUrl = datosServicio.imagen;
     if (datosServicio.imagen && datosServicio.imagen instanceof File) {
       const formData = new FormData();
-      formData.append("file", datosServicio.imagen);
-      formData.append("upload_preset", "taller_heber_servicios");
+      formData.append('file', datosServicio.imagen);
+      formData.append('upload_preset', 'taller_heber_servicios');
 
       try {
         const response = await fetch(
-          "https://api.cloudinary.com/v1_1/dtcjmtiwy/image/upload",
+          'https://api.cloudinary.com/v1_1/dtcjmtiwy/image/upload',
           {
-            method: "POST",
+            method: 'POST',
             body: formData,
           }
         );
         const data = await response.json();
         imagenUrl = data.secure_url;
       } catch (error) {
-        console.error("Error al subir imagen:", error);
+        console.error('Error al subir imagen:', error);
       }
     }
     if (!imagenUrl) {
       // Este caso no debería pasar ya que se valida previamente
       setFormErrors((prev) => ({
         ...prev,
-        imagen: "Debe subir una imagen en formato .jpg.",
+        imagen: 'Debe subir una imagen en formato .jpg.',
       }));
       return;
     }
@@ -320,19 +316,19 @@ function CrudServicios() {
       setReload((prev) => !prev);
 
       setDatosServicio({
-        nombre: "",
-        descripcion: "",
+        nombre: '',
+        descripcion: '',
         tipoVehiculo: [],
         marcas: [],
         imagen: null,
       });
-      setSelectedTipoVehiculo("");
-      setSelectedMarca("");
+      setSelectedTipoVehiculo('');
+      setSelectedMarca('');
       if (fileInputRef.current) {
-        fileInputRef.current.value = "";
+        fileInputRef.current.value = '';
       }
     } catch (error) {
-      console.error("Error en el manejo del servicio:", error);
+      console.error('Error en el manejo del servicio:', error);
     }
   };
 
@@ -355,7 +351,7 @@ function CrudServicios() {
       await deleteService(id);
       setServices((prevServices) => prevServices.filter((s) => s.id !== id));
     } catch (error) {
-      console.error("Error al eliminar el servicio:", error);
+      console.error('Error al eliminar el servicio:', error);
     }
   };
 
@@ -366,7 +362,7 @@ function CrudServicios() {
         <div>
           <form onSubmit={handleSubmit} className="form-card">
             <h2 className="form-title mb-4">
-              {modoEdicion ? "Editar Servicio" : "Agregar Servicio"}
+              {modoEdicion ? 'Editar Servicio' : 'Agregar Servicio'}
             </h2>
             <div className="form-group">
               <label htmlFor="nombre" className="form-label">
@@ -382,9 +378,7 @@ function CrudServicios() {
                 required
               />
               {formErrors.nombre && (
-                <p className="text-red-500 text-xs mt-1">
-                  {formErrors.nombre}
-                </p>
+                <p className="text-red-500 text-xs mt-1">{formErrors.nombre}</p>
               )}
             </div>
             <div className="form-group">
@@ -438,7 +432,7 @@ function CrudServicios() {
                       key={index}
                       className="inline-block bg-gray-200 rounded px-2 py-1 mr-2"
                     >
-                      {tipo ? tipo.nombre : "Desconocido"}
+                      {tipo ? tipo.nombre : 'Desconocido'}
                       <button
                         type="button"
                         onClick={() => eliminarTipoVehiculo(tipoNombre)}
@@ -486,7 +480,7 @@ function CrudServicios() {
                       key={index}
                       className="inline-block bg-gray-200 rounded px-2 py-1 mr-2"
                     >
-                      {marca ? marca.nombre : "Desconocido"}
+                      {marca ? marca.nombre : 'Desconocido'}
                       <button
                         type="button"
                         onClick={() => eliminarMarca(marcaNombre)}
@@ -498,9 +492,7 @@ function CrudServicios() {
                 })}
               </div>
               {formErrors.marcas && (
-                <p className="text-red-500 text-xs mt-1">
-                  {formErrors.marcas}
-                </p>
+                <p className="text-red-500 text-xs mt-1">{formErrors.marcas}</p>
               )}
             </div>
             <div className="form-group">
@@ -517,14 +509,12 @@ function CrudServicios() {
                 ref={fileInputRef}
               />
               {formErrors.imagen && (
-                <p className="text-red-500 text-xs mt-1">
-                  {formErrors.imagen}
-                </p>
+                <p className="text-red-500 text-xs mt-1">{formErrors.imagen}</p>
               )}
             </div>
             <div className="flex gap-2">
               <button type="submit" className="btn-aceptar">
-                {modoEdicion ? "Guardar Cambios" : "Agregar Servicio"}
+                {modoEdicion ? 'Guardar Cambios' : 'Agregar Servicio'}
               </button>
               {modoEdicion && (
                 <button
@@ -534,16 +524,16 @@ function CrudServicios() {
                     setModoEdicion(false);
                     setIdEdicion(null);
                     setDatosServicio({
-                      nombre: "",
-                      descripcion: "",
+                      nombre: '',
+                      descripcion: '',
                       tipoVehiculo: [],
                       marcas: [],
                       imagen: null,
                     });
-                    setSelectedTipoVehiculo("");
-                    setSelectedMarca("");
+                    setSelectedTipoVehiculo('');
+                    setSelectedMarca('');
                     if (fileInputRef.current) {
-                      fileInputRef.current.value = "";
+                      fileInputRef.current.value = '';
                     }
                   }}
                 >
@@ -552,7 +542,7 @@ function CrudServicios() {
               )}
             </div>
           </form>
-          {(!showTipoForm && !showMarcaForm) ? (
+          {!showTipoForm && !showMarcaForm ? (
             <div className="flex gap-2 mt-2">
               <button
                 type="button"
@@ -597,8 +587,8 @@ function CrudServicios() {
                             ...tipoVehiculoOptions,
                             newTipo.trim(),
                           ]);
-                          setNewTipo("");
-                        } 
+                          setNewTipo('');
+                        }
                       }}
                     >
                       Agregar
@@ -607,7 +597,7 @@ function CrudServicios() {
                       type="button"
                       className="btn-cancelar w-auto"
                       onClick={() => {
-                        setNewTipo("");
+                        setNewTipo('');
                         setShowTipoForm(false);
                       }}
                     >
@@ -615,7 +605,9 @@ function CrudServicios() {
                     </button>
                   </div>
                   <div className="mt-4">
-                    <h4 className="detalle-label">Tipos de Vehículo Disponibles</h4>
+                    <h4 className="detalle-label">
+                      Tipos de Vehículo Disponibles
+                    </h4>
                     {vehicleTypes.map((tipo, index) => (
                       <div
                         key={index}
@@ -699,8 +691,8 @@ function CrudServicios() {
                         agregarMarcaAPI(newMarca);
                         if (newMarca.trim()) {
                           setMarcasOptions([...marcasOptions, newMarca.trim()]);
-                          setNewMarca("");
-                        } 
+                          setNewMarca('');
+                        }
                       }}
                     >
                       Agregar
@@ -709,7 +701,7 @@ function CrudServicios() {
                       type="button"
                       className="btn-cancelar w-auto"
                       onClick={() => {
-                        setNewMarca("");
+                        setNewMarca('');
                         setShowMarcaForm(false);
                       }}
                     >
@@ -795,7 +787,10 @@ function CrudServicios() {
           ) : (
             <div className="space-y-4">
               {services.map((servicio) => (
-                <div key={servicio.id} className="service-card p-4 card-transition">
+                <div
+                  key={servicio.id}
+                  className="service-card p-4 card-transition"
+                >
                   <div className="flex items-center">
                     {servicio.imagen && (
                       <img
@@ -806,18 +801,20 @@ function CrudServicios() {
                     )}
                     <div>
                       <h3 className="service-card-title">{servicio.nombre}</h3>
-                      <p className="service-card-text">{servicio.descripcion}</p>
                       <p className="service-card-text">
-                        <span className="detalle-label">Tipo:</span>{" "}
-                        {Array.isArray(servicio.tipoVehiculo)
-                          ? servicio.tipoVehiculo.join(", ")
-                          : "No especificado"}
+                        {servicio.descripcion}
                       </p>
                       <p className="service-card-text">
-                        <span className="detalle-label">Marcas:</span>{" "}
+                        <span className="detalle-label">Tipo:</span>{' '}
+                        {Array.isArray(servicio.tipoVehiculo)
+                          ? servicio.tipoVehiculo.join(', ')
+                          : 'No especificado'}
+                      </p>
+                      <p className="service-card-text">
+                        <span className="detalle-label">Marcas:</span>{' '}
                         {Array.isArray(servicio.marcas)
-                          ? servicio.marcas.join(", ")
-                          : "No especificado"}
+                          ? servicio.marcas.join(', ')
+                          : 'No especificado'}
                       </p>
                     </div>
                   </div>

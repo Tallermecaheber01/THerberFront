@@ -1,7 +1,6 @@
-import React, { useState } from "react";
-import Breadcrumbs from "../Breadcrumbs";
+import React, { useState } from 'react';
+import Breadcrumbs from '../Breadcrumbs';
 
-// Componente genérico de Modal de Confirmación
 const ConfirmationModal = ({ title, message, onConfirm, onCancel }) => {
   return (
     <div className="modal-overlay fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
@@ -9,16 +8,10 @@ const ConfirmationModal = ({ title, message, onConfirm, onCancel }) => {
         <h3 className="text-xl font-semibold mb-4">{title}</h3>
         <p className="mb-6">{message}</p>
         <div className="flex justify-end gap-4">
-        <button
-            onClick={onConfirm}
-            className="btn-aceptar"
-          >
+          <button onClick={onConfirm} className="btn-aceptar">
             Confirmar
           </button>
-          <button
-            onClick={onCancel}
-            className="btn-cancelar "
-          >
+          <button onClick={onCancel} className="btn-cancelar ">
             Cancelar
           </button>
         </div>
@@ -28,79 +21,75 @@ const ConfirmationModal = ({ title, message, onConfirm, onCancel }) => {
 };
 
 function ConsultarCitas() {
-  // Breadcrumbs fijos para la navegación de la aplicación.
   const staticBreadcrumbs = [
-    { name: "Inicio", link: "/" },
-    { name: "Consultar Citas", link: "/consultarcitas" }
+    { name: 'Inicio', link: '/' },
+    { name: 'Consultar Citas', link: '/consultarcitas' },
   ];
 
-  // Datos de ejemplo de las citas.
   const [citas] = useState([
     {
       id: 1,
-      cliente: "Juan Pérez",
-      servicio: "Cambio de aceite",
-      fecha: "2025-01-05",
-      hora: "10:00",
+      cliente: 'Juan Pérez',
+      servicio: 'Cambio de aceite',
+      fecha: '2025-01-05',
+      hora: '10:00',
       costo: 50,
-      marca: "Toyota",
-      modelo: "Corolla 2019"
+      marca: 'Toyota',
+      modelo: 'Corolla 2019',
     },
     {
       id: 2,
-      cliente: "María Gómez",
-      servicio: "Revisión general",
-      fecha: "2025-01-06",
-      hora: "12:00",
+      cliente: 'María Gómez',
+      servicio: 'Revisión general',
+      fecha: '2025-01-06',
+      hora: '12:00',
       costo: 75,
-      marca: "Honda",
-      modelo: "Civic 2018"
+      marca: 'Honda',
+      modelo: 'Civic 2018',
     },
     {
       id: 3,
-      cliente: "Carlos López",
-      servicio: "Cambio de llantas",
-      fecha: "2025-01-05",
-      hora: "14:00",
+      cliente: 'Carlos López',
+      servicio: 'Cambio de llantas',
+      fecha: '2025-01-05',
+      hora: '14:00',
       costo: 100,
-      marca: "Ford",
-      modelo: "Focus 2020"
-    }
+      marca: 'Ford',
+      modelo: 'Focus 2020',
+    },
   ]);
 
-  // Estados para filtros y búsqueda básica.
-  const [filters, setFilters] = useState([{ type: "", value: "" }]);
-  const [searchQuery, setSearchQuery] = useState("");
-
-  // Estados para controlar los modales de confirmación
+  const [filters, setFilters] = useState([{ type: '', value: '' }]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedCitaForFinalize, setSelectedCitaForFinalize] = useState(null);
   const [isFinishModalOpen, setIsFinishModalOpen] = useState(false);
   const [isExtraRepairModalOpen, setIsExtraRepairModalOpen] = useState(false);
 
   const availableFilterTypes = [
-    "cliente",
-    "servicio",
-    "marca",
-    "modelo",
-    "costo"
+    'cliente',
+    'servicio',
+    'marca',
+    'modelo',
+    'costo',
   ];
 
-  // Función para normalizar cadenas (insensible a mayúsculas, minúsculas y acentos)
   const normalizeStr = (str) =>
-    str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    str
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
 
-  // Genera breadcrumbs dinámicos combinando los fijos y los filtros activos.
   const getDynamicBreadcrumbs = () => {
     const activeFilters = filters.filter(
-      (filter) => filter.type.trim() !== "" && filter.value.trim() !== ""
+      (filter) => filter.type.trim() !== '' && filter.value.trim() !== ''
     );
     const filterBreadcrumbs = activeFilters.map((filter) => ({
       name:
         filter.type.charAt(0).toUpperCase() +
         filter.type.slice(1) +
-        ": " +
+        ': ' +
         filter.value,
-      link: "#"
+      link: '#',
     }));
     return [...staticBreadcrumbs, ...filterBreadcrumbs];
   };
@@ -109,48 +98,44 @@ function ConsultarCitas() {
 
   const handleBreadcrumbClick = (index) => {
     if (index < staticBreadcrumbs.length) {
-      setFilters([{ type: "", value: "" }]);
-      setSearchQuery("");
+      setFilters([{ type: '', value: '' }]);
+      setSearchQuery('');
     } else {
       const filterIndex = index - staticBreadcrumbs.length;
       setFilters(filters.slice(0, filterIndex + 1));
     }
   };
 
-  // Actualiza un filtro específico.
   const handleFilterChange = (index, field, value) => {
     const newFilters = [...filters];
     newFilters[index] = { ...newFilters[index], [field]: value };
     setFilters(newFilters);
   };
 
-  // Agrega un nuevo filtro si el último está completamente definido.
   const handleAddFilter = () => {
     if (
       filters.length < 3 &&
-      filters[filters.length - 1].type.trim() !== "" &&
-      filters[filters.length - 1].value.trim() !== ""
+      filters[filters.length - 1].type.trim() !== '' &&
+      filters[filters.length - 1].value.trim() !== ''
     ) {
-      setFilters([...filters, { type: "", value: "" }]);
+      setFilters([...filters, { type: '', value: '' }]);
     }
   };
 
-  // Elimina un filtro.
   const handleRemoveFilter = (index) => {
     const newFilters = filters.filter((_, i) => i !== index);
-    if (newFilters.length === 0) newFilters.push({ type: "", value: "" });
+    if (newFilters.length === 0) newFilters.push({ type: '', value: '' });
     setFilters(newFilters);
   };
 
-  // Filtra la lista de citas usando la búsqueda básica y filtros avanzados.
   const filteredCitas = citas.filter((cita) => {
     const matchesSearch =
-      searchQuery === "" ||
+      searchQuery === '' ||
       Object.values(cita).some((val) =>
         normalizeStr(String(val)).includes(normalizeStr(searchQuery))
       );
     const matchesAdvanced = filters.every((filter) => {
-      if (filter.type.trim() === "" || filter.value.trim() === "") return true;
+      if (filter.type.trim() === '' || filter.value.trim() === '') return true;
       const citaField = cita[filter.type.toLowerCase()];
       if (!citaField) return false;
       return normalizeStr(String(citaField)).includes(
@@ -160,32 +145,28 @@ function ConsultarCitas() {
     return matchesSearch && matchesAdvanced;
   });
 
-  // Abre el modal de confirmación para finalizar el servicio.
   const handleFinalizarServicioClick = (citaSeleccionada) => {
     setSelectedCitaForFinalize(citaSeleccionada);
     setIsFinishModalOpen(true);
   };
 
-  // Función que se ejecuta al confirmar la finalización del servicio.
   const confirmFinalizarServicio = () => {
     if (selectedCitaForFinalize) {
       localStorage.setItem(
-        "selectedCita",
+        'selectedCita',
         JSON.stringify(selectedCitaForFinalize)
       );
-      window.location.href = "/registroreparaciones";
+      window.location.href = '/registroreparaciones';
     }
   };
 
-  // Abre el modal de confirmación para registrar una reparación extra.
   const handleReparacionExtraClick = () => {
     setIsExtraRepairModalOpen(true);
   };
 
-  // Función que se ejecuta al confirmar el registro de reparación extra.
   const confirmReparacionExtra = () => {
-    localStorage.removeItem("selectedCita");
-    window.location.href = "/registroreparaciones";
+    localStorage.removeItem('selectedCita');
+    window.location.href = '/registroreparaciones';
   };
 
   return (
@@ -197,11 +178,10 @@ function ConsultarCitas() {
       <div className="citasContainer">
         <form className="citasForm flex flex-col">
           <h1 className="form-title text-center">Consultar Citas Próximas</h1>
-          {/* Sección de búsqueda y filtros */}
           <div className="w-full flex flex-col items-end mb-4 gap-4">
             {filters.length === 1 &&
-              filters[0].type.trim() === "" &&
-              filters[0].value.trim() === "" && (
+              filters[0].type.trim() === '' &&
+              filters[0].value.trim() === '' && (
                 <input
                   type="text"
                   placeholder="Buscar citas"
@@ -216,7 +196,7 @@ function ConsultarCitas() {
                   <select
                     value={filter.type}
                     onChange={(e) =>
-                      handleFilterChange(index, "type", e.target.value)
+                      handleFilterChange(index, 'type', e.target.value)
                     }
                     className="form-input w-64 text-right"
                   >
@@ -236,12 +216,12 @@ function ConsultarCitas() {
                   </select>
                   <input
                     type={
-                      filter.type.toLowerCase() === "costo" ? "number" : "text"
+                      filter.type.toLowerCase() === 'costo' ? 'number' : 'text'
                     }
                     placeholder="Busqueda"
                     value={filter.value}
                     onChange={(e) =>
-                      handleFilterChange(index, "value", e.target.value)
+                      handleFilterChange(index, 'value', e.target.value)
                     }
                     className="form-input w-64 text-right"
                   />
@@ -257,8 +237,8 @@ function ConsultarCitas() {
                 </div>
               ))}
               {filters.length < 3 &&
-                filters[filters.length - 1].type.trim() !== "" &&
-                filters[filters.length - 1].value.trim() !== "" && (
+                filters[filters.length - 1].type.trim() !== '' &&
+                filters[filters.length - 1].value.trim() !== '' && (
                   <button
                     onClick={handleAddFilter}
                     className="button-yellow w-40"
@@ -269,14 +249,15 @@ function ConsultarCitas() {
                 )}
             </div>
           </div>
-
-          {/* Listado de citas filtradas */}
           <div className="mt-8">
             <h2 className="cita-title text-center">Citas Programadas</h2>
             {filteredCitas.length > 0 ? (
               <div className="cardCitas grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredCitas.map((cita) => (
-                  <div key={cita.id} className="reparacion-card card-transition">
+                  <div
+                    key={cita.id}
+                    className="reparacion-card card-transition"
+                  >
                     <div className="mb-2">
                       <span className="detalle-label">Cliente: </span>
                       <span className="detalle-costo">{cita.cliente}</span>
@@ -311,7 +292,6 @@ function ConsultarCitas() {
                         <span className="detalle-costo">{cita.modelo}</span>
                       </div>
                     )}
-                    {/* Botón que abre el modal de confirmación para finalizar el servicio */}
                     <button
                       type="button"
                       className="btn-aceptar w-full mt-2"
@@ -328,8 +308,6 @@ function ConsultarCitas() {
               </p>
             )}
           </div>
-
-          {/* Botón para registrar una reparación extra (abre su modal de confirmación) */}
           <div className="mt-8 flex justify-center">
             <button
               type="button"
@@ -362,19 +340,14 @@ function ConsultarCitas() {
         />
       )}
 
-      
       {isExtraRepairModalOpen && (
         <ConfirmationModal
           title={
-          <span className="text-yellow-500">
-          Confirmar la finalizacion de un servicio Extra
-          </span>
+            <span className="text-yellow-500">
+              Confirmar la finalizacion de un servicio Extra
+            </span>
           }
-          message={
-            <>
-            ¿Deseas registrar una reparación extra sin cita previa?
-            </>
-          }
+          message={<>¿Deseas registrar una reparación extra sin cita previa?</>}
           onConfirm={confirmReparacionExtra}
           onCancel={() => setIsExtraRepairModalOpen(false)}
         />

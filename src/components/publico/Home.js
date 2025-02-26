@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import Breadcrumbs from "../Breadcrumbs";
+import Breadcrumbs from '../Breadcrumbs';
 import { getAllServices } from '../../api/admin';
 
 function Home() {
@@ -7,8 +7,8 @@ function Home() {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const breadcrumbPaths = [
-    { name: "Catalogo", link: "/consultaservicios" },
-    { name: "Inicio", link: "/" },
+    { name: 'Catalogo', link: '/consultaservicios' },
+    { name: 'Inicio', link: '/' },
   ];
 
   useEffect(() => {
@@ -48,7 +48,7 @@ function Home() {
   // Auto slide cada 10 segundos
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentIndex(prevIndex => {
+      setCurrentIndex((prevIndex) => {
         if (services.length <= 3) return 0;
         if (prevIndex >= services.length - 3) {
           return 0;
@@ -62,7 +62,7 @@ function Home() {
 
   return (
     <div>
-      {/* Sección Principal */}
+
       <section className="home-banner">
         <img
           src="https://cdn-3.expansion.mx/dims4/default/ddae30c/2147483647/strip/true/crop/1254x837+0+0/resize/1800x1201!/format/webp/quality/80/?url=https%3A%2F%2Fcdn-3.expansion.mx%2Fe1%2F91%2F6b6f2f0d4630a6a378a16469a815%2Finflacion-mexico-hace-mas-caro-tener-carro.jpeg"
@@ -70,13 +70,14 @@ function Home() {
           className="home-banner-img"
         />
         <div className="home-banner-overlay">
-          <h1 className="home-banner-title">Bienvenido a Taller Automotriz Heber</h1>
+          <h1 className="home-banner-title">
+            Bienvenido a Taller Automotriz Heber
+          </h1>
         </div>
       </section>
 
       <Breadcrumbs paths={breadcrumbPaths} />
 
-      {/* Sección de Servicios */}
       <section className="services-section">
         <div className="services-container">
           <h2 className="services-title">Nuestros Servicios</h2>
@@ -102,25 +103,29 @@ function Home() {
                   gap: '1rem',
                 }}
               >
-                {services.slice(currentIndex, currentIndex + 3).map((service) => (
-                  <div
-                    key={service.id}
-                    className="service-card"
-                    style={{
-                      flex: '0 0 calc(33.33% - 1rem)',
-                    }}
-                  >
-                    <img
-                      src={service.imagen}
-                      alt={service.nombre}
-                      className="service-card-img"
-                    />
-                    <div className="service-card-content">
-                      <h3 className="service-card-title">{service.nombre}</h3>
-                      <p className="service-card-text">{service.descripcion}</p>
+                {services
+                  .slice(currentIndex, currentIndex + 3)
+                  .map((service) => (
+                    <div
+                      key={service.id}
+                      className="service-card"
+                      style={{
+                        flex: '0 0 calc(33.33% - 1rem)',
+                      }}
+                    >
+                      <img
+                        src={service.imagen}
+                        alt={service.nombre}
+                        className="service-card-img"
+                      />
+                      <div className="service-card-content">
+                        <h3 className="service-card-title">{service.nombre}</h3>
+                        <p className="service-card-text">
+                          {service.descripcion}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
               </div>
 
               {/* Botón Siguiente */}

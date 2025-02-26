@@ -1,31 +1,34 @@
-import React from "react";
-import Breadcrumbs from "../Breadcrumbs";
+import React from 'react';
+import Breadcrumbs from '../Breadcrumbs';
 
 const servicio = {
   id: 1,
-  titulo: "Cambio de Aceite",
+  titulo: 'Cambio de Aceite',
   descripcion:
-    "Mantén tu motor protegido con un cambio de aceite profesional. Este servicio incluye la extracción del aceite usado, cambio de filtro de aceite y llenado con aceite nuevo de alta calidad. Recomendado para prolongar la vida útil de tu motor y garantizar un desempeño óptimo.",
-  categoria:
-    "Mantenimiento",
-    imagen:
-    "https://blog.reparacion-vehiculos.es/hs-fs/hubfs/Im%C3%A1genes_Post/Julio%202018/errores%20cambio-aceite.jpg?width=1200&name=errores%20cambio-aceite.jpg",
-  costo: "$500 MXN",
-  duracion: "30 minutos",
+    'Mantén tu motor protegido con un cambio de aceite profesional. Este servicio incluye la extracción del aceite usado, cambio de filtro de aceite y llenado con aceite nuevo de alta calidad. Recomendado para prolongar la vida útil de tu motor y garantizar un desempeño óptimo.',
+  categoria: 'Mantenimiento',
+  imagen:
+    'https://blog.reparacion-vehiculos.es/hs-fs/hubfs/Im%C3%A1genes_Post/Julio%202018/errores%20cambio-aceite.jpg?width=1200&name=errores%20cambio-aceite.jpg',
+  costo: '$500 MXN',
+  duracion: '30 minutos',
 };
 
 function verDetalles() {
   const breadcrumbPaths = [
-    { name: "Inicio", link: "/" },
-    { name: "Consulta Servicios", link: "/consultaservicios" },
-    { name: "Detalles", link: "/verDetalles" },
+    { name: 'Inicio', link: '/' },
+    { name: 'Consulta Servicios', link: '/consultaservicios' },
+    { name: 'Detalles', link: '/verDetalles' },
   ];
   return (
     <div>
       <Breadcrumbs paths={breadcrumbPaths} />
       <section className="services-section">
         <div className="detalle-container">
-          <img src={servicio.imagen} alt={servicio.titulo} className="detalle-img" />
+          <img
+            src={servicio.imagen}
+            alt={servicio.titulo}
+            className="detalle-img"
+          />
           <div className="detalle-content">
             <h2 className="detalle-title">{servicio.titulo}</h2>
             <p className="detalle-descripcion">{servicio.descripcion}</p>
@@ -33,15 +36,17 @@ function verDetalles() {
               <span className="detalle-label">Costo:</span> {servicio.costo}
             </p>
             <p className="detalle-duracion">
-              <span className="detalle-label">Categoria:</span> {servicio.categoria}
+              <span className="detalle-label">Categoria:</span>{' '}
+              {servicio.categoria}
             </p>
             <p className="detalle-duracion">
-              <span className="detalle-label">Duración aproximado:</span> {servicio.duracion}
+              <span className="detalle-label">Duración aproximado:</span>{' '}
+              {servicio.duracion}
             </p>
           </div>
         </div>
       </section>
-      </div>
+    </div>
   );
 }
 

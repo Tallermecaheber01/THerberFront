@@ -1,9 +1,7 @@
-import React from 'react'
+import React from 'react';
 
 function datos_estadisticos() {
-  return (
-    <div>datos_estadisticos</div>
-  )
+  return <div>datos_estadisticos</div>;
 }
 
-export default datos_estadisticos
+export default datos_estadisticos;

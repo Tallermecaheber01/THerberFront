@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Breadcrumbs from '../Breadcrumbs'; 
+import Breadcrumbs from '../Breadcrumbs';
 
 function AgregarCita() {
   const [fecha, setFecha] = useState('');
@@ -12,12 +12,24 @@ function AgregarCita() {
     { nombre: 'Revisión General', precio: 70, clave: 'revisionGeneral' },
     { nombre: 'Reparación de Frenos', precio: 90, clave: 'reparacionFrenos' },
     { nombre: 'Alineación de Ruedas', precio: 80, clave: 'alineacionRuedas' },
-    { nombre: 'Cambio de Filtro de Aire', precio: 40, clave: 'cambioFiltroAire' },
-    { nombre: 'Reparación de Suspensión', precio: 100, clave: 'reparacionSuspension' },
+    {
+      nombre: 'Cambio de Filtro de Aire',
+      precio: 40,
+      clave: 'cambioFiltroAire',
+    },
+    {
+      nombre: 'Reparación de Suspensión',
+      precio: 100,
+      clave: 'reparacionSuspension',
+    },
     { nombre: 'Reemplazo de Batería', precio: 120, clave: 'reemplazoBateria' },
-    { nombre: 'Reparación de Radiador', precio: 150, clave: 'reparacionRadiador' },
+    {
+      nombre: 'Reparación de Radiador',
+      precio: 150,
+      clave: 'reparacionRadiador',
+    },
     { nombre: 'Cambio de Neumáticos', precio: 200, clave: 'cambioNeumaticos' },
-    { nombre: 'Cambio de Frenos', precio: 110, clave: 'cambioFrenos' }
+    { nombre: 'Cambio de Frenos', precio: 110, clave: 'cambioFrenos' },
   ];
 
   const manejarCambio = (e) => {
@@ -65,115 +77,141 @@ function AgregarCita() {
 
   return (
     <div>
-     <Breadcrumbs paths={breadcrumbPaths} />
-    <div className="form-container">
-      <div className="form-card">
-        <h2 className="form-title">Agregar Cita en el Taller Mecánico</h2>
-        <form onSubmit={manejarEnviar}>
-          {/* Fecha y Hora Preferida */}
-          <div className="form-group">
-            <label htmlFor="fecha" className="form-label">Fecha y Hora Preferida</label>
-            <input
-              type="datetime-local"
-              id="fecha"
-              name="fecha"
-              value={fecha}
-              onChange={manejarFechaCambio}
-              className="form-input"
-              required
-            />
-          </div>
-
-          {/* Servicios ya seleccionados */}
-          <div className="form-group">
-            <label className="form-label">Servicios Seleccionados</label>
-            <div className="space-y-4">
-              {Object.keys(serviciosSeleccionados).length > 0 ? (
-                Object.keys(serviciosSeleccionados).map((servicioClave) => {
-                  const servicio = servicios.find(s => s.clave === servicioClave);
-                  return (
-                    <div key={servicio.clave} className="flex items-center space-x-4">
-                      <input
-                        type="checkbox"
-                        name={servicio.clave}
-                        checked={serviciosSeleccionados[servicio.clave]}
-                        onChange={manejarCambio}
-                        className="form-checkbox"
-                      />
-                      <div>
-                        <h3 className="cita-title">{servicio.nombre}</h3>
-                        <p className="cita-subtitle">Precio: ${servicio.precio}</p>
-                      </div>
-                    </div>
-                  );
-                })
-              ) : (
-                <p>No hay servicios seleccionados.</p>
-              )}
-            </div>
-
-            
-            <button
-              type="button"
-              onClick={() => setMostrarServicios(!mostrarServicios)}
-              className="button-yellow"
-            >
-              {mostrarServicios ? 'Ocultar Servicios' : 'Agregar Más Servicios'}
-            </button>
-          </div>
-
-    
-          {mostrarServicios && (
+      <Breadcrumbs paths={breadcrumbPaths} />
+      <div className="form-container">
+        <div className="form-card">
+          <h2 className="form-title">Agregar Cita en el Taller Mecánico</h2>
+          <form onSubmit={manejarEnviar}>
+            {/* Fecha y Hora Preferida */}
             <div className="form-group">
-              <label className="form-label">Seleccione los Servicios Requeridos</label>
-              <div className="space-y-4">
-                {servicios.map((servicio) => {
-                  const isSelected = serviciosSeleccionados[servicio.clave] || false;
-                  return (
-                    <label key={servicio.clave} className="flex items-center space-x-4">
-                      <input
-                        type="checkbox"
-                        name={servicio.clave}
-                        checked={isSelected}
-                        onChange={manejarCambio}
-                        className="form-checkbox"
-                      />
-                      <div>
-                        <h3 className="cita-title">{servicio.nombre}</h3>
-                        <p className="cita-subtitle">Precio: ${servicio.precio}</p>
-                      </div>
-                    </label>
-                  );
-                })}
-              </div>
+              <label htmlFor="fecha" className="form-label">
+                Fecha y Hora Preferida
+              </label>
+              <input
+                type="datetime-local"
+                id="fecha"
+                name="fecha"
+                value={fecha}
+                onChange={manejarFechaCambio}
+                className="form-input"
+                required
+              />
             </div>
-          )}
 
-          {/* Total */}
-          <div className="form-group">
-            <label htmlFor="total" className="form-label">Total</label>
-            <input
-              type="text"
-              id="total"
-              name="total"
-              value={`$${total}`}
-              className="form-input"
-              disabled
-            />
-          </div>
+            {/* Servicios ya seleccionados */}
+            <div className="form-group">
+              <label className="form-label">Servicios Seleccionados</label>
+              <div className="space-y-4">
+                {Object.keys(serviciosSeleccionados).length > 0 ? (
+                  Object.keys(serviciosSeleccionados).map((servicioClave) => {
+                    const servicio = servicios.find(
+                      (s) => s.clave === servicioClave
+                    );
+                    return (
+                      <div
+                        key={servicio.clave}
+                        className="flex items-center space-x-4"
+                      >
+                        <input
+                          type="checkbox"
+                          name={servicio.clave}
+                          checked={serviciosSeleccionados[servicio.clave]}
+                          onChange={manejarCambio}
+                          className="form-checkbox"
+                        />
+                        <div>
+                          <h3 className="cita-title">{servicio.nombre}</h3>
+                          <p className="cita-subtitle">
+                            Precio: ${servicio.precio}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <p>No hay servicios seleccionados.</p>
+                )}
+              </div>
 
-         
-          <div className='mt-4'>
+              <button
+                type="button"
+                onClick={() => setMostrarServicios(!mostrarServicios)}
+                className="button-yellow"
+              >
+                {mostrarServicios
+                  ? 'Ocultar Servicios'
+                  : 'Agregar Más Servicios'}
+              </button>
+            </div>
+
+            {mostrarServicios && (
+              <div className="form-group">
+                <label className="form-label">
+                  Seleccione los Servicios Requeridos
+                </label>
+                <div className="space-y-4">
+                  {servicios.map((servicio) => {
+                    const isSelected =
+                      serviciosSeleccionados[servicio.clave] || false;
+                    return (
+                      <label
+                        key={servicio.clave}
+                        className="flex items-center space-x-4"
+                      >
+                        <input
+                          type="checkbox"
+                          name={servicio.clave}
+                          checked={isSelected}
+                          onChange={manejarCambio}
+                          className="form-checkbox"
+                        />
+                        <div>
+                          <h3 className="cita-title">{servicio.nombre}</h3>
+                          <p className="cita-subtitle">
+                            Precio: ${servicio.precio}
+                          </p>
+                        </div>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Total */}
+            <div className="form-group">
+              <label htmlFor="total" className="form-label">
+                Total
+              </label>
+              <input
+                type="text"
+                id="total"
+                name="total"
+                value={`$${total}`}
+                className="form-input"
+                disabled
+              />
+            </div>
+
+            <div className="mt-4">
               <div className="form-footer">
-                <button type="submit" className="btn-aceptar">Confirmar Cita</button>
+                <button type="submit" className="btn-aceptar">
+                  Confirmar Cita
+                </button>
               </div>
               <div className="form-footer mt-1">
-                <button type="button" className="btn-cancelar" onClick={() => window.location.reload()}>Cancelar</button>
+                <button
+                  type="button"
+                  className="btn-cancelar"
+                  onClick={() => window.location.reload()}
+                >
+                  Cancelar
+                </button>
               </div>
-         </div>
-        </form>
+            </div>
+          </form>
+        </div>
       </div>
-    </div>
     </div>
   );
 }

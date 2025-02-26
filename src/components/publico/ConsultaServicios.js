@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import Breadcrumbs from "../Breadcrumbs";
-import { 
-  getAllServices, 
-  getAllVehicleTypes, 
-  getAllBrands 
-} from "../../api/admin";
+import React, { useState, useEffect, useRef } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import Breadcrumbs from '../Breadcrumbs';
+import {
+  getAllServices,
+  getAllVehicleTypes,
+  getAllBrands,
+} from '../../api/admin';
 
 function ConsultaServicios() {
   const navigate = useNavigate();
@@ -13,8 +13,8 @@ function ConsultaServicios() {
 
   // Breadcrumbs estáticos (fijos)
   const staticBreadcrumbs = [
-    { name: "Inicio", link: "/" },
-    { name: "Servicios", link: "/consultaservicios" }
+    { name: 'Inicio', link: '/' },
+    { name: 'Servicios', link: '/consultaservicios' },
   ];
 
   // Estados para los datos
@@ -23,9 +23,9 @@ function ConsultaServicios() {
   const [brands, setBrands] = useState([]);
 
   // Estados para búsqueda y filtros avanzados
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filters, setFilters] = useState([{ type: "", value: "" }]);
-  const advancedActive = filters.some(f => f.type && f.value.trim() !== "");
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filters, setFilters] = useState([{ type: '', value: '' }]);
+  const advancedActive = filters.some((f) => f.type && f.value.trim() !== '');
 
   // Obtener los servicios de la base de datos
   useEffect(() => {
@@ -34,7 +34,7 @@ function ConsultaServicios() {
         const data = await getAllServices();
         setServices(data);
       } catch (error) {
-        console.error("Error fetching services:", error);
+        console.error('Error fetching services:', error);
       }
     };
     fetchServices();
@@ -47,7 +47,7 @@ function ConsultaServicios() {
         const data = await getAllVehicleTypes();
         setVehicleTypes(data);
       } catch (error) {
-        console.error("Error fetching vehicle types:", error);
+        console.error('Error fetching vehicle types:', error);
       }
     };
     fetchVehicleTypes();
@@ -60,7 +60,7 @@ function ConsultaServicios() {
         const data = await getAllBrands();
         setBrands(data);
       } catch (error) {
-        console.error("Error fetching brands:", error);
+        console.error('Error fetching brands:', error);
       }
     };
     fetchBrands();
@@ -69,23 +69,23 @@ function ConsultaServicios() {
   // Definir las opciones de filtros usando los datos traídos de la BD
   const filtrosDisponibles = {
     tipoVehiculo: {
-      label: "Tipo de Vehículo",
-      options: vehicleTypes.map((tipo) => tipo.nombre)
+      label: 'Tipo de Vehículo',
+      options: vehicleTypes.map((tipo) => tipo.nombre),
     },
     marcas: {
-      label: "Marca",
-      options: brands.map((marca) => marca.nombre)
-    }
+      label: 'Marca',
+      options: brands.map((marca) => marca.nombre),
+    },
   };
 
   // Función que genera los breadcrumbs dinámicos combinando los estáticos con los filtros activos
   const getDynamicBreadcrumbs = () => {
     const activeFilters = filters.filter(
-      (filter) => filter.type && filter.value.trim() !== ""
+      (filter) => filter.type && filter.value.trim() !== ''
     );
     const filterBreadcrumbs = activeFilters.map((filter) => ({
       name: `${filtrosDisponibles[filter.type].label}: ${filter.value}`,
-      link: "#" // Link ficticio; se manejará en el callback onCrumbClick
+      link: '#', // Link ficticio; se manejará en el callback onCrumbClick
     }));
     return [...staticBreadcrumbs, ...filterBreadcrumbs];
   };
@@ -93,8 +93,8 @@ function ConsultaServicios() {
   // Maneja el clic en un breadcrumb
   const handleBreadcrumbClick = (index) => {
     if (index < staticBreadcrumbs.length) {
-      setFilters([{ type: "", value: "" }]);
-      setSearchQuery("");
+      setFilters([{ type: '', value: '' }]);
+      setSearchQuery('');
       navigate(staticBreadcrumbs[index].link);
     } else {
       const filterIndex = index - staticBreadcrumbs.length;
@@ -106,7 +106,7 @@ function ConsultaServicios() {
   const handleFilterChange = (index, field, value) => {
     const newFilters = [...filters];
     newFilters[index][field] = value;
-    if (field === "type") newFilters[index].value = ""; // Reinicia el valor si se cambia el tipo
+    if (field === 'type') newFilters[index].value = ''; // Reinicia el valor si se cambia el tipo
     setFilters(newFilters);
   };
 
@@ -115,40 +115,42 @@ function ConsultaServicios() {
     if (
       filters.length < 3 &&
       filters[filters.length - 1].type &&
-      filters[filters.length - 1].value.trim() !== ""
+      filters[filters.length - 1].value.trim() !== ''
     ) {
-      setFilters([...filters, { type: "", value: "" }]);
+      setFilters([...filters, { type: '', value: '' }]);
     }
   };
 
   // Elimina un filtro específico
   const handleRemoveFilter = (index) => {
     const newFilters = filters.filter((_, i) => i !== index);
-    if (newFilters.length === 0) newFilters.push({ type: "", value: "" });
+    if (newFilters.length === 0) newFilters.push({ type: '', value: '' });
     setFilters(newFilters);
   };
 
-  const appliedFilterTypes = filters.map(filter => filter.type);
+  const appliedFilterTypes = filters.map((filter) => filter.type);
 
   // Filtrado de servicios según la búsqueda simple o filtros avanzados
   const filteredServices = advancedActive
-    ? services.filter(service =>
-        filters.every(filter => {
+    ? services.filter((service) =>
+        filters.every((filter) => {
           if (!filter.type || !filter.value.trim()) return true;
           const serviceValue = service[filter.type];
           // Si el valor en el servicio es un arreglo, se busca si alguno de sus elementos lo contiene
           if (Array.isArray(serviceValue)) {
-            return serviceValue.some(item =>
+            return serviceValue.some((item) =>
               item.toLowerCase().includes(filter.value.toLowerCase())
             );
-          } else if (typeof serviceValue === "string") {
-            return serviceValue.toLowerCase().includes(filter.value.toLowerCase());
+          } else if (typeof serviceValue === 'string') {
+            return serviceValue
+              .toLowerCase()
+              .includes(filter.value.toLowerCase());
           }
           return false;
         })
       )
-    : services.filter(service => {
-        if (searchQuery.trim() === "") return true;
+    : services.filter((service) => {
+        if (searchQuery.trim() === '') return true;
         return (
           service.nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
           service.descripcion.toLowerCase().includes(searchQuery.toLowerCase())
@@ -168,7 +170,7 @@ function ConsultaServicios() {
 
           <div className="max-w-screen-lg mx-auto flex flex-wrap items-center justify-end gap-4 mb-8">
             {/* Mostrar búsqueda simple si no hay filtros avanzados */}
-            {filters.length === 1 && filters[0].value.trim() === "" && (
+            {filters.length === 1 && filters[0].value.trim() === '' && (
               <input
                 type="text"
                 placeholder="Buscar servicios"
@@ -189,7 +191,7 @@ function ConsultaServicios() {
                   <select
                     value={filter.type}
                     onChange={(e) =>
-                      handleFilterChange(index, "type", e.target.value)
+                      handleFilterChange(index, 'type', e.target.value)
                     }
                     className="form-input w-64"
                   >
@@ -197,7 +199,8 @@ function ConsultaServicios() {
                     {Object.keys(filtrosDisponibles)
                       .filter(
                         (key) =>
-                          !appliedFilterTypes.includes(key) || key === filter.type
+                          !appliedFilterTypes.includes(key) ||
+                          key === filter.type
                       )
                       .map((key) => (
                         <option key={key} value={key}>
@@ -210,7 +213,7 @@ function ConsultaServicios() {
                     <select
                       value={filter.value}
                       onChange={(e) =>
-                        handleFilterChange(index, "value", e.target.value)
+                        handleFilterChange(index, 'value', e.target.value)
                       }
                       className="form-input w-64"
                     >
@@ -238,7 +241,7 @@ function ConsultaServicios() {
 
               {filters.length < 3 &&
                 filters[filters.length - 1].type &&
-                filters[filters.length - 1].value.trim() !== "" && (
+                filters[filters.length - 1].value.trim() !== '' && (
                   <div className="w-full flex justify-end">
                     <button
                       onClick={handleAddFilter}
@@ -254,10 +257,7 @@ function ConsultaServicios() {
           {/* Listado de servicios filtrados */}
           <div className="services-grid">
             {filteredServices.map((service) => (
-              <div
-                key={service.id}
-                className="service-card card-transition"
-              >
+              <div key={service.id} className="service-card card-transition">
                 <img
                   src={service.imagen}
                   alt={service.nombre}
@@ -266,7 +266,7 @@ function ConsultaServicios() {
                 <div className="service-card-content">
                   <h3 className="service-card-title">{service.nombre}</h3>
                   <p className="service-card-text">{service.descripcion}</p>
-                  <Link to={`/verDetalles`}>
+                  <Link to={'/verDetalles'}>
                     <button className="button-yellow mt-4">
                       Ver más detalles
                     </button>

@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from "react";
-import Breadcrumbs from "../Breadcrumbs";
+import React, { useState, useEffect } from 'react';
+import Breadcrumbs from '../Breadcrumbs';
 
-// Componente ConfirmationModal implementado inline
 const ConfirmationModal = ({ title, message, onConfirm, onCancel }) => {
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50">
-      {/* Fondo semi-transparente que cierra el modal al hacer click */}
-      <div className="absolute inset-0 bg-black opacity-50" onClick={onCancel}></div>
+      <div
+        className="absolute inset-0 bg-black opacity-50"
+        onClick={onCancel}
+      ></div>
       <div className="bg-white p-6 rounded shadow-lg z-10 max-w-md w-full">
         <h2 className="text-xl font-bold mb-4">{title}</h2>
         <div className="mb-4">{message}</div>
@@ -26,112 +27,103 @@ const ConfirmationModal = ({ title, message, onConfirm, onCancel }) => {
 const clientes = [
   {
     id: 1,
-    nombre: "Juan Pérez",
-    cars: [{ marca: "Toyota", modelos: ["Corolla 2019", "Camry 2020"] }]
+    nombre: 'Juan Pérez',
+    cars: [{ marca: 'Toyota', modelos: ['Corolla 2019', 'Camry 2020'] }],
   },
   {
     id: 2,
-    nombre: "María Gómez",
+    nombre: 'María Gómez',
     cars: [
-      { marca: "Honda", modelos: ["Civic 2018", "Accord 2019"] },
-      { marca: "Ford", modelos: ["Focus 2020"] }
-    ]
+      { marca: 'Honda', modelos: ['Civic 2018', 'Accord 2019'] },
+      { marca: 'Ford', modelos: ['Focus 2020'] },
+    ],
   },
   {
     id: 3,
-    nombre: "Carlos López",
+    nombre: 'Carlos López',
     cars: [
-      { marca: "Ford", modelos: ["Focus 2020", "Mustang 2021"] },
-      { marca: "Chevrolet", modelos: ["Spark 2018"] }
-    ]
+      { marca: 'Ford', modelos: ['Focus 2020', 'Mustang 2021'] },
+      { marca: 'Chevrolet', modelos: ['Spark 2018'] },
+    ],
   },
   {
     id: 4,
-    nombre: "Ana Martínez",
-    cars: [{ marca: "Hyundai", modelos: ["Elantra 2019"] }]
+    nombre: 'Ana Martínez',
+    cars: [{ marca: 'Hyundai', modelos: ['Elantra 2019'] }],
   },
   {
     id: 5,
-    nombre: "Luis Rodríguez",
+    nombre: 'Luis Rodríguez',
     cars: [
-      { marca: "Nissan", modelos: ["Sentra 2020", "Altima 2021"] },
-      { marca: "Toyota", modelos: ["RAV4 2022"] }
-    ]
+      { marca: 'Nissan', modelos: ['Sentra 2020', 'Altima 2021'] },
+      { marca: 'Toyota', modelos: ['RAV4 2022'] },
+    ],
   },
   {
     id: 6,
-    nombre: "Sofía García",
+    nombre: 'Sofía García',
     cars: [
-      { marca: "Kia", modelos: ["Rio 2018"] },
-      { marca: "Hyundai", modelos: ["Accent 2019", "Elantra 2020"] }
-    ]
+      { marca: 'Kia', modelos: ['Rio 2018'] },
+      { marca: 'Hyundai', modelos: ['Accent 2019', 'Elantra 2020'] },
+    ],
   },
   {
     id: 7,
-    nombre: "Miguel Torres",
-    cars: [{ marca: "Chevrolet", modelos: ["Cruze 2019"] }]
-  }
+    nombre: 'Miguel Torres',
+    cars: [{ marca: 'Chevrolet', modelos: ['Cruze 2019'] }],
+  },
 ];
 
 function RegistroReparacion() {
-  // Servicios permitidos para reparación extra
   const allowedServices = [
-    "Cambio de aceite",
-    "Revisión general",
-    "Cambio de llantas",
-    "Afinación",
-    "Cambio de pastillas"
+    'Cambio de aceite',
+    'Revisión general',
+    'Cambio de llantas',
+    'Afinación',
+    'Cambio de pastillas',
   ];
 
-  // Estados compartidos (para ambos modos)
   const [cita, setCita] = useState(null);
-  const [comentario, setComentario] = useState("");
+  const [comentario, setComentario] = useState('');
   const [extra, setExtra] = useState(0);
-  const [serviciosExtra, setServiciosExtra] = useState("");
+  const [serviciosExtra, setServiciosExtra] = useState('');
   const [tempCost, setTempCost] = useState(0);
   const [tempServices, setTempServices] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
-  const [empleado, setEmpleado] = useState("Pedro Pérez");
-  const [atencionDateTime, setAtencionDateTime] = useState("");
-
-  // Estados exclusivos para el modo Reparación Extra
-  const [clientSearch, setClientSearch] = useState("");
+  const [empleado, setEmpleado] = useState('Pedro Pérez');
+  const [atencionDateTime, setAtencionDateTime] = useState('');
+  const [clientSearch, setClientSearch] = useState('');
   const [filteredClients, setFilteredClients] = useState([]);
   const [selectedClient, setSelectedClient] = useState(null);
-  const [selectedMarca, setSelectedMarca] = useState("");
-  const [selectedModelo, setSelectedModelo] = useState("");
-
-  // Estados para errores y modales de confirmación
+  const [selectedMarca, setSelectedMarca] = useState('');
+  const [selectedModelo, setSelectedModelo] = useState('');
   const [errors, setErrors] = useState({});
   const [showNormalConfirmation, setShowNormalConfirmation] = useState(false);
   const [showExtraConfirmation, setShowExtraConfirmation] = useState(false);
 
-  // Helper para formatear números en fechas y horas
-  const pad = (num) => String(num).padStart(2, "0");
+  const pad = (num) => String(num).padStart(2, '0');
 
-  // Rutas fijas para Breadcrumbs
   const breadcrumbPaths = [
-    { name: "Inicio", link: "/" },
-    { name: "Consulta citas", link: "/consultacitas" },
-    { name: "Registro reparacion", link: "/registroreparaciones" },
+    { name: 'Inicio', link: '/' },
+    { name: 'Consulta citas', link: '/consultacitas' },
+    { name: 'Registro reparacion', link: '/registroreparaciones' },
   ];
-
-  // useEffect para cargar la cita si existe (modo Reparación Normal)
   useEffect(() => {
-    const storedCita = localStorage.getItem("selectedCita");
+    const storedCita = localStorage.getItem('selectedCita');
     if (storedCita) {
       const citaObj = JSON.parse(storedCita);
       setCita(citaObj);
-      setComentario(citaObj.comentario || "");
+      setComentario(citaObj.comentario || '');
       setTempCost(parseFloat(citaObj.costo));
-      const serviciosIniciales = citaObj.servicio ? citaObj.servicio.split("\n") : [];
+      const serviciosIniciales = citaObj.servicio
+        ? citaObj.servicio.split('\n')
+        : [];
       setTempServices(serviciosIniciales);
       const ahora = new Date();
       const formattedDateTime = `${pad(ahora.getDate())}/${pad(ahora.getMonth() + 1)}/${ahora.getFullYear()} ${pad(ahora.getHours())}:${pad(ahora.getMinutes())}`;
       setAtencionDateTime(formattedDateTime);
-      setEmpleado("Pedro Pérez");
+      setEmpleado('Pedro Pérez');
     } else {
-      // Modo Reparación Extra
       const ahora = new Date();
       const formattedDateTime = `${ahora.getFullYear()}-${pad(ahora.getMonth() + 1)}-${pad(ahora.getDate())}T${pad(ahora.getHours())}:${pad(ahora.getMinutes())}`;
       setAtencionDateTime(formattedDateTime);
@@ -139,7 +131,6 @@ function RegistroReparacion() {
     }
   }, []);
 
-  // Funciones para sumar/restar valores extras al costo
   const handleSumarExtra = () => {
     const extraVal = parseFloat(extra) || 0;
     const newCost = parseFloat(tempCost) + extraVal;
@@ -155,11 +146,10 @@ function RegistroReparacion() {
     setExtra(0);
   };
 
-  // Función para manejar el autocompletado del servicio extra
   const handleServicioExtraChange = (e) => {
     const inputValue = e.target.value;
     setServiciosExtra(inputValue);
-    if (inputValue.trim() !== "") {
+    if (inputValue.trim() !== '') {
       const filtered = allowedServices.filter((service) =>
         service.toLowerCase().startsWith(inputValue.toLowerCase())
       );
@@ -176,20 +166,26 @@ function RegistroReparacion() {
 
   const handleAgregarServicio = () => {
     const servicio = serviciosExtra.trim();
-    if (servicio !== "" && allowedServices.includes(servicio)) {
+    if (servicio !== '' && allowedServices.includes(servicio)) {
       if (
         tempServices.includes(servicio) ||
-        (cita && cita.servicio && cita.servicio.split("\n").includes(servicio))
+        (cita && cita.servicio && cita.servicio.split('\n').includes(servicio))
       ) {
-        setErrors((prev) => ({ ...prev, serviciosExtra: "El servicio ya ha sido agregado." }));
+        setErrors((prev) => ({
+          ...prev,
+          serviciosExtra: 'El servicio ya ha sido agregado.',
+        }));
         return;
       }
       setTempServices((prev) => [...prev, servicio]);
-      setServiciosExtra("");
+      setServiciosExtra('');
       setSuggestions([]);
-      setErrors((prev) => ({ ...prev, serviciosExtra: "" }));
+      setErrors((prev) => ({ ...prev, serviciosExtra: '' }));
     } else {
-      setErrors((prev) => ({ ...prev, serviciosExtra: "El servicio ingresado no es válido." }));
+      setErrors((prev) => ({
+        ...prev,
+        serviciosExtra: 'El servicio ingresado no es válido.',
+      }));
     }
   };
 
@@ -197,66 +193,66 @@ function RegistroReparacion() {
     setTempServices((prev) => prev.filter((s) => s !== servicio));
   };
 
-  // Prevención básica contra inyecciones SQL en textos
   const containsSQLInjection = (input) => {
-    const pattern = /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|ALTER|CREATE|EXEC)\b)|(--)|(;)/i;
+    const pattern =
+      /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|ALTER|CREATE|EXEC)\b)|(--)|(;)/i;
     return pattern.test(input);
   };
 
-  // Validación para modo Reparación Normal (cita existente)
+
   const validateNormal = () => {
     const newErrors = {};
     if (!atencionDateTime) {
-      newErrors.atencionDateTime = "La fecha y hora de atención es requerida.";
+      newErrors.atencionDateTime = 'La fecha y hora de atención es requerida.';
     }
     if (tempServices.length === 0) {
-      newErrors.tempServices = "Debe agregarse al menos un servicio para poder guardar el registro.";
+      newErrors.tempServices =
+        'Debe agregarse al menos un servicio para poder guardar el registro.';
     }
     if (comentario && containsSQLInjection(comentario)) {
-      newErrors.comentario = "El comentario contiene caracteres inválidos.";
+      newErrors.comentario = 'El comentario contiene caracteres inválidos.';
     }
     return newErrors;
   };
 
-  // Validación para modo Reparación Extra (sin cita)
   const validateExtra = () => {
     const newErrors = {};
     if (!selectedClient) {
-      newErrors.selectedClient = "Debe seleccionar un cliente.";
+      newErrors.selectedClient = 'Debe seleccionar un cliente.';
     }
     if (!selectedMarca) {
-      newErrors.selectedMarca = "Debe seleccionar una marca.";
+      newErrors.selectedMarca = 'Debe seleccionar una marca.';
     }
     if (!selectedModelo) {
-      newErrors.selectedModelo = "Debe seleccionar un modelo.";
+      newErrors.selectedModelo = 'Debe seleccionar un modelo.';
     }
     if (!atencionDateTime) {
-      newErrors.atencionDateTime = "La fecha y hora de atención es requerida.";
+      newErrors.atencionDateTime = 'La fecha y hora de atención es requerida.';
     }
     if (tempServices.length === 0) {
-      newErrors.tempServices = "Debe agregarse al menos un servicio para poder guardar el registro.";
+      newErrors.tempServices =
+        'Debe agregarse al menos un servicio para poder guardar el registro.';
     }
     if (comentario && containsSQLInjection(comentario)) {
-      newErrors.comentario = "El comentario contiene caracteres inválidos.";
+      newErrors.comentario = 'El comentario contiene caracteres inválidos.';
     }
     return newErrors;
   };
 
-  // Función que guarda la reparación (se ejecuta tras confirmar en el modal)
   const saveReparacion = () => {
     let reparacion;
     if (cita) {
-      const serviciosFinales = tempServices.join("\n");
+      const serviciosFinales = tempServices.join('\n');
       reparacion = {
         ...cita,
         comentario,
         costo: tempCost,
         servicio: serviciosFinales,
         empleado,
-        atencionDateTime
+        atencionDateTime,
       };
     } else {
-      const serviciosFinales = tempServices.join("\n");
+      const serviciosFinales = tempServices.join('\n');
       reparacion = {
         cliente: selectedClient.nombre,
         marca: selectedMarca,
@@ -265,15 +261,13 @@ function RegistroReparacion() {
         costo: tempCost,
         servicio: serviciosFinales,
         empleado,
-        atencionDateTime
+        atencionDateTime,
       };
     }
-    console.log("Datos de la reparación guardados:", reparacion);
-    // Aquí se podrían mostrar mensajes de éxito inline
+    console.log('Datos de la reparación guardados:', reparacion);
     cerrarFormulario();
   };
 
-  // Funciones para manejar el envío de cada formulario y mostrar el modal de confirmación
   const handleSubmitNormal = () => {
     const validationErrors = validateNormal();
     if (Object.keys(validationErrors).length > 0) {
@@ -300,24 +294,22 @@ function RegistroReparacion() {
 
   const cerrarFormulario = () => {
     setCita(null);
-    setComentario("");
+    setComentario('');
     setExtra(0);
-    setServiciosExtra("");
+    setServiciosExtra('');
     setTempCost(0);
     setTempServices([]);
     setSuggestions([]);
-    setAtencionDateTime("");
-    setClientSearch("");
+    setAtencionDateTime('');
+    setClientSearch('');
     setFilteredClients([]);
     setSelectedClient(null);
-    setSelectedMarca("");
-    setSelectedModelo("");
+    setSelectedMarca('');
+    setSelectedModelo('');
     setErrors({});
   };
 
-  // Renderizado según el modo (Reparación Normal si existe una cita; Reparación Extra si no)
   if (cita) {
-    // Modo Reparación Normal
     return (
       <div>
         <Breadcrumbs paths={breadcrumbPaths} />
@@ -331,10 +323,14 @@ function RegistroReparacion() {
                 <span className="detalle-costo">{empleado}</span>
               </div>
               <div className="mb-4">
-                <span className="detalle-label">Fecha y Hora de Atención: </span>
+                <span className="detalle-label">
+                  Fecha y Hora de Atención:{' '}
+                </span>
                 <span className="detalle-costo">{atencionDateTime}</span>
                 {errors.atencionDateTime && (
-                  <div className="text-red-500 text-xs">{errors.atencionDateTime}</div>
+                  <div className="text-red-500 text-xs">
+                    {errors.atencionDateTime}
+                  </div>
                 )}
               </div>
               <div className="mb-2">
@@ -357,7 +353,6 @@ function RegistroReparacion() {
                 <span className="detalle-label">Costo Actual: </span>
                 <span className="detalle-costo">{`$${cita.costo}`}</span>
               </div>
-              {/* Comentario (opcional) */}
               <div className="mb-2">
                 <span className="detalle-label">Comentario: </span>
                 <textarea
@@ -367,10 +362,11 @@ function RegistroReparacion() {
                   placeholder="Escribe un comentario sobre la reparación..."
                 />
                 {errors.comentario && (
-                  <div className="text-red-500 text-xs">{errors.comentario}</div>
+                  <div className="text-red-500 text-xs">
+                    {errors.comentario}
+                  </div>
                 )}
               </div>
-              {/* Extra y ajuste de costo */}
               <div className="mb-2 flex flex-col sm:flex-row gap-2 items-center">
                 <div>
                   <span className="detalle-label">Extra: </span>
@@ -386,14 +382,21 @@ function RegistroReparacion() {
                     placeholder="Extra"
                   />
                 </div>
-                <button type="button" className="btn-aceptar mt-5" onClick={handleSumarExtra}>
+                <button
+                  type="button"
+                  className="btn-aceptar mt-5"
+                  onClick={handleSumarExtra}
+                >
                   Sumar
                 </button>
-                <button type="button" className="btn-cancelar mt-5" onClick={handleRestarExtra}>
+                <button
+                  type="button"
+                  className="btn-cancelar mt-5"
+                  onClick={handleRestarExtra}
+                >
                   Restar
                 </button>
               </div>
-              {/* Servicio Extra */}
               <div className="mb-2 flex flex-col sm:flex-row gap-2 items-center">
                 <div className="relative">
                   <span className="detalle-label">Servicio Extra: </span>
@@ -418,20 +421,28 @@ function RegistroReparacion() {
                     </div>
                   )}
                   {errors.serviciosExtra && (
-                    <div className="text-red-500 text-xs">{errors.serviciosExtra}</div>
+                    <div className="text-red-500 text-xs">
+                      {errors.serviciosExtra}
+                    </div>
                   )}
                 </div>
-                <button type="button" className="btn-aceptar mt-5" onClick={handleAgregarServicio}>
+                <button
+                  type="button"
+                  className="btn-aceptar mt-5"
+                  onClick={handleAgregarServicio}
+                >
                   Añadir Servicio
                 </button>
               </div>
-              {/* Lista de servicios agregados */}
               {tempServices.length > 0 && (
                 <div className="mb-2">
                   <span className="detalle-label">Servicios: </span>
                   <ul className="detalle-costo text-sm">
                     {tempServices.map((serv, idx) => (
-                      <li key={idx} className="grid grid-cols-[1fr_20px] items-center gap-1 px-2 rounded">
+                      <li
+                        key={idx}
+                        className="grid grid-cols-[1fr_20px] items-center gap-1 px-2 rounded"
+                      >
                         <span>{serv}</span>
                         <button
                           type="button"
@@ -444,7 +455,9 @@ function RegistroReparacion() {
                     ))}
                   </ul>
                   {errors.tempServices && (
-                    <div className="text-red-500 text-xs">{errors.tempServices}</div>
+                    <div className="text-red-500 text-xs">
+                      {errors.tempServices}
+                    </div>
                   )}
                 </div>
               )}
@@ -454,19 +467,30 @@ function RegistroReparacion() {
               </div>
             </div>
             <div className="flex gap-4 justify-center">
-              <button type="button" className="btn-aceptar" onClick={handleSubmitNormal}>
+              <button
+                type="button"
+                className="btn-aceptar"
+                onClick={handleSubmitNormal}
+              >
                 Guardar
               </button>
-              <button type="button" className="btn-cancelar" onClick={handleCancelar}>
+              <button
+                type="button"
+                className="btn-cancelar"
+                onClick={handleCancelar}
+              >
                 Cancelar
               </button>
             </div>
           </form>
         </div>
-        {/* Modal de confirmación para Reparación Normal */}
         {showNormalConfirmation && (
           <ConfirmationModal
-            title={<span className="text-yellow-500">Confirmación de Registro de Reparación</span>}
+            title={
+              <span className="text-yellow-500">
+                Confirmación de Registro de Reparación
+              </span>
+            }
             message={<>¿Está seguro de guardar el registro de reparación?</>}
             onConfirm={() => {
               saveReparacion();
@@ -478,14 +502,14 @@ function RegistroReparacion() {
       </div>
     );
   } else {
-    // Modo Reparación Extra
     return (
       <div>
         <Breadcrumbs paths={breadcrumbPaths} />
         <div className="form-container w-[680px] mx-auto">
           <form className="citasForm flex flex-col">
-            <h1 className="form-title text-center mb-1">Registro de Reparación Extra</h1>
-            {/* Fecha y Hora de Atención */}
+            <h1 className="form-title text-center mb-1">
+              Registro de Reparación Extra
+            </h1>
             <div className="">
               <label className="detalle-label" htmlFor="atencionDateTime">
                 Fecha y Hora de Atención:
@@ -498,10 +522,11 @@ function RegistroReparacion() {
                 onChange={(e) => setAtencionDateTime(e.target.value)}
               />
               {errors.atencionDateTime && (
-                <div className="text-red-500 text-xs">{errors.atencionDateTime}</div>
+                <div className="text-red-500 text-xs">
+                  {errors.atencionDateTime}
+                </div>
               )}
             </div>
-            {/* Buscador de Cliente */}
             <div className="relative">
               <label className="detalle-label" htmlFor="clientSearch">
                 Buscar Cliente:
@@ -514,7 +539,7 @@ function RegistroReparacion() {
                 onChange={(e) => {
                   const value = e.target.value;
                   setClientSearch(value);
-                  if (value.trim() !== "") {
+                  if (value.trim() !== '') {
                     const filtered = clientes.filter((client) =>
                       client.nombre.toLowerCase().includes(value.toLowerCase())
                     );
@@ -535,8 +560,8 @@ function RegistroReparacion() {
                         setSelectedClient(client);
                         setClientSearch(client.nombre);
                         setFilteredClients([]);
-                        setSelectedMarca("");
-                        setSelectedModelo("");
+                        setSelectedMarca('');
+                        setSelectedModelo('');
                       }}
                     >
                       {client.nombre}
@@ -545,10 +570,11 @@ function RegistroReparacion() {
                 </div>
               )}
               {errors.selectedClient && (
-                <div className="text-red-500 text-xs">{errors.selectedClient}</div>
+                <div className="text-red-500 text-xs">
+                  {errors.selectedClient}
+                </div>
               )}
             </div>
-            {/* Selección de Marca y Modelo si se eligió un cliente */}
             {selectedClient && (
               <>
                 <div className="mb-1">
@@ -561,7 +587,7 @@ function RegistroReparacion() {
                     value={selectedMarca}
                     onChange={(e) => {
                       setSelectedMarca(e.target.value);
-                      setSelectedModelo("");
+                      setSelectedModelo('');
                     }}
                   >
                     <option value="">Selecciona una marca</option>
@@ -572,7 +598,9 @@ function RegistroReparacion() {
                     ))}
                   </select>
                   {errors.selectedMarca && (
-                    <div className="text-red-500 text-xs">{errors.selectedMarca}</div>
+                    <div className="text-red-500 text-xs">
+                      {errors.selectedMarca}
+                    </div>
                   )}
                 </div>
                 {selectedMarca && (
@@ -596,13 +624,14 @@ function RegistroReparacion() {
                         ))}
                     </select>
                     {errors.selectedModelo && (
-                      <div className="text-red-500 text-xs">{errors.selectedModelo}</div>
+                      <div className="text-red-500 text-xs">
+                        {errors.selectedModelo}
+                      </div>
                     )}
                   </div>
                 )}
               </>
             )}
-            {/* Comentario (opcional) */}
             <div className="mb-1">
               <span className="detalle-label">Comentario: </span>
               <textarea
@@ -615,7 +644,6 @@ function RegistroReparacion() {
                 <div className="text-red-500 text-xs">{errors.comentario}</div>
               )}
             </div>
-            {/* Servicio Extra y autocompletado */}
             <div className="mb-1 flex flex-col sm:flex-row gap-1 items-center">
               <div className="relative">
                 <span className="detalle-label">Añadir servicio: </span>
@@ -640,14 +668,19 @@ function RegistroReparacion() {
                   </div>
                 )}
                 {errors.serviciosExtra && (
-                  <div className="text-red-500 text-xs">{errors.serviciosExtra}</div>
+                  <div className="text-red-500 text-xs">
+                    {errors.serviciosExtra}
+                  </div>
                 )}
               </div>
-              <button type="button" className="btn-aceptar mt-5" onClick={handleAgregarServicio}>
+              <button
+                type="button"
+                className="btn-aceptar mt-5"
+                onClick={handleAgregarServicio}
+              >
                 Agregar
               </button>
             </div>
-            {/* Extra y ajuste de costo */}
             <div className="mb-1 flex flex-col sm:flex-row gap-1 items-center">
               <div>
                 <span className="detalle-label">Costo: </span>
@@ -663,20 +696,30 @@ function RegistroReparacion() {
                   placeholder="Extra"
                 />
               </div>
-              <button type="button" className="btn-aceptar mt-5" onClick={handleSumarExtra}>
+              <button
+                type="button"
+                className="btn-aceptar mt-5"
+                onClick={handleSumarExtra}
+              >
                 Sumar
               </button>
-              <button type="button" className="btn-cancelar mt-5" onClick={handleRestarExtra}>
+              <button
+                type="button"
+                className="btn-cancelar mt-5"
+                onClick={handleRestarExtra}
+              >
                 Restar
               </button>
             </div>
-            {/* Lista de servicios agregados */}
             {tempServices.length > 0 && (
               <div className="mb-1">
                 <span className="detalle-label">Servicios: </span>
                 <ul className="detalle-costo text-sm">
                   {tempServices.map((serv, idx) => (
-                    <li key={idx} className="grid grid-cols-[1fr_20px] items-center gap-1 px-2 rounded">
+                    <li
+                      key={idx}
+                      className="grid grid-cols-[1fr_20px] items-center gap-1 px-2 rounded"
+                    >
                       <span>{serv}</span>
                       <button
                         type="button"
@@ -689,7 +732,9 @@ function RegistroReparacion() {
                   ))}
                 </ul>
                 {errors.tempServices && (
-                  <div className="text-red-500 text-xs">{errors.tempServices}</div>
+                  <div className="text-red-500 text-xs">
+                    {errors.tempServices}
+                  </div>
                 )}
               </div>
             )}
@@ -698,20 +743,33 @@ function RegistroReparacion() {
               <span className="detalle-costo">{`$${tempCost}`}</span>
             </div>
             <div className="flex gap-2 justify-center">
-              <button type="button" className="btn-aceptar" onClick={handleSubmitExtra}>
+              <button
+                type="button"
+                className="btn-aceptar"
+                onClick={handleSubmitExtra}
+              >
                 Guardar
               </button>
-              <button type="button" className="btn-cancelar" onClick={handleCancelar}>
+              <button
+                type="button"
+                className="btn-cancelar"
+                onClick={handleCancelar}
+              >
                 Cancelar
               </button>
             </div>
           </form>
         </div>
-        {/* Modal de confirmación para Reparación Extra */}
         {showExtraConfirmation && (
           <ConfirmationModal
-            title={<span className="text-yellow-500">Confirmación de Registro de Reparación Extra</span>}
-            message={<>¿Está seguro de guardar el registro de reparación extra?</>}
+            title={
+              <span className="text-yellow-500">
+                Confirmación de Registro de Reparación Extra
+              </span>
+            }
+            message={
+              <>¿Está seguro de guardar el registro de reparación extra?</>
+            }
             onConfirm={() => {
               saveReparacion();
               setShowExtraConfirmation(false);

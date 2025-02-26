@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaUserLock, FaHome } from 'react-icons/fa'; 
+import { FaUserLock, FaHome } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 
 function Unauthorized() {
@@ -10,7 +10,8 @@ function Unauthorized() {
         <h1 className="erroresTitle">401</h1>
         <p className="erroresSubtitle">Acceso No Autorizado</p>
         <p className="erroresDescription">
-          No tienes permisos para acceder a esta página. Verifica tus credenciales o consulta con el administrador.
+          No tienes permisos para acceder a esta página. Verifica tus
+          credenciales o consulta con el administrador.
         </p>
         <Link to="/" className="btnerror">
           <FaHome className="mr-2" />

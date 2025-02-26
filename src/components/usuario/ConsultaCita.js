@@ -1,66 +1,66 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import Breadcrumbs from "../Breadcrumbs";
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import Breadcrumbs from '../Breadcrumbs';
 
 function Consulta_cita() {
   const staticBreadcrumbs = [
-    { name: "Inicio", link: "/" },
-    { name: "Consulta cita", link: "/consultacita" }
+    { name: 'Inicio', link: '/' },
+    { name: 'Consulta cita', link: '/consultacita' },
   ];
 
   const [citas, setCitas] = useState([
     {
       id: 1,
-      trabajador: "Pedro Cruz",
-      horario: "10:00 AM - 11:00 AM",
-      ubicacion: "Sucursal Centro",
-      servicio: "Cambio de aceite"
+      trabajador: 'Pedro Cruz',
+      horario: '10:00 AM - 11:00 AM',
+      ubicacion: 'Sucursal Centro',
+      servicio: 'Cambio de aceite',
     },
     {
       id: 2,
-      trabajador: "Juan Pérez",
-      horario: "12:00 PM - 01:00 PM",
-      ubicacion: "Sucursal Norte",
-      servicio: "Revisión de frenos"
+      trabajador: 'Juan Pérez',
+      horario: '12:00 PM - 01:00 PM',
+      ubicacion: 'Sucursal Norte',
+      servicio: 'Revisión de frenos',
     },
     {
       id: 3,
-      trabajador: "Jesus Lopéz",
-      horario: "02:00 PM - 3:00 PM",
-      ubicacion: "Sucursal Sur",
-      servicio: "Alineación y balanceo"
+      trabajador: 'Jesus Lopéz',
+      horario: '02:00 PM - 3:00 PM',
+      ubicacion: 'Sucursal Sur',
+      servicio: 'Alineación y balanceo',
     },
     {
       id: 4,
-      trabajador: "Juan Pérez",
-      horario: "03:30 PM - 04:30 PM",
-      ubicacion: "Sucursal Este",
-      servicio: "Cambio de batería"
+      trabajador: 'Juan Pérez',
+      horario: '03:30 PM - 04:30 PM',
+      ubicacion: 'Sucursal Este',
+      servicio: 'Cambio de batería',
     },
     {
       id: 5,
-      trabajador: "Juan Pérez",
-      horario: "05:00 PM - 06:00 PM",
-      ubicacion: "Sucursal Oeste",
-      servicio: "Revisión general"
-    }
+      trabajador: 'Juan Pérez',
+      horario: '05:00 PM - 06:00 PM',
+      ubicacion: 'Sucursal Oeste',
+      servicio: 'Revisión general',
+    },
   ]);
 
   const [selectedCita, setSelectedCita] = useState(null);
   // Estado de filtros avanzados: se inicia con un objeto vacío para mostrar la UI de filtros
-  const [filters, setFilters] = useState([{ type: "", value: "" }]);
-  const [searchQuery, setSearchQuery] = useState(""); // Búsqueda simple
+  const [filters, setFilters] = useState([{ type: '', value: '' }]);
+  const [searchQuery, setSearchQuery] = useState(''); // Búsqueda simple
 
   const navigate = useNavigate();
 
   // Genera los breadcrumbs combinando los fijos con aquellos derivados de filtros activos
   const getDynamicBreadcrumbs = () => {
     const activeFilters = filters.filter(
-      (filter) => filter.type && filter.value.trim() !== ""
+      (filter) => filter.type && filter.value.trim() !== ''
     );
     const filterBreadcrumbs = activeFilters.map((filter) => ({
       name: filter.type,
-      link: "#" // El link es ficticio; la acción se maneja en el onCrumbClick
+      link: '#', // El link es ficticio; la acción se maneja en el onCrumbClick
     }));
     return [...staticBreadcrumbs, ...filterBreadcrumbs];
   };
@@ -69,11 +69,11 @@ function Consulta_cita() {
   // - Si es un breadcrumb fijo ("Inicio" o "Consulta cita"), se reinician los filtros y la búsqueda.
   // - Si es un breadcrumb de filtro, se eliminan los filtros que vengan después del seleccionado.
   const handleBreadcrumbClick = (index) => {
-    console.log("Se hizo clic en el breadcrumb con índice:", index);
+    console.log('Se hizo clic en el breadcrumb con índice:', index);
     if (index < staticBreadcrumbs.length) {
       // Reinicia los filtros (dejándolos en estado inicial) y la búsqueda simple.
-      setFilters([{ type: "", value: "" }]);
-      setSearchQuery("");
+      setFilters([{ type: '', value: '' }]);
+      setSearchQuery('');
       navigate(staticBreadcrumbs[index].link);
     } else {
       // Índice relativo en el array de filtros activos:
@@ -84,18 +84,20 @@ function Consulta_cita() {
 
   // Funciones de navegación y acciones sobre las citas
   const handleAgregarCita = () => {
-    navigate("/agregarCita");
+    navigate('/agregarCita');
   };
 
   const handleCambiarCita = (id) => {
-    navigate(`/cambiarCita`);
+    navigate('/cambiarCita');
   };
 
   const handleCancelarCita = (id) => {
-    const confirmar = window.confirm("¿Estás seguro de que deseas cancelar esta cita?");
+    const confirmar = window.confirm(
+      '¿Estás seguro de que deseas cancelar esta cita?'
+    );
     if (confirmar) {
       setCitas(citas.filter((cita) => cita.id !== id));
-      alert("Cita cancelada con éxito.");
+      alert('Cita cancelada con éxito.');
       setSelectedCita(null);
     }
   };
@@ -113,9 +115,9 @@ function Consulta_cita() {
     const newFilters = [...filters];
     newFilters[index] = {
       ...newFilters[index],
-      [field]: value
+      [field]: value,
     };
-    if (field === "type") newFilters[index].value = ""; // Reinicia el valor si se cambia el tipo
+    if (field === 'type') newFilters[index].value = ''; // Reinicia el valor si se cambia el tipo
     setFilters(newFilters);
   };
 
@@ -124,9 +126,9 @@ function Consulta_cita() {
     if (
       filters.length < 3 &&
       filters[filters.length - 1].type &&
-      filters[filters.length - 1].value.trim() !== ""
+      filters[filters.length - 1].value.trim() !== ''
     ) {
-      setFilters([...filters, { type: "", value: "" }]);
+      setFilters([...filters, { type: '', value: '' }]);
     }
   };
 
@@ -134,21 +136,21 @@ function Consulta_cita() {
   const handleRemoveFilter = (index) => {
     const newFilters = filters.filter((_, i) => i !== index);
     // Si se elimina el último filtro y queda vacío, se vuelve a inicializar con un objeto vacío
-    if (newFilters.length === 0) newFilters.push({ type: "", value: "" });
+    if (newFilters.length === 0) newFilters.push({ type: '', value: '' });
     setFilters(newFilters);
   };
 
-  const availableFilterTypes = ["trabajador", "servicio", "ubicacion"];
+  const availableFilterTypes = ['trabajador', 'servicio', 'ubicacion'];
   const appliedFilterTypes = filters.map((filter) => filter.type);
 
   // Filtra las citas según la búsqueda simple y los filtros avanzados activos
   const filteredCitas = citas.filter((cita) => {
     return (
       // Búsqueda simple: se revisa cada valor de la cita
-      (searchQuery === "" ||
+      (searchQuery === '' ||
         Object.values(cita).some((value) => {
           return (
-            typeof value === "string" &&
+            typeof value === 'string' &&
             value.toLowerCase().includes(searchQuery.toLowerCase())
           );
         })) &&
@@ -186,7 +188,7 @@ function Consulta_cita() {
           {/* Área de búsqueda y filtros */}
           <div className="max-w-screen-lg mx-auto flex flex-wrap items-center justify-end gap-4 mb-8">
             {/* Se muestra la búsqueda simple cuando se tiene un único filtro sin valor */}
-            {filters.length === 1 && filters[0].value.trim() === "" && (
+            {filters.length === 1 && filters[0].value.trim() === '' && (
               <input
                 type="text"
                 placeholder="Buscar citas"
@@ -206,7 +208,7 @@ function Consulta_cita() {
                   <select
                     value={filter.type}
                     onChange={(e) =>
-                      handleFilterChange(index, "type", e.target.value)
+                      handleFilterChange(index, 'type', e.target.value)
                     }
                     className="form-input w-64"
                   >
@@ -214,7 +216,8 @@ function Consulta_cita() {
                     {availableFilterTypes
                       .filter(
                         (type) =>
-                          !appliedFilterTypes.includes(type) || type === filter.type
+                          !appliedFilterTypes.includes(type) ||
+                          type === filter.type
                       )
                       .map((type) => (
                         <option key={type} value={type}>
@@ -227,32 +230,36 @@ function Consulta_cita() {
                     <select
                       value={filter.value}
                       onChange={(e) =>
-                        handleFilterChange(index, "value", e.target.value)
+                        handleFilterChange(index, 'value', e.target.value)
                       }
                       className="form-input w-64"
                     >
                       <option value="">
-                        Selecciona{" "}
+                        Selecciona{' '}
                         {filter.type.charAt(0).toUpperCase() +
                           filter.type.slice(1)}
                       </option>
                       {(() => {
                         const optionsByFilter = {
-                          trabajador: ["Pedro Cruz", "Juan Pérez", "Jesus Lopéz"],
+                          trabajador: [
+                            'Pedro Cruz',
+                            'Juan Pérez',
+                            'Jesus Lopéz',
+                          ],
                           servicio: [
-                            "Cambio de aceite",
-                            "Revisión de frenos",
-                            "Alineación y balanceo",
-                            "Cambio de batería",
-                            "Revisión general"
+                            'Cambio de aceite',
+                            'Revisión de frenos',
+                            'Alineación y balanceo',
+                            'Cambio de batería',
+                            'Revisión general',
                           ],
                           ubicacion: [
-                            "Sucursal Centro",
-                            "Sucursal Norte",
-                            "Sucursal Sur",
-                            "Sucursal Este",
-                            "Sucursal Oeste"
-                          ]
+                            'Sucursal Centro',
+                            'Sucursal Norte',
+                            'Sucursal Sur',
+                            'Sucursal Este',
+                            'Sucursal Oeste',
+                          ],
                         };
                         return optionsByFilter[filter.type].map((opcion) => (
                           <option key={opcion} value={opcion}>
@@ -276,7 +283,7 @@ function Consulta_cita() {
 
               {filters.length < 3 &&
                 filters[filters.length - 1].type &&
-                filters[filters.length - 1].value.trim() !== "" && (
+                filters[filters.length - 1].value.trim() !== '' && (
                   <div className="w-full flex justify-end">
                     <button
                       onClick={handleAddFilter}
@@ -296,7 +303,9 @@ function Consulta_cita() {
                 <div className="service-card-content">
                   <h3 className="service-card-title">{cita.trabajador}</h3>
                   <p className="service-card-text">Horario: {cita.horario}</p>
-                  <p className="service-card-text">Ubicación: {cita.ubicacion}</p>
+                  <p className="service-card-text">
+                    Ubicación: {cita.ubicacion}
+                  </p>
                   <button
                     className="btn-blue"
                     onClick={() => handleVerDetalles(cita.id)}
@@ -314,7 +323,8 @@ function Consulta_cita() {
               <div className="detalle-content">
                 <h3 className="detalle-title">Detalles de la Cita</h3>
                 <p className="detalle-descripcion">
-                  <strong>Atención por el empleado:</strong> {selectedCita.trabajador}
+                  <strong>Atención por el empleado:</strong>{' '}
+                  {selectedCita.trabajador}
                 </p>
                 <p className="detalle-descripcion">
                   <strong>Horario:</strong> {selectedCita.horario}
@@ -338,7 +348,10 @@ function Consulta_cita() {
                   >
                     Cancelar Cita
                   </button>
-                  <button className="btn-cancelar" onClick={handleCerrarDetalles}>
+                  <button
+                    className="btn-cancelar"
+                    onClick={handleCerrarDetalles}
+                  >
                     Cerrar detalles
                   </button>
                 </div>

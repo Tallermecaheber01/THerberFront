@@ -1,18 +1,18 @@
-import React, { useState } from "react";
-import Breadcrumbs from "../Breadcrumbs";
-
-// Componente genérico de Modal de Confirmación
+import React, { useState } from 'react';
+import Breadcrumbs from '../Breadcrumbs';
 
 const ConfirmationModal = ({ title, message, onConfirm, onCancel }) => {
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50">
-      {/* Fondo semi-transparente que cierra el modal al hacer click */}
-      <div className="absolute inset-0 bg-black opacity-50" onClick={onCancel}></div>
+      <div
+        className="absolute inset-0 bg-black opacity-50"
+        onClick={onCancel}
+      ></div>
       <div className="bg-white p-6 rounded shadow-lg z-10 max-w-md w-full">
         <h2 className="text-yellow-500 font-bold mb-4">{title}</h2>
         <div className="mb-4">{message}</div>
         <div className="flex justify-end gap-2">
-        <button className="btn-aceptar" onClick={onConfirm}>
+          <button className="btn-aceptar" onClick={onConfirm}>
             Confirmar
           </button>
           <button className="btn-cancelar" onClick={onCancel}>
@@ -24,114 +24,105 @@ const ConfirmationModal = ({ title, message, onConfirm, onCancel }) => {
   );
 };
 
-
 function ConsultasReparaciones() {
-  // Breadcrumbs fijos para la navegación
   const staticBreadcrumbs = [
-    { name: "Inicio", link: "/" },
-    { name: "Reparaciones Realizadas", link: "/ConsultasReparaciones" }
+    { name: 'Inicio', link: '/' },
+    { name: 'Reparaciones Realizadas', link: '/ConsultasReparaciones' },
   ];
 
-  // Datos de ejemplo de reparaciones
   const [citas, setCitas] = useState([
     {
       id: 1,
-      cliente: "Juan Pérez",
-      servicio: "Cambio de aceite",
-      fecha: "2025-01-05",
-      hora: "10:00",
+      cliente: 'Juan Pérez',
+      servicio: 'Cambio de aceite',
+      fecha: '2025-01-05',
+      hora: '10:00',
       costo: 50,
-      marca: "Toyota",
-      modelo: "Corolla 2019",
-      comentario: ""
+      marca: 'Toyota',
+      modelo: 'Corolla 2019',
+      comentario: '',
     },
     {
       id: 2,
-      cliente: "María Gómez",
-      servicio: "Revisión general",
-      fecha: "2025-01-06",
-      hora: "12:00",
+      cliente: 'María Gómez',
+      servicio: 'Revisión general',
+      fecha: '2025-01-06',
+      hora: '12:00',
       costo: 75,
-      marca: "Honda",
-      modelo: "Civic 2018",
-      comentario: ""
+      marca: 'Honda',
+      modelo: 'Civic 2018',
+      comentario: '',
     },
     {
       id: 3,
-      cliente: "Carlos López",
-      servicio: "Cambio de llantas",
-      fecha: "2025-01-05",
-      hora: "14:00",
+      cliente: 'Carlos López',
+      servicio: 'Cambio de llantas',
+      fecha: '2025-01-05',
+      hora: '14:00',
       costo: 100,
-      marca: "Ford",
-      modelo: "Focus 2020",
-      comentario: ""
-    }
+      marca: 'Ford',
+      modelo: 'Focus 2020',
+      comentario: '',
+    },
   ]);
 
-  // Estados para la edición de reparación
   const [citaSeleccionada, setCitaSeleccionada] = useState(null);
-  const [comentario, setComentario] = useState("");
+  const [comentario, setComentario] = useState('');
   const [extra, setExtra] = useState(0);
   const [tempCost, setTempCost] = useState(0);
   const [tempServices, setTempServices] = useState([]);
-  const [serviciosExtra, setServiciosExtra] = useState("");
+  const [serviciosExtra, setServiciosExtra] = useState('');
   const [suggestions, setSuggestions] = useState([]);
-
-  // Estados para errores en validación
-  const [commentError, setCommentError] = useState("");
-  const [serviceError, setServiceError] = useState("");
-
-  // Estados para los modales de confirmación
+  const [commentError, setCommentError] = useState('');
+  const [serviceError, setServiceError] = useState('');
   const [isEditConfirmModalOpen, setIsEditConfirmModalOpen] = useState(false);
   const [pendingEditCita, setPendingEditCita] = useState(null);
   const [isSaveConfirmModalOpen, setIsSaveConfirmModalOpen] = useState(false);
-
-  // Estados para búsqueda y filtros avanzados
-  const [filters, setFilters] = useState([{ type: "", value: "" }]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const availableFilterTypes = ["cliente", "servicio", "marca", "modelo", "costo"];
-
-  // Lista de servicios permitidos para autocompletar
-  const allowedServices = [
-    "Cambio de aceite",
-    "Revisión general",
-    "Cambio de llantas",
-    "Afinación",
-    "Cambio de pastillas"
+  const [filters, setFilters] = useState([{ type: '', value: '' }]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const availableFilterTypes = [
+    'cliente',
+    'servicio',
+    'marca',
+    'modelo',
+    'costo',
   ];
 
-  // Función para sanitizar inputs (prevención básica)
+  const allowedServices = [
+    'Cambio de aceite',
+    'Revisión general',
+    'Cambio de llantas',
+    'Afinación',
+    'Cambio de pastillas',
+  ];
+
   const sanitizeInput = (str) => {
-    if (typeof str !== "string") return str;
-    return str.replace(/['";<>]/g, "");
+    if (typeof str !== 'string') return str;
+    return str.replace(/['";<>]/g, '');
   };
 
-  // VALIDACIÓN DEL COMENTARIO
   const handleCommentChange = (e) => {
     const value = e.target.value;
-    // Se detectan caracteres no permitidos: comillas, punto y coma, menor y mayor.
     const invalidChars = /[\'";<>]/;
     if (invalidChars.test(value)) {
-      setCommentError("El comentario contiene caracteres no permitidos.");
+      setCommentError('El comentario contiene caracteres no permitidos.');
     } else {
-      setCommentError("");
+      setCommentError('');
     }
     setComentario(value);
   };
 
-  // FUNCIONES PARA LA EDICIÓN
   const handleEditarReparacion = (cita) => {
     setCitaSeleccionada(cita);
-    setComentario(cita.comentario || "");
+    setComentario(cita.comentario || '');
     setExtra(0);
     setTempCost(cita.costo);
-    const serviciosIniciales = cita.servicio ? cita.servicio.split("\n") : [];
+    const serviciosIniciales = cita.servicio ? cita.servicio.split('\n') : [];
     setTempServices(serviciosIniciales);
-    setServiciosExtra("");
+    setServiciosExtra('');
     setSuggestions([]);
-    setCommentError("");
-    setServiceError("");
+    setCommentError('');
+    setServiceError('');
   };
 
   const confirmEditarReparacion = () => {
@@ -157,12 +148,11 @@ function ConsultasReparaciones() {
     setExtra(0);
   };
 
-  // MODIFICACIONES EN EL AGREGAR SERVICIO EXTRA
   const handleServicioExtraChange = (e) => {
     const inputValue = e.target.value;
-    setServiceError(""); // Limpia el error anterior
+    setServiceError(''); 
     setServiciosExtra(inputValue);
-    if (inputValue.trim() !== "") {
+    if (inputValue.trim() !== '') {
       const filtered = allowedServices.filter((service) =>
         service.toLowerCase().includes(inputValue.toLowerCase())
       );
@@ -179,19 +169,19 @@ function ConsultasReparaciones() {
 
   const handleAgregarServicio = () => {
     const serviceTrimmed = serviciosExtra.trim();
-    if (serviceTrimmed === "") return;
+    if (serviceTrimmed === '') return;
     if (!allowedServices.includes(serviceTrimmed)) {
-      setServiceError("El servicio ingresado no es válido.");
+      setServiceError('El servicio ingresado no es válido.');
       return;
     }
     if (tempServices.includes(serviceTrimmed)) {
-      setServiceError("El servicio ya ha sido agregado.");
+      setServiceError('El servicio ya ha sido agregado.');
       return;
     }
     setTempServices((prev) => [...prev, serviceTrimmed]);
-    setServiciosExtra("");
+    setServiciosExtra('');
     setSuggestions([]);
-    setServiceError("");
+    setServiceError('');
   };
 
   const handleQuitarServicio = (servicio) => {
@@ -200,16 +190,15 @@ function ConsultasReparaciones() {
 
   const handleGuardarReparacion = () => {
     if (!citaSeleccionada) return;
-    // Se sanitiza el comentario antes de guardar
     const sanitizedComentario = sanitizeInput(comentario);
     const sanitizedTempServices = tempServices.map((s) => sanitizeInput(s));
-    const serviciosFinales = sanitizedTempServices.join("\n");
+    const serviciosFinales = sanitizedTempServices.join('\n');
 
     const citaActualizada = {
       ...citaSeleccionada,
       comentario: sanitizedComentario,
       costo: tempCost,
-      servicio: serviciosFinales
+      servicio: serviciosFinales,
     };
 
     const nuevasCitas = citas.map((c) =>
@@ -221,14 +210,14 @@ function ConsultasReparaciones() {
 
   const cerrarFormulario = () => {
     setCitaSeleccionada(null);
-    setComentario("");
+    setComentario('');
     setExtra(0);
-    setServiciosExtra("");
+    setServiciosExtra('');
     setTempCost(0);
     setTempServices([]);
     setSuggestions([]);
-    setCommentError("");
-    setServiceError("");
+    setCommentError('');
+    setServiceError('');
   };
 
   const handleCancelar = (e) => {
@@ -236,10 +225,9 @@ function ConsultasReparaciones() {
     cerrarFormulario();
   };
 
-  // CONFIRMACIÓN AL GUARDAR
   const handleGuardarButtonClick = () => {
     if (tempServices.length === 0) {
-      setServiceError("Debe agregar al menos un servicio.");
+      setServiceError('Debe agregar al menos un servicio.');
       return;
     }
     setIsSaveConfirmModalOpen(true);
@@ -250,21 +238,23 @@ function ConsultasReparaciones() {
     setIsSaveConfirmModalOpen(false);
   };
 
-  // FILTROS Y BÚSQUEDA
   const normalizeStr = (str) =>
-    str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    str
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
 
   const getDynamicBreadcrumbs = () => {
     const activeFilters = filters.filter(
-      (filter) => filter.type.trim() !== "" && filter.value.trim() !== ""
+      (filter) => filter.type.trim() !== '' && filter.value.trim() !== ''
     );
     const filterBreadcrumbs = activeFilters.map((filter) => ({
       name:
         filter.type.charAt(0).toUpperCase() +
         filter.type.slice(1) +
-        ": " +
+        ': ' +
         filter.value,
-      link: "#"
+      link: '#',
     }));
     return [...staticBreadcrumbs, ...filterBreadcrumbs];
   };
@@ -273,8 +263,8 @@ function ConsultasReparaciones() {
 
   const handleBreadcrumbClick = (index) => {
     if (index < staticBreadcrumbs.length) {
-      setFilters([{ type: "", value: "" }]);
-      setSearchQuery("");
+      setFilters([{ type: '', value: '' }]);
+      setSearchQuery('');
     } else {
       const filterIndex = index - staticBreadcrumbs.length;
       setFilters(filters.slice(0, filterIndex + 1));
@@ -290,45 +280,49 @@ function ConsultasReparaciones() {
   const handleAddFilter = () => {
     if (
       filters.length < 3 &&
-      filters[filters.length - 1].type.trim() !== "" &&
-      filters[filters.length - 1].value.trim() !== ""
+      filters[filters.length - 1].type.trim() !== '' &&
+      filters[filters.length - 1].value.trim() !== ''
     ) {
-      setFilters([...filters, { type: "", value: "" }]);
+      setFilters([...filters, { type: '', value: '' }]);
     }
   };
 
   const handleRemoveFilter = (index) => {
     const newFilters = filters.filter((_, i) => i !== index);
-    if (newFilters.length === 0) newFilters.push({ type: "", value: "" });
+    if (newFilters.length === 0) newFilters.push({ type: '', value: '' });
     setFilters(newFilters);
   };
 
   const filteredCitas = citas.filter((cita) => {
     const matchesSearch =
-      searchQuery === "" ||
+      searchQuery === '' ||
       Object.values(cita).some((val) =>
         normalizeStr(String(val)).includes(normalizeStr(searchQuery))
       );
     const matchesAdvanced = filters.every((filter) => {
-      if (filter.type.trim() === "" || filter.value.trim() === "") return true;
+      if (filter.type.trim() === '' || filter.value.trim() === '') return true;
       const citaField = cita[filter.type.toLowerCase()];
       if (!citaField) return false;
-      return normalizeStr(String(citaField)).includes(normalizeStr(filter.value));
+      return normalizeStr(String(citaField)).includes(
+        normalizeStr(filter.value)
+      );
     });
     return matchesSearch && matchesAdvanced;
   });
 
   return (
     <div>
-      <Breadcrumbs paths={dynamicBreadcrumbs} onCrumbClick={handleBreadcrumbClick} />
+      <Breadcrumbs
+        paths={dynamicBreadcrumbs}
+        onCrumbClick={handleBreadcrumbClick}
+      />
       <div className="citasContainer">
         <form className="citasForm flex flex-col">
           <h1 className="form-title text-center">Reparaciones Realizadas</h1>
-          {/* Búsqueda y filtros */}
           <div className="w-full flex flex-col items-end mb-4 gap-4">
             {filters.length === 1 &&
-              filters[0].type.trim() === "" &&
-              filters[0].value.trim() === "" && (
+              filters[0].type.trim() === '' &&
+              filters[0].value.trim() === '' && (
                 <input
                   type="text"
                   placeholder="Buscar reparaciones"
@@ -343,7 +337,7 @@ function ConsultasReparaciones() {
                   <select
                     value={filter.type}
                     onChange={(e) =>
-                      handleFilterChange(index, "type", e.target.value)
+                      handleFilterChange(index, 'type', e.target.value)
                     }
                     className="form-input w-64 text-right"
                   >
@@ -351,7 +345,9 @@ function ConsultasReparaciones() {
                     {availableFilterTypes
                       .filter((type) => {
                         if (filter.type === type) return true;
-                        return !filters.some((f, i) => i !== index && f.type === type);
+                        return !filters.some(
+                          (f, i) => i !== index && f.type === type
+                        );
                       })
                       .map((type) => (
                         <option key={type} value={type}>
@@ -360,11 +356,13 @@ function ConsultasReparaciones() {
                       ))}
                   </select>
                   <input
-                    type={filter.type.toLowerCase() === "costo" ? "number" : "text"}
+                    type={
+                      filter.type.toLowerCase() === 'costo' ? 'number' : 'text'
+                    }
                     placeholder="Busqueda"
                     value={filter.value}
                     onChange={(e) =>
-                      handleFilterChange(index, "value", e.target.value)
+                      handleFilterChange(index, 'value', e.target.value)
                     }
                     className="form-input w-64 text-right"
                   />
@@ -380,8 +378,8 @@ function ConsultasReparaciones() {
                 </div>
               ))}
               {filters.length < 3 &&
-                filters[filters.length - 1].type.trim() !== "" &&
-                filters[filters.length - 1].value.trim() !== "" && (
+                filters[filters.length - 1].type.trim() !== '' &&
+                filters[filters.length - 1].value.trim() !== '' && (
                   <button
                     onClick={handleAddFilter}
                     className="button-yellow w-40"
@@ -392,13 +390,14 @@ function ConsultasReparaciones() {
                 )}
             </div>
           </div>
-
-          {/* Listado de reparaciones filtradas */}
           <div className="mt-8">
             {filteredCitas.length > 0 ? (
               <div className="cardCitas grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredCitas.map((cita) => (
-                  <div key={cita.id} className="reparacion-card p-4 rounded-md card-transition">
+                  <div
+                    key={cita.id}
+                    className="reparacion-card p-4 rounded-md card-transition"
+                  >
                     <div className="mb-1">
                       <span className="detalle-label">Cliente: </span>
                       <span className="detalle-costo">{cita.cliente}</span>
@@ -407,10 +406,10 @@ function ConsultasReparaciones() {
                       <span className="detalle-label">Servicio: </span>
                       <span className="detalle-costo">
                         {cita.servicio
-                          ? cita.servicio.split("\n").map((serv, idx) => (
-                              <div key={idx}>{serv}</div>
-                            ))
-                          : "N/A"}
+                          ? cita.servicio
+                              .split('\n')
+                              .map((serv, idx) => <div key={idx}>{serv}</div>)
+                          : 'N/A'}
                       </span>
                     </div>
                     <div className="mb-1">
@@ -458,15 +457,15 @@ function ConsultasReparaciones() {
               </p>
             )}
           </div>
-
-          {/* Formulario de edición (visible al seleccionar una reparación) */}
           {citaSeleccionada && (
             <div className="mt-8">
               <h2 className="cita-title text-center">Editar Reparación</h2>
               <div className="reparacion-card mb-4 p-4 rounded-md">
                 <div className="mb-1">
                   <span className="detalle-label">Costo Actual: </span>
-                  <span className="detalle-costo">${citaSeleccionada.costo}</span>
+                  <span className="detalle-costo">
+                    ${citaSeleccionada.costo}
+                  </span>
                 </div>
                 <div className="mb-1">
                   <span className="detalle-label">Comentario: </span>
@@ -487,15 +486,23 @@ function ConsultasReparaciones() {
                       type="number"
                       min="0"
                       className="form-input w-32 text-right"
-                      value={extra === 0 ? "" : extra}
+                      value={extra === 0 ? '' : extra}
                       onChange={(e) => setExtra(Number(e.target.value))}
                       placeholder="Extra"
                     />
                   </div>
-                  <button type="button" className="btn-aceptar mt-5" onClick={handleSumarExtra}>
+                  <button
+                    type="button"
+                    className="btn-aceptar mt-5"
+                    onClick={handleSumarExtra}
+                  >
                     Sumar
                   </button>
-                  <button type="button" className="btn-cancelar mt-5" onClick={handleRestarExtra}>
+                  <button
+                    type="button"
+                    className="btn-cancelar mt-5"
+                    onClick={handleRestarExtra}
+                  >
                     Restar
                   </button>
                 </div>
@@ -523,7 +530,11 @@ function ConsultasReparaciones() {
                       </div>
                     )}
                   </div>
-                  <button type="button" className="btn-aceptar mt-5" onClick={handleAgregarServicio}>
+                  <button
+                    type="button"
+                    className="btn-aceptar mt-5"
+                    onClick={handleAgregarServicio}
+                  >
                     Añadir Servicio
                   </button>
                 </div>
@@ -535,7 +546,10 @@ function ConsultasReparaciones() {
                     <span className="detalle-label">Servicios: </span>
                     <ul className="detalle-costo">
                       {tempServices.map((serv, idx) => (
-                        <li key={idx} className="grid grid-cols-[1fr_20px] items-center gap-1 px-2 rounded">
+                        <li
+                          key={idx}
+                          className="grid grid-cols-[1fr_20px] items-center gap-1 px-2 rounded"
+                        >
                           <span>{serv}</span>
                           <button
                             className="btn-cancelar text-xs flex justify-center items-center"
@@ -561,7 +575,11 @@ function ConsultasReparaciones() {
                 >
                   Guardar
                 </button>
-                <button type="button" className="btn-cancelar mt-2" onClick={handleCancelar}>
+                <button
+                  type="button"
+                  className="btn-cancelar mt-2"
+                  onClick={handleCancelar}
+                >
                   Cancelar
                 </button>
               </div>
@@ -569,8 +587,6 @@ function ConsultasReparaciones() {
           )}
         </form>
       </div>
-
-      {/* Modal de confirmación para editar reparación */}
       {isEditConfirmModalOpen && pendingEditCita && (
         <ConfirmationModal
           title="Confirmar Edición"
@@ -582,8 +598,6 @@ function ConsultasReparaciones() {
           }}
         />
       )}
-
-      {/* Modal de confirmación para guardar edición */}
       {isSaveConfirmModalOpen && (
         <ConfirmationModal
           title="Confirmar Guardado"
@@ -592,7 +606,6 @@ function ConsultasReparaciones() {
           onCancel={() => setIsSaveConfirmModalOpen(false)}
         />
       )}
-
     </div>
   );
 }
