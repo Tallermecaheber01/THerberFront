@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { FiXCircle, FiEye, FiEyeOff } from 'react-icons/fi';
+import { FiXCircle, FiEye, FiEyeOff, FiCheckCircle } from 'react-icons/fi';
 import { ToastContainer, toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import 'react-toastify/dist/ReactToastify.css';
@@ -13,7 +13,7 @@ function Registro() {
     { name: "Registro", link: "/registro" },
   ];
 
-  // Referencias para los valores de los campos del formulario.
+  // Referencias para campos de formulario
   const nombreReg = useRef(null);
   const apellidoPaternoReg = useRef(null);
   const apellidoMaternoReg = useRef(null);
@@ -22,12 +22,25 @@ function Registro() {
   const contrasenaReg = useRef(null);
   const confirmacionContrasenaReg = useRef(null);
 
-  // Estados para manejar errores y visibilidad de las contraseñas.
+  // Estados
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // Validación de cada campo del formulario según el tipo de dato.
+  // Para mostrar/ocultar el bloque de requisitos de contraseña
+  const [showRequirements, setShowRequirements] = useState(false);
+
+  // Estados para checks de la contraseña
+  const [passwordChecks, setPasswordChecks] = useState({
+    minLength: false,
+    upperCase: false,
+    lowerCase: false,
+    number: false,
+    specialChar: false,
+    noSequence: false,
+  });
+
+  // Función genérica para validar un campo (sin la barra de fortaleza)
   const validateInput = (name, value) => {
     switch (name) {
       case 'nombre':
@@ -47,11 +60,6 @@ function Registro() {
           return 'Solo valores numéricos (10 dígitos)';
         }
         break;
-      case 'contrasena':
-        if (!/^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,20}$/.test(value)) {
-          return 'Debe tener 8-20 caracteres, un símbolo, mayúscula y número.';
-        }
-        break;
       case 'confirmacionContrasena':
         if (value !== contrasenaReg.current.value) {
           return 'Las contraseñas no coinciden.';
@@ -63,48 +71,50 @@ function Registro() {
     return '';
   };
 
-  // Validación dinámica de la contraseña
-  const validContra = (value) => {
-    const errors = [];
-    if (value.length < 8 || value.length > 20) {
-      errors.push('La contraseña debe tener entre 8 y 20 caracteres.');
-    }
-    else if (!/[A-Z]/.test(value)) {
-      errors.push('Debe contener al menos una mayúscula.');
-    }
-    if (!/[a-z]/.test(value)) {
-      errors.push('Debe contener al menos una minúscula.');
-    }
-    if (!/[0-9]/.test(value)) {
-      errors.push('Debe contener al menos un número.');
-    }
-    if (!/[!@#$%^&*]/.test(value)) {
-      errors.push('Debe contener al menos un símbolo (!@#$%^&*).');
-    }
-    return errors;
+  /**
+   * Verifica cada requisito individualmente y devuelve un objeto con booleans
+   */
+  const getPasswordChecks = (password) => {
+    return {
+      minLength: password.length >= 8 && password.length <= 20,
+      upperCase: /[A-Z]/.test(password),
+      lowerCase: /[a-z]/.test(password),
+      number: /\d/.test(password),
+      specialChar: /[!@#$%^&*]/.test(password),
+      noSequence: !/(12345|abcd)/.test(password),
+    };
   };
 
-
-  // Maneja la validación de los campos al perder el foco.
+  // Maneja la validación al perder el foco
   const handleBlur = (e) => {
     const { name, value } = e.target;
     const error = validateInput(name, value.trim());
     setErrors((prev) => ({ ...prev, [name]: error }));
   };
 
-  // Maneja la validación de los campos mientras se escribe.
+  // Maneja la validación mientras se escribe
   const handleChange = (e) => {
     const { name, value } = e.target;
+
     if (name === 'contrasena') {
-      const passwordErrors = validContra(value);
-      setErrors((prev) => ({ ...prev, [name]: passwordErrors.join(' ') }));
-    } else if (name === 'correo') {
+      // Muestra el bloque de requisitos en cuanto se empieza a escribir
+      if (!showRequirements && value.length > 0) {
+        setShowRequirements(true);
+      }
+
+      // Obtenemos checks y los guardamos en el estado
+      const checks = getPasswordChecks(value);
+      setPasswordChecks(checks);
+    }
+
+    // Validación en tiempo real para el correo (si lo deseas)
+    if (name === 'correo') {
       const error = validateInput(name, value.trim());
       setErrors((prev) => ({ ...prev, [name]: error }));
     }
   };
 
-  // Limpia todos los campos y errores del formulario.
+  // Limpia los campos
   const handleCancelar = () => {
     nombreReg.current.value = '';
     apellidoPaternoReg.current.value = '';
@@ -114,9 +124,18 @@ function Registro() {
     contrasenaReg.current.value = '';
     confirmacionContrasenaReg.current.value = '';
     setErrors({});
+    setShowRequirements(false);
+    setPasswordChecks({
+      minLength: false,
+      upperCase: false,
+      lowerCase: false,
+      number: false,
+      specialChar: false,
+      noSequence: false,
+    });
   };
 
-  // Alterna la visibilidad de las contraseñas.
+  // Alterna la visibilidad de la contraseña
   const togglePasswordVisibility = (type) => {
     if (type === 'password') {
       setShowPassword(!showPassword);
@@ -125,23 +144,34 @@ function Registro() {
     }
   };
 
-  // Maneja el envío del formulario.
+  // Maneja el envío del formulario
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validación previa de todos los campos.
-    const errors = {};
-    ['nombre', 'apellidoPaterno', 'apellidoMaterno', 'correo', 'telefono', 'contrasena', 'confirmacionContrasena'].forEach((field) => {
-      const error = validateInput(field, eval(`${field}Reg.current.value`));
-      if (error) errors[field] = error;
+    // Validación previa de todos los campos
+    const fields = [
+      'nombre',
+      'apellidoPaterno',
+      'apellidoMaterno',
+      'correo',
+      'telefono',
+      'contrasena',
+      'confirmacionContrasena',
+    ];
+
+    const newErrors = {};
+    fields.forEach((field) => {
+      const value = eval(`${field}Reg.current.value`);
+      const error = validateInput(field, value);
+      if (error) newErrors[field] = error;
     });
 
-    if (Object.keys(errors).length > 0) {
-      setErrors(errors); // Actualiza los errores si hay alguno.
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
 
-    // Datos del usuario para el registro
+    // Datos del usuario
     const userData = {
       nombre: nombreReg.current.value,
       apellido_paterno: apellidoPaternoReg.current.value,
@@ -152,22 +182,25 @@ function Registro() {
     };
 
     try {
-      // Enviar el código de verificación
+      // Enviar código de verificación
       await sendVerificationCode2(userData.correo);
       toast.success("¡Código de verificación enviado!");
 
       setTimeout(() => {
         navigate('/validacioncuenta', { state: { userData } });
-      }, 5000);
+      }, 3000);
 
     } catch (error) {
-      //navigate('/ValidacionCuenta', { state: { userData } });
       toast.error("Error al registrar cuenta", {
         position: "top-right",
         autoClose: 3000,
       });
     }
   };
+
+  // Calcula si se han cumplido todos los requisitos
+  const totalChecks = Object.values(passwordChecks).filter(Boolean).length;
+  const allChecksSatisfied = totalChecks === 6;
 
   return (
     <div>
@@ -186,8 +219,12 @@ function Registro() {
                   id={field}
                   name={field}
                   placeholder={`Ingresa tu ${field}`}
-                  className={`form-input`}
-                  ref={{ nombre: nombreReg, apellidoPaterno: apellidoPaternoReg, apellidoMaterno: apellidoMaternoReg }[field]}
+                  className="form-input"
+                  ref={{
+                    nombre: nombreReg,
+                    apellidoPaterno: apellidoPaternoReg,
+                    apellidoMaterno: apellidoMaternoReg,
+                  }[field]}
                   onBlur={handleBlur}
                 />
                 {errors[field] && (
@@ -198,6 +235,7 @@ function Registro() {
                 )}
               </div>
             ))}
+
             <div className="form-group">
               <label htmlFor="correo" className="form-label">Correo Electrónico</label>
               <input
@@ -205,10 +243,10 @@ function Registro() {
                 id="correo"
                 name="correo"
                 placeholder="Ingresa tu correo"
-                className={`form-input`}
+                className="form-input"
                 ref={correoReg}
                 onBlur={handleBlur}
-                onChange={handleChange} // Validación dinámica
+                onChange={handleChange}
               />
               {errors.correo && (
                 <p className="textError">
@@ -217,6 +255,7 @@ function Registro() {
                 </p>
               )}
             </div>
+
             <div className="form-group">
               <label htmlFor="telefono" className="form-label">Teléfono</label>
               <input
@@ -224,7 +263,7 @@ function Registro() {
                 id="telefono"
                 name="telefono"
                 placeholder="Ingresa tu número de teléfono"
-                className={`form-input`}
+                className="form-input"
                 ref={telefonoReg}
                 onBlur={handleBlur}
               />
@@ -235,6 +274,8 @@ function Registro() {
                 </p>
               )}
             </div>
+
+            {/* CONTRASEÑA */}
             <div className="form-group relative">
               <label htmlFor="contrasena" className="form-label">Contraseña</label>
               <input
@@ -242,10 +283,10 @@ function Registro() {
                 id="contrasena"
                 name="contrasena"
                 placeholder="Ingresa tu contraseña"
-                className={`form-input`}
+                className="form-input"
                 ref={contrasenaReg}
                 onBlur={handleBlur}
-                onChange={handleChange} // Validación dinámica
+                onChange={handleChange}
               />
               <button
                 type="button"
@@ -260,7 +301,66 @@ function Registro() {
                   {errors.contrasena}
                 </p>
               )}
+
+              {/* Lista de requisitos: se muestra si el usuario comenzó a escribir y
+                  todavía NO se cumplen todos los requisitos */}
+             {showRequirements && !allChecksSatisfied && (
+              <div className="requirements-list">
+                <ul className="list-none p-0 m-0">
+                  <li className="flex items-center gap-2">
+                    {passwordChecks.minLength ? (
+                      <FiCheckCircle className='iconoCorrect'/>
+                    ) : (
+                      <FiXCircle className="iconoError" />
+                    )}
+                    <span className="white-text">Mínimo 8 caracteres (máx. 20)</span>
+                  </li>
+                  <li className="flex items-center gap-2 ">
+                    {passwordChecks.upperCase ? (
+                      <FiCheckCircle className='iconoCorrect'/>
+                    ) : (
+                      <FiXCircle className="iconoError" />
+                    )}
+                    <span className="white-text">Al menos una mayúscula</span>
+                  </li>
+                  <li className="flex items-center gap-2 ">
+                    {passwordChecks.lowerCase ? (
+                      <FiCheckCircle className='iconoCorrect'/>
+                    ) : (
+                      <FiXCircle className="iconoError" />
+                    )}
+                    <span className="white-text">Al menos una minúscula</span>
+                  </li>
+                  <li className="flex items-center gap-2 ">
+                    {passwordChecks.number ? (
+                      <FiCheckCircle className='iconoCorrect'/>
+                    ) : (
+                      <FiXCircle className="iconoError" />
+                    )}
+                    <span className="white-text">Al menos un número</span>
+                  </li>
+                  <li className="flex items-center gap-2 ">
+                    {passwordChecks.specialChar ? (
+                      <FiCheckCircle className='iconoCorrect'/>
+                    ) : (
+                      <FiXCircle className="iconoError" />
+                    )}
+                    <span className="white-text">Al menos un carácter especial (!@#$%^&*)</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    {passwordChecks.noSequence ? (
+                      <FiCheckCircle className='iconoCorrect'/>
+                    ) : (
+                      <FiXCircle className="iconoError" />
+                    )}
+                    <span className="white-text">Sin secuencias obvias como "12345" o "abcd"</span>
+                  </li>
+                </ul>
+              </div>
+            )}
             </div>
+
+            {/* CONFIRMAR CONTRASEÑA */}
             <div className="form-group relative">
               <label htmlFor="confirmacionContrasena" className="form-label">Confirmar Contraseña</label>
               <input
@@ -268,7 +368,7 @@ function Registro() {
                 id="confirmacionContrasena"
                 name="confirmacionContrasena"
                 placeholder="Confirma tu contraseña"
-                className={`form-input`}
+                className="form-input"
                 ref={confirmacionContrasenaReg}
                 onBlur={handleBlur}
               />
@@ -286,6 +386,7 @@ function Registro() {
                 </p>
               )}
             </div>
+
             <div className="form-group flex gap-4 mt-4">
               <button type="submit" className="btn-aceptar">Aceptar</button>
               <button type="button" className="btn-cancelar" onClick={handleCancelar}>Cancelar</button>

@@ -24,7 +24,6 @@ function ValidacionCuenta() {
     try {
       // Validar el código de verificación
       const response = await verifyCode2(userData.correo, verificationCode);
-      console.log('Respuesta de la API:', response);
       await registerUser(userData);
       toast.success("¡Usuario Registrado correctamente!");
       setTimeout(() => {

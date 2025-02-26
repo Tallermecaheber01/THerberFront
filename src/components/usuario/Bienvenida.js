@@ -22,7 +22,6 @@ function Bienvenida() {
   useEffect(() => {
     const token = getTokenFromCookies(); // Obtener el token desde la cookie
     if (!token) {
-      console.log('No se encontró token de autenticación, prueba otra vez');
       navigate('/login'); // Redirige al inicio de sesión si no hay token
       return;
     }
@@ -30,7 +29,6 @@ function Bienvenida() {
     try {
       // Decodificar el token JWT
       const decodedToken = jwtDecode(token);
-      console.log('Contenido del token:', decodedToken);
 
       // Extraer el id del usuario desde el token
       const { userId } = decodedToken;
@@ -41,20 +39,15 @@ function Bienvenida() {
           if (data) {
             setUsuario(data);
             setLoading(false);
-            console.log(data);
-
             getRole(userId).then((role)=>{
               setRol(role);
-              console.log('Rol del usuario:',role)
             })
           }
         })
         .catch((error) => {
-          console.error('Error al obtener la información del usuario:', error);
           setLoading(false);
         });
     } catch (error) {
-      console.error('Error al decodificar el token:', error);
       setLoading(false);
     }
   }, [navigate]);
@@ -79,7 +72,6 @@ function Bienvenida() {
 
             <div className="">
               <h2 className="detalle-descripcion">Información del Usuario</h2>
-              <p className='detalle-descripcion'><strong>Rol:</strong> {usuario.rol}</p>
               <p className='detalle-descripcion'><strong>Nombre:</strong> {usuario.nombre}</p>
               <p className='detalle-descripcion'><strong>Apellido Paterno:</strong> {usuario.apellido_paterno}</p>
               <p className='detalle-descripcion'><strong>Apellido Materno:</strong> {usuario.apellido_materno}</p>

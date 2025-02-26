@@ -208,6 +208,10 @@
       @apply text-white dark:text-gray-300 text-lg mb-4;
     }
 
+    .white-text {
+      @apply text-gray-300 mb-4;
+    }
+
     .detalle-costo, .detalle-duracion {
       @apply text-white dark:text-gray-300 text-lg mb-2;
     }
@@ -378,5 +382,8 @@
     }
     .iconoVer{
       @apply w-5 h-5 text-gray-600;
+    }
+    .iconoCorrect{
+      @apply w-5 h-5 mr-2 text-green-500;
     }
   }
