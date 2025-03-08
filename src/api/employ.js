@@ -10,19 +10,19 @@ const handleError = (error, functionName) => {
 };
 
 export const createNewAppointment = async (appointmentData) => {
-  try {
-    const response = await api.post('/employ/new-appointment', appointmentData);
-    return response.data;
-  } catch (error) {
-    return handleError(error, 'createNewAppointment');
-  }
-};
+    try {
+        const response = await api.post('/employ/new-appointment', appointmentData);
+        return response.data;
+    } catch (error) {
+        return handleError(error, 'createNewAppointment')
+    }
+}
 
 export const getAllAppointments = async () => {
-  try {
-    const response = await api.get('employ/all-appointmens');
-    return response.data;
-  } catch (error) {
-    return handleError(error, 'getAllApointments');
-  }
-};
+    try {
+        const response = await api.get('employ/all-appointmens');
+        return response.data
+    } catch (error) {
+        return handleError(error,'getAllApointments');
+    }
+}

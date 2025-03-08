@@ -108,6 +108,12 @@ export const getAllBrands = async () => {
 };
 
 export const deleteService = async (id) => {
+    try {
+        const response = await api.delete(`/admin/delete-service/${id}`);
+        return response.data;
+    } catch (error) {
+        return handleError(error, 'deleteService');
+    }
   try {
     const response = await api.delete(`/admin/delete-service/${id}`);
     return response.data; // Devuelve la respuesta del backend

@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
-import Breadcrumbs from '../Breadcrumbs';
+import React, { useEffect, useState } from 'react';
+import { createNewAppointment, getAllUsersClient, getAllEmployees, getAllServices } from '../../api/employ';
+import Breadcrumbs from "../Breadcrumbs";
 
 function AsignacionCita() {
+  // Datos fijos
   const [clientes] = useState([
     {
       id: 1,
@@ -47,10 +49,10 @@ function AsignacionCita() {
   ];
 
   const [busquedaCliente, setBusquedaCliente] = useState('');
-  const clientesFiltrados = clientes.filter(
+  const clientesFiltrados = usersClient.filter(
     (cliente) =>
-      cliente.nombre.toLowerCase().includes(busquedaCliente.toLowerCase()) ||
-      cliente.id.toString().includes(busquedaCliente)
+      cliente.user_nombre.toLowerCase().includes(busquedaCliente.toLowerCase()) ||
+      cliente.user_id.toString().includes(busquedaCliente)
   );
   const [clienteSeleccionado, setClienteSeleccionado] = useState(null);
   const [selectedMarca, setSelectedMarca] = useState('');
@@ -58,6 +60,8 @@ function AsignacionCita() {
   const [busquedaServicio, setBusquedaServicio] = useState('');
   const [servicioCosto, setServicioCosto] = useState('');
   const [serviciosSeleccionados, setServiciosSeleccionados] = useState([]);
+  
+  // Estados para el formulario de cita
   const [empleadoSeleccionado, setEmpleadoSeleccionado] = useState('');
   const [fecha, setFecha] = useState('');
   const [hora, setHora] = useState('');
@@ -86,7 +90,7 @@ function AsignacionCita() {
     if (!isInputSecure(busquedaServicio)) {
       return;
     }
-    const servicioValido = serviciosDisponibles.find(
+    const servicioValido = service.find(
       (s) => s.nombre.toLowerCase() === busquedaServicio.toLowerCase()
     );
     if (!servicioValido) {
@@ -181,19 +185,12 @@ function AsignacionCita() {
 
   const validateAsignacion = () => {
     const errors = {};
-    if (!clienteSeleccionado) errors.cliente = 'Debe seleccionar un cliente.';
-    if (
-      clienteSeleccionado &&
-      clienteSeleccionado.cars &&
-      clienteSeleccionado.cars.length > 0
-    ) {
-      if (!selectedMarca) errors.marca = 'Debe seleccionar la marca del auto.';
+    if (!clienteSeleccionado) errors.cliente = "Debe seleccionar un cliente.";
+    if (clienteSeleccionado && clienteSeleccionado.cars && clienteSeleccionado.cars.length > 0) {
+      if (!selectedMarca) errors.marca = "Debe seleccionar la marca del auto.";
       if (selectedMarca) {
-        const car = clienteSeleccionado.cars.find(
-          (car) => car.marca === selectedMarca
-        );
-        if (car && !selectedModelo)
-          errors.modelo = 'Debe seleccionar un modelo.';
+        const car = clienteSeleccionado.cars.find((car) => car.marca === selectedMarca);
+        if (car && !selectedModelo) errors.modelo = "Debe seleccionar un modelo.";
       }
     }
     if (!empleadoSeleccionado)
@@ -221,6 +218,7 @@ function AsignacionCita() {
     setShowConfirmAssignModal(true);
   };
 
+  
   const confirmAsignacion = () => {
     limpiarCampos();
     setShowConfirmAssignModal(false);
@@ -255,11 +253,11 @@ function AsignacionCita() {
                 busquedaCliente &&
                 clientesFiltrados.map((cliente) => (
                   <div
-                    key={cliente.id}
+                    key={cliente.user_id}
                     className="cursorPoint"
                     onClick={() => handleSeleccionarCliente(cliente)}
                   >
-                    {cliente.nombre} (ID: {cliente.id})
+                    {cliente.user_nombre} (ID: {cliente.user_id})
                   </div>
                 ))}
               {formErrors.cliente && !clienteSeleccionado && (
@@ -270,7 +268,7 @@ function AsignacionCita() {
               {clienteSeleccionado && (
                 <div>
                   <span className="cita-subtitle">
-                    Cliente Seleccionado: {clienteSeleccionado.nombre}
+                    Cliente Seleccionado: {clienteSeleccionado.user_nombre}
                   </span>
                   <div className="mt-2">
                     <button
@@ -286,6 +284,8 @@ function AsignacionCita() {
                 </div>
               )}
             </div>
+
+            {/* Selección de auto */}
             {clienteSeleccionado && clienteSeleccionado.cars && (
               <>
                 <div className="form-group">
@@ -302,9 +302,9 @@ function AsignacionCita() {
                     }}
                   >
                     <option value="">Selecciona una marca</option>
-                    {clienteSeleccionado.cars.map((car) => (
-                      <option key={car.marca} value={car.marca}>
-                        {car.marca}
+                    {clienteSeleccionado.vehicles.map((vehiculoGrupo) => (
+                      <option key={vehiculoGrupo.vehicle_marca} value={vehiculoGrupo.vehicle_marca}>
+                        {vehiculoGrupo.vehicle_marca}
                       </option>
                     ))}
                   </select>
@@ -314,6 +314,7 @@ function AsignacionCita() {
                     </p>
                   )}
                 </div>
+
                 {selectedMarca && (
                   <div className="form-group">
                     <label htmlFor="modeloSelect" className="form-label">
@@ -326,11 +327,11 @@ function AsignacionCita() {
                       onChange={(e) => setSelectedModelo(e.target.value)}
                     >
                       <option value="">Selecciona un modelo</option>
-                      {clienteSeleccionado.cars
-                        .find((car) => car.marca === selectedMarca)
-                        .modelos.map((modelo, index) => (
-                          <option key={index} value={modelo}>
-                            {modelo}
+                      {clienteSeleccionado.vehicles
+                        .find((vehiculoGrupo) => vehiculoGrupo.vehicle_marca === selectedMarca)
+                        ?.modelos.map((modelo, index) => (
+                          <option key={index} value={modelo.vehicle_modelo}>
+                            {modelo.vehicle_modelo}
                           </option>
                         ))}
                     </select>
@@ -343,6 +344,8 @@ function AsignacionCita() {
                 )}
               </>
             )}
+
+            {/* Selección de empleado, fecha y hora */}
             <div className="form-group">
               <label htmlFor="empleado" className="form-label">
                 Empleado
@@ -355,7 +358,7 @@ function AsignacionCita() {
                 disabled={!clienteSeleccionado}
               >
                 <option value="">Seleccione un empleado</option>
-                {empleados.map((empleado) => (
+                {employ.map((empleado) => (
                   <option key={empleado.id} value={empleado.nombre}>
                     {empleado.nombre}
                   </option>
@@ -412,7 +415,7 @@ function AsignacionCita() {
                 disabled={!clienteSeleccionado}
               />
               {busquedaServicio &&
-                serviciosDisponibles
+                service
                   .filter((servicio) =>
                     servicio.nombre
                       .toLowerCase()
