@@ -1,12 +1,12 @@
 import api from './axios';
 
 const handleError = (error, functionName) => {
-  console.error(
-    `Error en ${functionName}:`,
-    error.response?.data || error.message
-  );
-  alert(error.response?.data?.message || 'Ocurrio un error inesperado.');
-  return { success: false, error: error.response?.data || error.message };
+    console.error(
+        `Error en ${functionName}:`,
+        error.response?.data || error.message
+    );
+    alert(error.response?.data?.message || 'Ocurrio un error inesperado.');
+    return { success: false, error: error.response?.data || error.message };
 };
 
 export const createNewAppointment = async (appointmentData) => {
@@ -18,42 +18,40 @@ export const createNewAppointment = async (appointmentData) => {
     }
 }
 
-export const getAllAppointments = async () => {
+
+export const getAppointmentsWithServices = async () => {
     try {
-        const response = await api.get('employ/all-appointmens');
+        const response = await api.get('employ/appointments/full');
         return response.data
     } catch (error) {
-        return handleError(error,'getAllApointments');
+        return handleError(error, 'getAllAppointmentsWithServices');
     }
-<<<<<<< HEAD
-}
-=======
 };
+
+export const getAllUsersClient = async () => {
+    try {
+        const response = await api.get('employ/with-vehicles');
+        return response.data
+    } catch (error) {
+        return handleError(error, 'getAllUsersClient');
+    }
+}
 
 export const getAllEmployees = async () => {
     try {
-        const response = await api.get('/employ/employees');
-        return response.data;
+        const response = await api.get('employ/employees');
+        return response.data
     } catch (error) {
-        return handleError(error, 'getAllEmployees')
+        return handleError(error, 'getAllEmployees');
     }
-};
+}
 
 export const getAllServices = async () => {
     try {
-        const response = await api.get('/employ/services');
-        return response.data;
+        const response = await api.get('employ/services');
+        return response.data
     } catch (error) {
         return handleError(error, 'getAllServices');
     }
 }
 
-export const getAppointmentsWithServices = async () => {
-    try {
-        const response = await api.get('/employ/appointments/full');
-        return response.data;
-    } catch (error) {
-        return handleError(error,'getAppointmentsWithServices')
-    }
-}
->>>>>>> 50ecb (Consulta citas y asignar cita)

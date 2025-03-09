@@ -3,6 +3,31 @@ import { createNewAppointment, getAllUsersClient, getAllEmployees, getAllService
 import Breadcrumbs from "../Breadcrumbs";
 
 function AsignacionCita() {
+
+  const [usersClient, setUserClient] = useState([]);
+  const [service, setService] = useState([]);
+  const [employ, setEmploy] = useState([]);
+
+  const fetchData = async () => {
+    try {
+      // Llamadas a las APIs para obtener los datos
+      const usersResponse = await getAllUsersClient();
+      const servicesResponse = await getAllServices();
+      const employeesResponse = await getAllEmployees();
+
+      // Aquí actualizas los estados con los datos obtenidos
+      setUserClient(usersResponse);
+      setService(servicesResponse);
+      setEmploy(employeesResponse);
+    } catch (error) {
+      console.error("Error al obtener los datos:", error);
+    }
+  };
+
+  // Ejecutar la función fetchData cuando el componente se monta
+  useEffect(() => {
+    fetchData();
+  }, []); // El array vacío asegura que solo se ejecute una vez cuando el componente se monta
   // Datos fijos
   const [clientes] = useState([
     {
@@ -60,7 +85,7 @@ function AsignacionCita() {
   const [busquedaServicio, setBusquedaServicio] = useState('');
   const [servicioCosto, setServicioCosto] = useState('');
   const [serviciosSeleccionados, setServiciosSeleccionados] = useState([]);
-  
+
   // Estados para el formulario de cita
   const [empleadoSeleccionado, setEmpleadoSeleccionado] = useState('');
   const [fecha, setFecha] = useState('');
