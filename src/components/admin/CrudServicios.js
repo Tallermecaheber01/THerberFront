@@ -102,53 +102,53 @@ function CrudServicios() {
     }
   };
 
-// Efecto para buscar modelos
-useEffect(() => {
-  const fetchModelos = async () => {
-    // Verificar que la marca seleccionada exista en la BD
-    const brandExists = brands.some(
-      (brand) =>
-        brand.nombre.toLowerCase() === selectedMarcaModelos.toLowerCase()
-    );
-    if (selectedMarcaModelos && brandExists) {
-      try {
-        const response = await axios.get(
-          `https://vpic.nhtsa.dot.gov/api/vehicles/getmodelsformake/${selectedMarcaModelos}?format=json`
-        );
-        const modelosData = response.data.Results.map(
-          (item) => item.Model_Name
-        );
-        setModelos(modelosData);
-      } catch (error) {
-        console.error('Error fetching modelos:', error);
+  // Efecto para buscar modelos
+  useEffect(() => {
+    const fetchModelos = async () => {
+      // Verificar que la marca seleccionada exista en la BD
+      const brandExists = brands.some(
+        (brand) =>
+          brand.nombre.toLowerCase() === selectedMarcaModelos.toLowerCase()
+      );
+      if (selectedMarcaModelos && brandExists) {
+        try {
+          const response = await axios.get(
+            `https://vpic.nhtsa.dot.gov/api/vehicles/getmodelsformake/${selectedMarcaModelos}?format=json`
+          );
+          const modelosData = response.data.Results.map(
+            (item) => item.Model_Name
+          );
+          setModelos(modelosData);
+        } catch (error) {
+          console.error('Error fetching modelos:', error);
+        }
       }
-    }
-  };
+    };
 
-  const delayDebounce = setTimeout(() => {
-    if (selectedMarcaModelos) {
-      fetchModelos();
-    }
-  }, 500);
+    const delayDebounce = setTimeout(() => {
+      if (selectedMarcaModelos) {
+        fetchModelos();
+      }
+    }, 500);
 
-  return () => clearTimeout(delayDebounce);
-}, [selectedMarcaModelos, modeloSearch, brands]);
-
+    return () => clearTimeout(delayDebounce);
+  }, [selectedMarcaModelos, modeloSearch, brands]);
 
 
 
-useEffect(() => {
-  const handleClickOutside = (event) => {
-    if (modelosRef.current && !modelosRef.current.contains(event.target)) {
-      setShowModeloDropdown(false);
-    }
-  };
-  
-  document.addEventListener('mousedown', handleClickOutside);
-  return () => {
-    document.removeEventListener('mousedown', handleClickOutside);
-  };
-}, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (modelosRef.current && !modelosRef.current.contains(event.target)) {
+        setShowModeloDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
 
 
@@ -210,28 +210,28 @@ useEffect(() => {
   };
 
   const agregarTipoVehiculoAPI = async (newTipo) => {
-  if (!isValidInput(newTipo)) {
-    setFormErrors(prev => ({
-      ...prev,
-      newTipo: 'Caracteres no permitidos'
-    }));
-    return;
-  }
+    if (!isValidInput(newTipo)) {
+      setFormErrors(prev => ({
+        ...prev,
+        newTipo: 'Caracteres no permitidos'
+      }));
+      return;
+    }
 
-  try {
-    await createVehicleType({ nombre: newTipo.trim() });
-    const vehiclesData = await getAllVehicleTypes();
-    setVehicleTypes(vehiclesData);
-    setNewTipo('');
-    setFormErrors(prev => ({ ...prev, newTipo: '' }));
-  } catch (error) {
-    console.error('Error al crear tipo de vehículo:', error);
-    setFormErrors(prev => ({
-      ...prev,
-      newTipo: 'Error al crear el tipo de vehículo'
-    }));
-  }
-};
+    try {
+      await createVehicleType({ nombre: newTipo.trim() });
+      const vehiclesData = await getAllVehicleTypes();
+      setVehicleTypes(vehiclesData);
+      setNewTipo('');
+      setFormErrors(prev => ({ ...prev, newTipo: '' }));
+    } catch (error) {
+      console.error('Error al crear tipo de vehículo:', error);
+      setFormErrors(prev => ({
+        ...prev,
+        newTipo: 'Error al crear el tipo de vehículo'
+      }));
+    }
+  };
 
   const eliminarTipoVehiculo = (tipo) => {
     setDatosServicio((prev) => ({
@@ -256,7 +256,7 @@ useEffect(() => {
 
       setEditingTipoIndex(null);
       setEditingTipoValue('');
-    } catch (error) {}
+    } catch (error) { }
   };
 
   const agregarModelo = (modelo) => {
@@ -264,7 +264,7 @@ useEffect(() => {
       nombre: modelo,
       marca: selectedMarcaModelos // Guardar la marca asociada
     };
-  
+
     if (!datosServicio.modelos.some(m => m.nombre === modelo && m.marca === selectedMarcaModelos)) {
       setDatosServicio(prev => ({
         ...prev,
@@ -275,7 +275,7 @@ useEffect(() => {
     setShowModeloDropdown(false);
   };
 
-  
+
   const eliminarModelo = (modeloNombre) => {
     setDatosServicio(prev => ({
       ...prev,
@@ -290,7 +290,7 @@ useEffect(() => {
       console.log('Tipo de vehículo eliminado', response);
       const vehiclesData = await getAllVehicleTypes();
       setVehicleTypes(vehiclesData);
-    } catch (error) {}
+    } catch (error) { }
   };
 
 
@@ -298,7 +298,7 @@ useEffect(() => {
     if (typeof str !== 'string') return '';
     return str.replace(/</g, '&lt;').replace(/>/g, '&gt;');
   };
-  
+
 
   const agregarMarcaAPI = async (newMarca) => {
     const brandData = { nombre: newMarca };
@@ -308,33 +308,33 @@ useEffect(() => {
       console.log('Nueva marca:', response);
       const brandsData = await getAllBrands();
       setBrands(brandsData);
-    } catch (error) {}
+    } catch (error) { }
   };
 
   const eliminarMarca = (marca) => {
     setDatosServicio((prev) => {
       // Filtrar marcas: quitar la marca eliminada
       const nuevasMarcas = prev.marcas.filter((item) => item !== marca);
-      
+
       // Filtrar modelos: eliminar solo aquellos que pertenezcan a la marca eliminada
       const nuevosModelos = prev.modelos.filter(
         (modelo) => modelo.marca.toLowerCase() !== marca.toLowerCase()
       );
-      
+
       return {
         ...prev,
         marcas: nuevasMarcas,
         modelos: nuevosModelos,
       };
     });
-    
+
     // Si la marca eliminada es la seleccionada para la búsqueda de modelos, reiniciar ese estado
     if (selectedMarcaModelos.toLowerCase() === marca.toLowerCase()) {
       setSelectedMarcaModelos('');
     }
   };
-  
-  
+
+
 
   const handleSaveMarca = async (index) => {
     try {
@@ -346,7 +346,7 @@ useEffect(() => {
       setBrands(brandsData);
       setEditingMarcaIndex(null);
       setEditingMarcaValue('');
-    } catch (error) {}
+    } catch (error) { }
   };
 
   const handleDeleteMarca = async (index) => {
@@ -356,7 +356,7 @@ useEffect(() => {
       console.log('Marca eliminada:', response);
       const brandsData = await getAllBrands();
       setBrands(brandsData);
-    } catch (error) {}
+    } catch (error) { }
   };
 
   const handleSubmit = async (e) => {
@@ -466,9 +466,9 @@ useEffect(() => {
       descripcion: servicio.descripcion,
       tipoVehiculo: servicio.tipoVehiculo,
       marcas: servicio.marcas,
-      modelos: servicio.modelos 
-      ? servicio.modelos.map(m => typeof m === 'string' ? { nombre: m, marca: '' } : m)
-      : [],
+      modelos: servicio.modelos
+        ? servicio.modelos.map(m => typeof m === 'string' ? { nombre: m, marca: '' } : m)
+        : [],
       imagen: servicio.imagen,
     });
   };
@@ -591,7 +591,7 @@ useEffect(() => {
                     setSelectedMarcaModelos(e.target.value);
                   }}
                 />
-  
+
                 {filteredBrands.length > 0 && (
                   <div className="absolute z-10 bg-white w-full mt-1 border rounded max-h-40 overflow-y-auto">
                     {filteredBrands.map((marca) => (
@@ -616,7 +616,7 @@ useEffect(() => {
                   </div>
                 )}
               </div>
-  
+
               <div className="mt-2">
                 {datosServicio.marcas.map((marcaNombre, index) => {
                   const marca = brands.find((v) => v.nombre === marcaNombre);
@@ -663,11 +663,11 @@ useEffect(() => {
                     }}
                     onFocus={() => setShowModeloDropdown(true)}
                   />
-                  
+
                   {showModeloDropdown && modelos.length > 0 && (
                     <div className="absolute z-10 bg-white w-full mt-1 border rounded max-h-40 overflow-y-auto">
                       {modelos
-                        .filter(modelo => 
+                        .filter(modelo =>
                           modelo.toLowerCase().includes(modeloSearch.toLowerCase())
                         )
                         .map((modelo, index) => (
@@ -686,15 +686,15 @@ useEffect(() => {
                   )}
                 </div>
 
-                    <div className="mt-2">
+                <div className="mt-2">
                   {datosServicio.modelos.map((modeloObj, index) => {
-  
+
                     return (
                       <span
                         key={index}
                         className='inline-block bg-gray-200 rounded px-2 py-1 mr-2 mb-2'
                       >
-                         {modeloObj.nombre}
+                        {modeloObj.nombre}
                         <button
                           type="button"
                           onClick={() => eliminarModelo(modeloObj.nombre)}
@@ -708,7 +708,7 @@ useEffect(() => {
                 </div>
               </div>
             )}
-  
+
             <div className="form-group">
               <label htmlFor="imagen" className="form-label">
                 Imagen
@@ -1065,7 +1065,7 @@ useEffect(() => {
           )}
         </div>
       </div>
-  
+
       {/* Modal de confirmación para editar */}
       {showConfirmEditModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
@@ -1096,7 +1096,7 @@ useEffect(() => {
           </div>
         </div>
       )}
-  
+
       {/* Modal de confirmación para eliminar */}
       {showConfirmDeleteModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
@@ -1129,7 +1129,6 @@ useEffect(() => {
       )}
     </div>
   );
-  }
-  
-  export default CrudServicios;
-  
+}
+
+export default CrudServicios;

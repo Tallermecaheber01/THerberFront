@@ -55,3 +55,12 @@ export const getAllServices = async () => {
     }
 }
 
+export const getAppointmentById = async (appointmentId) => {
+    try {
+        const response = await api.get(`employ/appointment/${appointmentId}`);
+        return response.data
+    } catch (error) {
+        return handleError(error,'getAppointmentById');
+    }
+}
+
