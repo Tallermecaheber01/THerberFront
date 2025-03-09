@@ -15,6 +15,10 @@ function AsignacionCita() {
       const servicesResponse = await getAllServices();
       const employeesResponse = await getAllEmployees();
 
+      console.log("Usuarios Cliente:", usersResponse);
+      console.log("Servicios:", servicesResponse);
+      console.log("Empleados:", employeesResponse);
+
       // Aquí actualizas los estados con los datos obtenidos
       setUserClient(usersResponse);
       setService(servicesResponse);
@@ -28,6 +32,7 @@ function AsignacionCita() {
   useEffect(() => {
     fetchData();
   }, []); // El array vacío asegura que solo se ejecute una vez cuando el componente se monta
+
   // Datos fijos
   const [clientes] = useState([
     {
@@ -210,25 +215,45 @@ function AsignacionCita() {
 
   const validateAsignacion = () => {
     const errors = {};
+
+    // Validación de cliente
     if (!clienteSeleccionado) errors.cliente = "Debe seleccionar un cliente.";
-    if (clienteSeleccionado && clienteSeleccionado.cars && clienteSeleccionado.cars.length > 0) {
+
+    // Validación de autos y selección de marca y modelo
+    if (clienteSeleccionado && clienteSeleccionado.vehicles && clienteSeleccionado.vehicles.length > 0) {
       if (!selectedMarca) errors.marca = "Debe seleccionar la marca del auto.";
+
       if (selectedMarca) {
-        const car = clienteSeleccionado.cars.find((car) => car.marca === selectedMarca);
+        // Buscar el auto con la marca seleccionada
+        const car = clienteSeleccionado.vehicles.find((vehicle) => vehicle.vehicle_marca === selectedMarca);
+
+        // Validar que se haya seleccionado un modelo, solo si se encontró un vehículo con la marca seleccionada
         if (car && !selectedModelo) errors.modelo = "Debe seleccionar un modelo.";
+
+        // Si se encontró el vehículo con la marca seleccionada, valida el modelo
+        if (car && selectedModelo) {
+          const modelSelected = car.modelos.find((modelo) => modelo.vehicle_modelo === selectedModelo);
+          if (!modelSelected) errors.modelo = "El modelo seleccionado no existe para esta marca.";
+        }
       }
     }
-    if (!empleadoSeleccionado)
-      errors.empleado = 'Debe seleccionar un empleado.';
+
+    // Validación de empleado
+    if (!empleadoSeleccionado) errors.empleado = 'Debe seleccionar un empleado.';
     if (empleadoSeleccionado && !isInputSecure(empleadoSeleccionado))
-      errors.empleado =
-        'El empleado seleccionado contiene caracteres no permitidos.';
+      errors.empleado = 'El empleado seleccionado contiene caracteres no permitidos.';
+
+    // Validación de fecha y hora
     if (!fecha) errors.fecha = 'Debe seleccionar una fecha.';
     if (!hora) errors.hora = 'Debe seleccionar una hora.';
+
+    // Validación de servicios seleccionados
     if (serviciosSeleccionados.length === 0)
       errors.servicios = 'Debe agregar al menos un servicio.';
+
     return errors;
   };
+
 
   const [showConfirmAssignModal, setShowConfirmAssignModal] = useState(false);
 
@@ -367,7 +392,7 @@ function AsignacionCita() {
             </div>
 
             {/* Selección de auto */}
-            {clienteSeleccionado && clienteSeleccionado.cars && (
+            {clienteSeleccionado && clienteSeleccionado.vehicles && (
               <>
                 <div className="form-group">
                   <label htmlFor="marcaSelect" className="form-label">
@@ -378,8 +403,8 @@ function AsignacionCita() {
                     className="form-input"
                     value={selectedMarca}
                     onChange={(e) => {
-                      setSelectedMarca(e.target.value);
-                      setSelectedModelo('');
+                      setSelectedMarca(e.target.value); // Actualizamos la marca seleccionada
+                      setSelectedModelo(''); // Limpiamos la selección de modelo al cambiar la marca
                     }}
                   >
                     <option value="">Selecciona una marca</option>
@@ -405,7 +430,7 @@ function AsignacionCita() {
                       id="modeloSelect"
                       className="form-input"
                       value={selectedModelo}
-                      onChange={(e) => setSelectedModelo(e.target.value)}
+                      onChange={(e) => setSelectedModelo(e.target.value)} // Actualizamos el modelo seleccionado
                     >
                       <option value="">Selecciona un modelo</option>
                       {clienteSeleccionado.vehicles
@@ -425,6 +450,7 @@ function AsignacionCita() {
                 )}
               </>
             )}
+
 
             {/* Selección de empleado, fecha y hora */}
             <div className="form-group">
