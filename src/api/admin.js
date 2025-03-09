@@ -5,7 +5,6 @@ const handleError = (error, functionName) => {
     `Error en ${functionName}:`,
     error.response?.data || error.message
   );
-  alert(error.response?.data?.message || 'Ocurrió un error inesperado.');
   return { success: false, error: error.response?.data || error.message };
 };
 

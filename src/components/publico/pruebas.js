@@ -1,7 +1,9 @@
-import React from 'react';
+import React from 'react'
 
-function pruebas() {
-  return <div>pruebas</div>;
+function Pruebas() {
+  return (
+    <div>Pruebas</div>
+  )
 }
 
-export default pruebas;
+export default Pruebas

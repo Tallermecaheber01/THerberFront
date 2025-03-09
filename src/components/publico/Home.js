@@ -7,7 +7,6 @@ function Home() {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const breadcrumbPaths = [
-    { name: 'Catalogo', link: '/consultaservicios' },
     { name: 'Inicio', link: '/' },
   ];
 

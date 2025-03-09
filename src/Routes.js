@@ -16,6 +16,7 @@ import AcercaDe from './components/publico/AcercaDe';
 import PoliticaDePrivacidad from './components/publico/PoliticaDePrivacidad';
 import TerminosYCondiciones from './components/publico/TerminosYCondiciones';
 import ValidacionCuenta from './components/publico/ValidacionCuenta';
+import Marcas from './components/publico/Marcas';
 // Usuarios
 import AtencionCliente from './components/usuario/AtencionClientes';
 import ConsultaCita from './components/usuario/ConsultaCita';
@@ -52,7 +53,7 @@ const AppRoutes = () => {
       <Route path="login" element={<Login />} />
       <Route path="consultaservicios" element={<ConsultaServicios />} />
       <Route path="recuperacion" element={<Recuperacion />} />
-      <Route path="verdetalles" element={<VerDetalles />} />
+      <Route path="verDetalles/:id" element={<VerDetalles />} />
       <Route path="NotFound" element={<PageNotFound />} />
       <Route path="500" element={<InternalServerError />} />
       <Route path="403" element={<Unauthorized />} />
@@ -61,6 +62,7 @@ const AppRoutes = () => {
       <Route path="politicadeprivacidad" element={<PoliticaDePrivacidad />} />
       <Route path="terminosycondiciones" element={<TerminosYCondiciones />} />
       <Route path="validacioncuenta" element={<ValidacionCuenta />} />
+      <Route path="Marcas" element={<Marcas/>} />
 
       {/* usuarios */}
       <Route path="atencioncliente" element={<AtencionCliente />} />
