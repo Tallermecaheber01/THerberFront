@@ -19,9 +19,9 @@ export const createNewAppointment = async (appointmentData) => {
 }
 
 
-export const getAppointmentsWithServices = async () => {
+export const getAppointmentsWithServices = async (idEmploy) => {
     try {
-        const response = await api.get('employ/appointments/full');
+        const response = await api.get(`employ/appointments/full/${idEmploy}`);
         return response.data
     } catch (error) {
         return handleError(error, 'getAllAppointmentsWithServices');
