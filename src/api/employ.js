@@ -25,4 +25,35 @@ export const getAllAppointments = async () => {
     } catch (error) {
         return handleError(error,'getAllApointments');
     }
+<<<<<<< HEAD
 }
+=======
+};
+
+export const getAllEmployees = async () => {
+    try {
+        const response = await api.get('/employ/employees');
+        return response.data;
+    } catch (error) {
+        return handleError(error, 'getAllEmployees')
+    }
+};
+
+export const getAllServices = async () => {
+    try {
+        const response = await api.get('/employ/services');
+        return response.data;
+    } catch (error) {
+        return handleError(error, 'getAllServices');
+    }
+}
+
+export const getAppointmentsWithServices = async () => {
+    try {
+        const response = await api.get('/employ/appointments/full');
+        return response.data;
+    } catch (error) {
+        return handleError(error,'getAppointmentsWithServices')
+    }
+}
+>>>>>>> 50ecb (Consulta citas y asignar cita)

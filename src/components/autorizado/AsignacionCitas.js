@@ -218,10 +218,66 @@ function AsignacionCita() {
     setShowConfirmAssignModal(true);
   };
 
-  
-  const confirmAsignacion = () => {
-    limpiarCampos();
-    setShowConfirmAssignModal(false);
+  serviciosSeleccionados.forEach((servicio, index) => {
+    //console.log(`Servicio ${index + 1}:`, servicio);
+  });
+
+  const confirmAsignacion = async () => {
+    // Busca el vehículo dentro de los vehículos del cliente que coincide con la marca y el modelo seleccionados
+    const vehicleSeleccionado = clienteSeleccionado.vehicles.find(
+      (vehiculo) =>
+        vehiculo.vehicle_marca === selectedMarca && vehiculo.vehicle_modelo === selectedModelo
+    );
+
+    const appointmentData = {
+      appointment: {
+        nombreCliente: clienteSeleccionado.user_nombre,
+        nombreEmpleado: empleadoSeleccionado,
+        fecha: fecha,
+        hora: hora,
+        costoExtra: extraAmount,
+        total: totalCosto,
+        marca: selectedMarca,
+        modelo: selectedModelo
+      },
+      services: serviciosSeleccionados.map(servicio => ({
+        servicio: servicio.nombre,
+        costo: servicio.costo
+      }))
+    };
+
+
+    console.log("Aouto:", vehicleSeleccionado);
+    // Imprime en consola los valores de las variables relevantes
+    console.log("Cliente seleccionado:", clienteSeleccionado.user_nombre);
+    // Marca y modelo del auto seleccionado
+    console.log("Marca del auto seleccionada:", selectedMarca);
+    console.log("Modelo del auto seleccionado:", selectedModelo);
+    console.log("Empleado seleccionado:", empleadoSeleccionado);
+    console.log("Fecha:", fecha);
+    console.log("Hora:", hora);
+    console.log("Servicios seleccionados:", serviciosSeleccionados);
+    console.log("Marca del auto seleccionada:", selectedMarca);
+    console.log("Modelo del auto seleccionado:", selectedModelo);
+
+    console.log("Extra:", extraAmount);
+    console.log("Costo total:", totalCosto);
+    try {
+      const response = await createNewAppointment(appointmentData);
+      if (response) {
+        // Si la cita fue creada exitosamente, muestra el mensaje y limpia los campos
+        alert("Cita asignada exitosamente.");
+        console.log('data:', appointmentData);
+        limpiarCampos();
+        setShowConfirmAssignModal(false);
+      } else {
+        // Si hubo un error en la creación de la cita, maneja el error aquí
+        alert("Hubo un error al asignar la cita. Intente nuevamente.");
+      }
+    } catch (error) {
+      alert("Hubo un error al asignar la cita. Intente nuevamente.");
+      console.error("Error al crear la cita:", error);
+    }
   };
 
   const handleCancelar = (e) => {

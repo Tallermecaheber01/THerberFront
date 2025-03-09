@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import Breadcrumbs from '../Breadcrumbs';
+import React, { useEffect, useState } from "react";
+import Breadcrumbs from "../Breadcrumbs";
+import { getAppointmentsWithServices } from "../../api/employ";
 
 const ConfirmationModal = ({ title, message, onConfirm, onCancel }) => {
   return (
@@ -22,10 +25,39 @@ const ConfirmationModal = ({ title, message, onConfirm, onCancel }) => {
 
 function ConsultarCitas() {
   const staticBreadcrumbs = [
-    { name: 'Inicio', link: '/' },
-    { name: 'Consultar Citas', link: '/consultarcitas' },
+    { name: "Inicio", link: "/" },
+    { name: "Consultar Citas", link: "/consultarcitas" }
   ];
 
+  const [appointments, setAppointments] = useState([]);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const appointmentsData = await getAppointmentsWithServices();
+        console.log("Datos obtenidos de las citas:", appointmentsData);
+
+        // Transformar los datos según la nueva estructura
+        const formattedAppointments = appointmentsData.map((appointment) => ({
+          id: appointment.appointment_id,
+          cliente: appointment.nombreCliente,
+          servicio: appointment.services.map((service) => service.servicio).join(", "), // Combina todos los servicios en un solo string
+          fecha: new Date(appointment.fecha).toLocaleDateString(), // Formatea la fecha si lo necesitas
+          hora: appointment.hora,
+          costo: appointment.total,
+          marca: appointment.marca,
+          modelo: appointment.modelo
+        }));
+
+        setAppointments(formattedAppointments);
+      } catch (error) {
+        console.error("Error al obtener los datos:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Datos de ejemplo de las citas.
   const [citas] = useState([
     {
       id: 1,
@@ -128,7 +160,8 @@ function ConsultarCitas() {
     setFilters(newFilters);
   };
 
-  const filteredCitas = citas.filter((cita) => {
+  // Filtra la lista de citas usando la búsqueda básica y filtros avanzados.
+  const filteredCitas = appointments.filter((cita) => {
     const matchesSearch =
       searchQuery === '' ||
       Object.values(cita).some((val) =>
@@ -343,9 +376,9 @@ function ConsultarCitas() {
       {isExtraRepairModalOpen && (
         <ConfirmationModal
           title={
-            <span className="text-yellow-500">
-              Confirmar la finalizacion de un servicio Extra
-            </span>
+              <span className="text-yellow-500">
+                  Confirmar la finalizacion de un servicio Extra
+              </span>
           }
           message={<>¿Deseas registrar una reparación extra sin cita previa?</>}
           onConfirm={confirmReparacionExtra}
