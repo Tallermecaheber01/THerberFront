@@ -20,7 +20,6 @@ export const createNewAppointment = async (appointmentData) => {
 
 
 export const getAppointmentsWithServices = async (idEmploy) => {
-export const getAppointmentsWithServices = async (idEmploy) => {
     try {
         const response = await api.get(`/employ/appointments/full/${idEmploy}`);
         return response.data
