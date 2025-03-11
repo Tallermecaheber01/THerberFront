@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import Breadcrumbs from "../Breadcrumbs";
-import { getAppointmentsWithServices } from "../../api/employ";
+import { AuthContext } from "../AuthContext"; 
+import { getAppointmentsWithServicesID } from "../../api/employ";
 
 const ConfirmationModal = ({ title, message, onConfirm, onCancel }) => {
   return (
@@ -12,7 +13,7 @@ const ConfirmationModal = ({ title, message, onConfirm, onCancel }) => {
           <button onClick={onConfirm} className="btn-aceptar">
             Confirmar
           </button>
-          <button onClick={onCancel} className="btn-cancelar ">
+          <button onClick={onCancel} className="btn-cancelar">
             Cancelar
           </button>
         </div>
@@ -22,104 +23,81 @@ const ConfirmationModal = ({ title, message, onConfirm, onCancel }) => {
 };
 
 function ConsultarCitas() {
+  const { auth } = useContext(AuthContext);
   const staticBreadcrumbs = [
     { name: "Inicio", link: "/" },
-    { name: "Consultar Citas", link: "/consultarcitas" }
+    { name: "Consultar Citas", link: "/consultarcitas" },
   ];
 
   const [appointments, setAppointments] = useState([]);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const appointmentsData = await getAppointmentsWithServices();
+        let appointmentsData;
+        // Si el usuario es administrador o empleado, se pasa el id al endpoint
+        if (
+          auth &&
+          auth.user &&
+          (auth.role === "administrador" || auth.role === "empleado")
+        ) {
+          appointmentsData = await getAppointmentsWithServicesID(auth.user.id);
+        } else {
+          appointmentsData = await getAppointmentsWithServicesID();
+        }
         console.log("Datos obtenidos de las citas:", appointmentsData);
 
-        // Transformar los datos según la nueva estructura
+        // Transformar los datos según la estructura requerida
         const formattedAppointments = appointmentsData.map((appointment) => ({
           id: appointment.appointment_id,
           cliente: appointment.nombreCliente,
-          servicio: appointment.services.map((service) => service.servicio).join(", "), // Combina todos los servicios en un solo string
-          fecha: new Date(appointment.fecha).toLocaleDateString(), // Formatea la fecha si lo necesitas
+          servicio: appointment.services
+            .map((service) => service.servicio)
+            .join(", "),
+          fecha: new Date(appointment.fecha).toLocaleDateString(),
           hora: appointment.hora,
           costo: appointment.total,
           marca: appointment.marca,
-          modelo: appointment.modelo
+          modelo: appointment.modelo,
         }));
 
         setAppointments(formattedAppointments);
       } catch (error) {
-        console.error("Error al obtener los datos:", error);
+        
       }
     };
 
     fetchData();
-  }, []);
+  }, [auth]);
 
-  // Datos de ejemplo de las citas.
-  const [citas] = useState([
-    {
-      id: 1,
-      cliente: 'Juan Pérez',
-      servicio: 'Cambio de aceite',
-      fecha: '2025-01-05',
-      hora: '10:00',
-      costo: 50,
-      marca: 'Toyota',
-      modelo: 'Corolla 2019',
-    },
-    {
-      id: 2,
-      cliente: 'María Gómez',
-      servicio: 'Revisión general',
-      fecha: '2025-01-06',
-      hora: '12:00',
-      costo: 75,
-      marca: 'Honda',
-      modelo: 'Civic 2018',
-    },
-    {
-      id: 3,
-      cliente: 'Carlos López',
-      servicio: 'Cambio de llantas',
-      fecha: '2025-01-05',
-      hora: '14:00',
-      costo: 100,
-      marca: 'Ford',
-      modelo: 'Focus 2020',
-    },
-  ]);
-
-  const [filters, setFilters] = useState([{ type: '', value: '' }]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [filters, setFilters] = useState([{ type: "", value: "" }]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedCitaForFinalize, setSelectedCitaForFinalize] = useState(null);
   const [isFinishModalOpen, setIsFinishModalOpen] = useState(false);
   const [isExtraRepairModalOpen, setIsExtraRepairModalOpen] = useState(false);
 
   const availableFilterTypes = [
-    'cliente',
-    'servicio',
-    'marca',
-    'modelo',
-    'costo',
+    "cliente",
+    "servicio",
+    "marca",
+    "modelo",
+    "costo",
   ];
 
   const normalizeStr = (str) =>
-    str
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase();
+    str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
   const getDynamicBreadcrumbs = () => {
     const activeFilters = filters.filter(
-      (filter) => filter.type.trim() !== '' && filter.value.trim() !== ''
+      (filter) => filter.type.trim() !== "" && filter.value.trim() !== ""
     );
     const filterBreadcrumbs = activeFilters.map((filter) => ({
       name:
         filter.type.charAt(0).toUpperCase() +
         filter.type.slice(1) +
-        ': ' +
+        ": " +
         filter.value,
-      link: '#',
+      link: "#",
     }));
     return [...staticBreadcrumbs, ...filterBreadcrumbs];
   };
@@ -128,8 +106,8 @@ function ConsultarCitas() {
 
   const handleBreadcrumbClick = (index) => {
     if (index < staticBreadcrumbs.length) {
-      setFilters([{ type: '', value: '' }]);
-      setSearchQuery('');
+      setFilters([{ type: "", value: "" }]);
+      setSearchQuery("");
     } else {
       const filterIndex = index - staticBreadcrumbs.length;
       setFilters(filters.slice(0, filterIndex + 1));
@@ -145,28 +123,28 @@ function ConsultarCitas() {
   const handleAddFilter = () => {
     if (
       filters.length < 3 &&
-      filters[filters.length - 1].type.trim() !== '' &&
-      filters[filters.length - 1].value.trim() !== ''
+      filters[filters.length - 1].type.trim() !== "" &&
+      filters[filters.length - 1].value.trim() !== ""
     ) {
-      setFilters([...filters, { type: '', value: '' }]);
+      setFilters([...filters, { type: "", value: "" }]);
     }
   };
 
   const handleRemoveFilter = (index) => {
     const newFilters = filters.filter((_, i) => i !== index);
-    if (newFilters.length === 0) newFilters.push({ type: '', value: '' });
+    if (newFilters.length === 0) newFilters.push({ type: "", value: "" });
     setFilters(newFilters);
   };
 
-  // Filtra la lista de citas usando la búsqueda básica y filtros avanzados.
+  // Se filtran las citas según la búsqueda básica y los filtros avanzados.
   const filteredCitas = appointments.filter((cita) => {
     const matchesSearch =
-      searchQuery === '' ||
+      searchQuery === "" ||
       Object.values(cita).some((val) =>
         normalizeStr(String(val)).includes(normalizeStr(searchQuery))
       );
     const matchesAdvanced = filters.every((filter) => {
-      if (filter.type.trim() === '' || filter.value.trim() === '') return true;
+      if (filter.type.trim() === "" || filter.value.trim() === "") return true;
       const citaField = cita[filter.type.toLowerCase()];
       if (!citaField) return false;
       return normalizeStr(String(citaField)).includes(
@@ -181,23 +159,19 @@ function ConsultarCitas() {
     setIsFinishModalOpen(true);
   };
 
-  const confirmFinalizarServicio = () => {
-    if (selectedCitaForFinalize) {
-      localStorage.setItem(
-        'selectedCita',
-        JSON.stringify(selectedCitaForFinalize)
-      );
-      window.location.href = '/registroreparaciones';
-    }
-  };
+    const confirmFinalizarServicio = () => {
+      if (selectedCitaForFinalize) {
+        window.location.href = `/registroreparaciones?id=${selectedCitaForFinalize.id}`;
+      }
+    };
 
   const handleReparacionExtraClick = () => {
     setIsExtraRepairModalOpen(true);
   };
 
   const confirmReparacionExtra = () => {
-    localStorage.removeItem('selectedCita');
-    window.location.href = '/registroreparaciones';
+    localStorage.removeItem("selectedCita");
+    window.location.href = "/registroreparaciones";
   };
 
   return (
@@ -211,8 +185,8 @@ function ConsultarCitas() {
           <h1 className="form-title text-center">Consultar Citas Próximas</h1>
           <div className="w-full flex flex-col items-end mb-4 gap-4">
             {filters.length === 1 &&
-              filters[0].type.trim() === '' &&
-              filters[0].value.trim() === '' && (
+              filters[0].type.trim() === "" &&
+              filters[0].value.trim() === "" && (
                 <input
                   type="text"
                   placeholder="Buscar citas"
@@ -227,7 +201,7 @@ function ConsultarCitas() {
                   <select
                     value={filter.type}
                     onChange={(e) =>
-                      handleFilterChange(index, 'type', e.target.value)
+                      handleFilterChange(index, "type", e.target.value)
                     }
                     className="form-input w-64 text-right"
                   >
@@ -247,12 +221,12 @@ function ConsultarCitas() {
                   </select>
                   <input
                     type={
-                      filter.type.toLowerCase() === 'costo' ? 'number' : 'text'
+                      filter.type.toLowerCase() === "costo" ? "number" : "text"
                     }
                     placeholder="Busqueda"
                     value={filter.value}
                     onChange={(e) =>
-                      handleFilterChange(index, 'value', e.target.value)
+                      handleFilterChange(index, "value", e.target.value)
                     }
                     className="form-input w-64 text-right"
                   />
@@ -268,8 +242,8 @@ function ConsultarCitas() {
                 </div>
               ))}
               {filters.length < 3 &&
-                filters[filters.length - 1].type.trim() !== '' &&
-                filters[filters.length - 1].value.trim() !== '' && (
+                filters[filters.length - 1].type.trim() !== "" &&
+                filters[filters.length - 1].value.trim() !== "" && (
                   <button
                     onClick={handleAddFilter}
                     className="button-yellow w-40"
@@ -359,7 +333,7 @@ function ConsultarCitas() {
           }
           message={
             <>
-              ¿Estás seguro de finalizar el servicio para{' '}
+              ¿Estás seguro de finalizar el servicio para{" "}
               <span className="text-yellow-500 font-bold">
                 {selectedCitaForFinalize?.cliente}
               </span>
@@ -370,13 +344,12 @@ function ConsultarCitas() {
           onCancel={() => setIsFinishModalOpen(false)}
         />
       )}
-
       {isExtraRepairModalOpen && (
         <ConfirmationModal
           title={
-              <span className="text-yellow-500">
-                  Confirmar la finalizacion de un servicio Extra
-              </span>
+            <span className="text-yellow-500">
+              Confirmar la finalizacion de un servicio Extra
+            </span>
           }
           message={<>¿Deseas registrar una reparación extra sin cita previa?</>}
           onConfirm={confirmReparacionExtra}

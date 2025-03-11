@@ -5,6 +5,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import Breadcrumbs from '../Breadcrumbs';
 import { loginUser } from '../../api/users';
 import { AuthContext } from '../AuthContext';
+import ReCAPTCHA from 'react-google-recaptcha'; 
 
 const Login = () => {
   const breadcrumbPaths = [
@@ -14,9 +15,10 @@ const Login = () => {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { updateAuth } = useContext(AuthContext); // Usamos updateAuth para forzar la actualización
+  const { updateAuth } = useContext(AuthContext);
   const [errors, setErrors] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
+  const [captchaValue, setCaptchaValue] = useState(null);
   const navigate = useNavigate();
 
   const validateInput = (name, value) => {
@@ -54,6 +56,10 @@ const Login = () => {
     setErrors((prev) => ({ ...prev, [name]: '' }));
   };
 
+  const onCaptchaChange = (value) => {
+    setCaptchaValue(value);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const emailError = validateInput('email', email);
@@ -63,11 +69,16 @@ const Login = () => {
       return;
     }
 
+    if (!captchaValue) {
+      toast.error('Valida el reCAPTCHA');
+      return;
+    }
+
     try {
-      const response = await loginUser({ correo: email, contrasena: password });
+      const response = await loginUser({ correo: email, contrasena: password, captcha: captchaValue });
       if (response) {
         toast.success('¡Inicio de sesión exitoso!');
-        updateAuth(); // Forzar la actualización del estado de autenticación
+        updateAuth();
         setTimeout(() => navigate('/Bienvenida'), 3000);
       } else {
         toast.error('Credenciales incorrectas.');
@@ -148,6 +159,14 @@ const Login = () => {
                 </p>
               )}
             </div>
+            <div className="form-group" style={{ display: 'flex', justifyContent: 'center' }}>
+              <div style={{ transform: 'scale(0.8)', transformOrigin: 'center' }}>
+                <ReCAPTCHA
+                  sitekey="6LeG5PAqAAAAAEKr3HP3C_W5OiL5HpPHCFxY5pMK" 
+                  onChange={onCaptchaChange}
+                />
+              </div>
+            </div>
 
             <button type="submit" className="btn-aceptar">
               Iniciar Sesión
@@ -167,3 +186,4 @@ const Login = () => {
 };
 
 export default Login;
+
