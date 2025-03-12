@@ -1,38 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Breadcrumbs from '../Breadcrumbs';
+import { getAppointmentsInWaiting, getAllEmployees, updateWaitingAppointment } from '../../api/employ';
 
 function AprobacionesCitas() {
   const navigate = useNavigate();
+  const [appoinmentInWaiting, setAppointmentInWaiting] = useState([]);
+  const [employes, setEmployes] = useState([]);
 
-  const [citas, setCitas] = useState([
-    {
-      id: 1,
-      referencia: 'CITA001',
-      estado: 'pendiente',
-      razonRechazo: '',
-      modelo: 'Corolla 2020',
-      marca: 'Toyota',
-      fecha: '2025-03-01',
-      hora: '09:00 AM',
-      serviciosSolicitados: ['Cambio de aceite', 'Revisión de frenos'],
-      cliente: 'Juan Pérez',
-      total: 0,
-    },
-    {
-      id: 2,
-      referencia: 'CITA002',
-      estado: 'pendiente',
-      razonRechazo: '',
-      modelo: 'F-150 2021',
-      marca: 'Ford',
-      fecha: '2025-03-02',
-      hora: '02:00 PM',
-      serviciosSolicitados: ['Cambio de batería', 'Revisión de suspensión'],
-      cliente: 'María Gómez',
-      total: 0,
-    },
-  ]);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const appointmentData = await getAppointmentsInWaiting();
+        const employData = await getAllEmployees();
+        console.log("Respuesta:", appointmentData);
+        console.log("Empleados:", employData);
+        setAppointmentInWaiting(appointmentData);
+        setEmployes(employData);
+      } catch (error) {
+        console.error("Error al obtener los datos:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const [selectedCita, setSelectedCita] = useState(null);
   const [total, setTotal] = useState('');
@@ -106,49 +97,64 @@ function AprobacionesCitas() {
     setFilters(newFilters);
   };
 
-  const filteredCitas = citas.filter((cita) => {
-    if (cita.estado !== 'pendiente') return false;
+  const filteredCitas = appoinmentInWaiting.filter((cita) => {
+    // Filtrar solo las citas que están en estado 'En espera'
+    if (cita.estado !== 'En espera') return false;
+
+    // Buscar coincidencias en los valores de la cita
     const matchesSearch =
       searchQuery === '' ||
       Object.values(cita).some((value) => {
-        if (typeof value === 'string')
+        if (typeof value === 'string') {
+          // Verificar que sea un string antes de comparar
           return value.toLowerCase().includes(searchQuery.toLowerCase());
-        else if (Array.isArray(value))
-          return value
-            .join(' ')
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase());
+        } else if (Array.isArray(value)) {
+          // Verificar que sea un arreglo antes de intentar hacer join
+          return value.length > 0 && value.join(' ').toLowerCase().includes(searchQuery.toLowerCase());
+        }
         return false;
       });
+
+    // Filtrar por los filtros proporcionados
     const matchesFilters = filters.every((filter) => {
       if (!filter.type || !filter.value) return true;
+
       const field = filter.type.toLowerCase();
+
+      // Verificación especial para 'servicio', ahora buscamos dentro de 'services'
       if (field === 'servicio') {
         return (
-          cita.serviciosSolicitados &&
-          cita.serviciosSolicitados
-            .join(' ')
-            .toLowerCase()
-            .includes(filter.value.toLowerCase())
+          Array.isArray(cita.services) &&
+          cita.services.some((service) =>
+            service.servicio.toLowerCase().includes(filter.value.toLowerCase())
+          )
         );
       }
+
+      // Verifica que el campo de la cita contiene el valor del filtro
       return cita[field]?.toLowerCase().includes(filter.value.toLowerCase());
     });
+
+    // Devuelve true si pasa tanto la búsqueda como los filtros
     return matchesSearch && matchesFilters;
   });
+
+
+
+
 
   useEffect(() => {
     if (
       selectedCita &&
-      !filteredCitas.some((cita) => cita.id === selectedCita.id)
+      !filteredCitas.some((cita) => cita.appointment_id === selectedCita.appointment_id)
     ) {
       setSelectedCita(null);
     }
   }, [filteredCitas, selectedCita]);
 
   const handleSelectCita = (id) => {
-    const cita = citas.find((c) => c.id === id);
-    setSelectedCita(cita);
+    const citaSeleccionada = appoinmentInWaiting.find(cita => cita.appointment_id === id);
+    setSelectedCita(citaSeleccionada); // Esto actualiza el estado de la cita seleccionada
     setTotal('');
     setSelectedEmpleado('');
     setIsRejectionMode(false);
@@ -180,7 +186,10 @@ function AprobacionesCitas() {
   };
 
   const handleAttemptApprove = () => {
+    console.log("Empleado seleccionado en handleAttemptApprove:", selectedEmpleado);
+
     const errors = {};
+
     if (total.trim() === '') {
       errors.total = 'El total es obligatorio.';
     } else if (isNaN(total)) {
@@ -188,15 +197,15 @@ function AprobacionesCitas() {
     } else if (parseFloat(total) < 0) {
       errors.total = 'El total no puede ser negativo.';
     }
-    if (selectedEmpleado.trim() === '') {
+    // Verificar que selectedEmpleado no esté vacío
+    if (!selectedEmpleado) {
       errors.selectedEmpleado = 'Debe seleccionar un empleado.';
     }
     if (!isInputSecure(total)) {
       errors.total = 'El total contiene caracteres no permitidos.';
     }
     if (!isInputSecure(selectedEmpleado)) {
-      errors.selectedEmpleado =
-        'El empleado seleccionado contiene caracteres no permitidos.';
+      errors.selectedEmpleado = 'El empleado seleccionado contiene caracteres no permitidos.';
     }
     if (Object.keys(errors).length > 0) {
       setApprovalErrors(errors);
@@ -206,46 +215,102 @@ function AprobacionesCitas() {
     setShowConfirmApproveModal(true);
   };
 
-  const confirmApprove = () => {
-    setCitas((prevCitas) =>
-      prevCitas.map((cita) =>
-        cita.id === selectedCita.id
-          ? { ...cita, estado: 'aprobada', total: Number(total) }
-          : cita
-      )
-    );
+  const confirmApprove = async () => {
+    // Verifica si se ha seleccionado un empleado
+    if (!selectedEmpleado) {
+      setApprovalErrors((prevErrors) => ({
+        ...prevErrors,
+        empleado: "Por favor, seleccione un empleado", // Mensaje de error si no se seleccionó empleado
+      }));
+      console.log("Empleado no seleccionado.");
+      return; // Detiene el envío si no se ha seleccionado un empleado
+    }
+
+    // Imprimir el estado actual de las citas antes de actualizarlas
+    console.log("Citas antes de la actualización:", appoinmentInWaiting);
+    console.log("Cita seleccionada:", selectedCita);
+    console.log("Total que se enviará:", Number(total));
+    console.log("Empleado:", selectedEmpleado);
+
+    try {
+      // Llamar a la API para actualizar la cita en el backend
+      const updatedAppointment = await updateWaitingAppointment(selectedCita.appointment_id, {
+        nombreEmpleado: selectedEmpleado, // Asigna el empleado seleccionado
+        total: Number(total),
+        estado: "Confirmada", // Se establece el nuevo estado
+      });
+
+      console.log("Respuesta de la API:", updatedAppointment);
+
+      // Actualizar el estado de las citas en el frontend
+      setAppointmentInWaiting((prevCitas) =>
+        prevCitas.map((cita) =>
+          cita.appointment_id === selectedCita.appointment_id
+            ? {
+              ...cita,
+              estado: "Confirmada",
+              total: Number(total),
+              nombreEmpleado: selectedEmpleado, // Asigna el empleado seleccionado
+            }
+            : cita
+        )
+      );
+    } catch (error) {
+      console.error("Error al actualizar la cita:", error);
+    }
+
+    // Limpiar los campos después de la actualización
     setShowConfirmApproveModal(false);
     setSelectedCita(null);
-    setTotal('');
-    setSelectedEmpleado('');
+    setTotal("");
+    setSelectedEmpleado("");
     setApprovalErrors({});
   };
+
+
 
   const handleEnterRejection = () => {
     setIsRejectionMode(true);
     setApprovalErrors({});
   };
 
-  const handleConfirmRejection = () => {
+  const handleConfirmRejection = async () => {
     if (razonRechazo.trim() !== '' && /^\d+$/.test(razonRechazo.trim())) {
       setApprovalErrors({
         razonRechazo: 'La razón de rechazo no puede contener solo números.',
       });
       return;
     }
+
     if (!isInputSecure(razonRechazo)) {
       setApprovalErrors({
         razonRechazo: 'La razón de rechazo contiene caracteres no permitidos.',
       });
       return;
     }
-    setCitas((prevCitas) =>
-      prevCitas.map((cita) =>
-        cita.id === selectedCita.id
-          ? { ...cita, estado: 'rechazada', razonRechazo }
-          : cita
-      )
-    );
+
+    try {
+      // Llamar a la API para actualizar el estado a "Rechazada"
+      const updatedAppointment = await updateWaitingAppointment(selectedCita.appointment_id, {
+        estado: "Rechazada",
+        razonRechazo, // Enviar la razón del rechazo al backend
+      });
+
+      console.log("Respuesta de la API:", updatedAppointment);
+
+      // Actualizar el estado en el frontend solo si la API responde correctamente
+      setAppointmentInWaiting((prevCitas) =>
+        prevCitas.map((cita) =>
+          cita.appointment_id === selectedCita.appointment_id
+            ? { ...cita, estado: "Rechazada", razonRechazo }
+            : cita
+        )
+      );
+    } catch (error) {
+      console.error("Error al rechazar la cita:", error);
+    }
+
+    // Limpiar los campos después de la actualización
     setSelectedCita(null);
     setApprovalErrors({});
   };
@@ -360,19 +425,21 @@ function AprobacionesCitas() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredCitas.map((cita) => (
               <div
-                key={cita.id}
+                key={cita.appointment_id}
                 className="reparacion-card cursor-pointer card-transition"
-                onClick={() => handleSelectCita(cita.id)}
+                onClick={() => handleSelectCita(cita.appointment_id)}
               >
-                <h2 className="cita-title">{cita.referencia}</h2>
+                <h2 className="cita-title">{cita.appointment_id}</h2>
                 <p className="cita-subtitle">Modelo: {cita.modelo}</p>
                 <p className="cita-subtitle">Marca: {cita.marca}</p>
-                <p className="cita-subtitle">Cliente: {cita.cliente}</p>
+                <p className="cita-subtitle">Cliente: {cita.nombreCliente}</p>
                 <p className="cita-subtitle">
-                  Fecha: {cita.fecha} - Hora: {cita.hora}
+                  Fecha: {new Date(cita.fecha).toLocaleDateString()} - Hora: {cita.hora}
                 </p>
                 <p className="cita-subtitle">
-                  Servicios: {cita.serviciosSolicitados.join(', ')}
+                  Servicios: {Array.isArray(cita.services) && cita.services.length > 0
+                    ? cita.services.map(service => service.servicio).join(', ')
+                    : 'No hay servicios'}
                 </p>
               </div>
             ))}
@@ -390,17 +457,20 @@ function AprobacionesCitas() {
               </button>
             </div>
             <div className="detalle-descripcion">
-              <h2 className="cita-title">{selectedCita.referencia}</h2>
+              <h2 className="cita-title">{selectedCita.appointment_id}</h2>
               <p className="cita-subtitle">Modelo: {selectedCita.modelo}</p>
               <p className="cita-subtitle">Marca: {selectedCita.marca}</p>
-              <p className="cita-subtitle">Cliente: {selectedCita.cliente}</p>
+              <p className="cita-subtitle">Cliente: {selectedCita.nombreCliente}</p>
               <p className="cita-subtitle">
-                Fecha: {selectedCita.fecha} - Hora: {selectedCita.hora}
+                Fecha: {new Date(selectedCita.fecha).toLocaleDateString()} - Hora: {selectedCita.hora}
               </p>
               <p className="cita-subtitle">
                 Servicios solicitados:{' '}
-                {selectedCita.serviciosSolicitados.join(', ')}
+                {Array.isArray(selectedCita.services) && selectedCita.services.length > 0
+                  ? selectedCita.services.map(service => service.servicio).join(', ')
+                  : 'No hay servicios'}
               </p>
+
             </div>
             {!isRejectionMode && (
               <>
@@ -433,10 +503,15 @@ function AprobacionesCitas() {
                     onChange={(e) => setSelectedEmpleado(e.target.value)}
                   >
                     <option value="">Seleccione un trabajador</option>
-                    <option value="Pedro">Pedro</option>
-                    <option value="Pablo">Pablo</option>
-                    <option value="Matias">Matias</option>
+                    {employes.map((empleado) => (
+                      <option key={empleado.id} value={empleado.nombre}>
+                        {empleado.nombre}
+                      </option>
+                    ))}
                   </select>
+
+
+
                   {approvalErrors.selectedEmpleado && (
                     <p className="text-red-500 text-xs mt-1">
                       {approvalErrors.selectedEmpleado}

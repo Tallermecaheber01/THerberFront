@@ -60,7 +60,6 @@ export const loginUser = async (credentials) => {
       credentials,
       { withCredentials: true } // Habilitar envío de cookies
     );
-    console.log('Inicio de sesion exitodo:', response.data);
     return response.data;
   } catch (error) {
     // No imprimir nada en consola

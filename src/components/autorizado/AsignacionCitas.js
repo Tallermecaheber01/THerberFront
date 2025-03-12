@@ -10,16 +10,18 @@ function AsignacionCita() {
 
   const fetchData = async () => {
     try {
-      // Llamadas a las APIs para obtener los datos
-      const usersResponse = await getAllUsersClient();
-      const servicesResponse = await getAllServices();
-      const employeesResponse = await getAllEmployees();
+      // Ejecutar las llamadas a las APIs de forma concurrente
+      const [usersResponse, servicesResponse, employeesResponse] = await Promise.all([
+        getAllUsersClient(),
+        getAllServices(),
+        getAllEmployees()
+      ]);
 
       console.log("Usuarios Cliente:", usersResponse);
       console.log("Servicios:", servicesResponse);
       console.log("Empleados:", employeesResponse);
 
-      // Aquí actualizas los estados con los datos obtenidos
+      // Actualizar los estados con los datos obtenidos
       setUserClient(usersResponse);
       setService(servicesResponse);
       setEmploy(employeesResponse);

@@ -1,46 +1,29 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Breadcrumbs from '../Breadcrumbs';
+import { getAppointmentsCancelled } from '../../api/employ';
 
 function CitasCanceladas() {
+  const [appointmentCancelled, setAppointmentCancelled] = useState([]);
   const staticBreadcrumbs = [
     { name: 'Inicio', link: '/' },
     { name: 'Citas Canceladas', link: '/citascanceladas' },
   ];
 
-  const [citas] = useState([
-    {
-      id: 1,
-      cliente: 'Juan Pérez',
-      servicio: 'Cambio de aceite',
-      fecha: '2025-01-05',
-      hora: '10:00',
-      canceladoPor: 'empleado',
-      empleadoCancelador: 'Pablo',
-      mensajeCancelacion: 'El cliente canceló por enfermedad.',
-      fechaCancelacion: '2025-01-04',
-    },
-    {
-      id: 2,
-      cliente: 'María Gómez',
-      servicio: 'Revisión general',
-      fecha: '2025-01-06',
-      hora: '12:00',
-      canceladoPor: 'cliente',
-      mensajeCancelacion: 'Ya no necesito el servicio.',
-      fechaCancelacion: '2025-01-05',
-    },
-    {
-      id: 3,
-      cliente: 'Carlos López',
-      servicio: 'Cambio de llantas',
-      fecha: '2025-01-05',
-      hora: '14:00',
-      canceladoPor: 'empleado',
-      empleadoCancelador: 'Pedro',
-      mensajeCancelacion: 'Se encontró una falla en el vehículo.',
-      fechaCancelacion: '2025-01-05',
-    },
-  ]);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const appointmentCancelledData = await getAppointmentsCancelled();
+        console.log("Citas canceladas:", appointmentCancelledData);
+        setAppointmentCancelled(appointmentCancelledData);
+      } catch (error) {
+        console.error("Error al obtener los datos:", error);
+      }
+    };
+    fetchData();
+  }, []);
+
+  
+
 
   const [filters, setFilters] = useState([{ type: '', value: '' }]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -60,9 +43,9 @@ function CitasCanceladas() {
         filter.type === 'nombreCancelador'
           ? 'Nombre del cancelador: ' + filter.value
           : filter.type.charAt(0).toUpperCase() +
-            filter.type.slice(1) +
-            ': ' +
-            filter.value,
+          filter.type.slice(1) +
+          ': ' +
+          filter.value,
       link: '#',
     }));
     return [...staticBreadcrumbs, ...filterBreadcrumbs];
@@ -102,33 +85,70 @@ function CitasCanceladas() {
     setFilters(newFilters);
   };
 
-  const filteredCitas = citas.filter((cita) => {
+  const filteredCitas = appointmentCancelled.filter((cita) => {
     const matchesSearch =
       searchQuery === '' ||
       Object.values(cita).some((val) =>
         normalizeStr(String(val)).includes(normalizeStr(searchQuery))
       );
+
     const matchesAdvanced = filters.every((filter) => {
       if (filter.type.trim() === '' || filter.value.trim() === '') return true;
+
+      // Filtrar por canceladoPor
       if (filter.type === 'canceladoPor') {
-        return normalizeStr(cita.canceladoPor) === normalizeStr(filter.value);
-      } else if (filter.type === 'nombreCancelador') {
-        return (
-          cita.empleadoCancelador &&
-          normalizeStr(cita.empleadoCancelador).includes(
-            normalizeStr(filter.value)
-          )
-        );
-      } else {
-        const fieldValue = cita[filter.type];
-        if (!fieldValue) return false;
-        return normalizeStr(String(fieldValue)).includes(
-          normalizeStr(filter.value)
+        return cita.cancelaciones.some(
+          (cancelacion) =>
+            normalizeStr(cancelacion.canceladoPor).includes(normalizeStr(filter.value))
         );
       }
+      // Filtrar por nombreCancelador (Empleado o Cliente)
+      else if (filter.type === 'nombreCancelador') {
+        return cita.cancelaciones.some(
+          (cancelacion) =>
+            normalizeStr(cancelacion.canceladoPor).includes(normalizeStr(filter.value))
+        );
+      }
+      // Filtrar por nombreCliente
+      else if (filter.type === 'cliente') {
+        const normalizedCliente = normalizeStr(cita.nombreCliente || ''); // Si no hay nombreCliente, se reemplaza por una cadena vacía
+        const normalizedFilter = normalizeStr(filter.value || ''); // Si no hay valor en el filtro, se reemplaza por una cadena vacía
+
+        // Verificamos si el valor del filtro no está vacío y si existe nombreCliente
+        if (normalizedFilter === '') return true; // Si el filtro está vacío, no aplicamos el filtro
+        if (normalizedCliente === '') return false; // Si no hay nombreCliente, no lo incluimos
+
+        // Si los valores son válidos, verificamos si el nombreCliente contiene el valor del filtro
+        return normalizedCliente.includes(normalizedFilter);
+      }
+
+      // Filtrar por servicio
+      else if (filter.type === 'servicio') {
+        // Obtener todos los servicios de la cita
+        const servicios = cita.services || [];
+        const normalizedFilter = normalizeStr(filter.value || ''); // Normalizar el valor del filtro
+
+        // Recorrer el arreglo de servicios y verificar si alguno cumple con el filtro
+        const match = servicios.some(servicio =>
+          normalizeStr(servicio.servicio).includes(normalizedFilter) // Compara cada servicio con el filtro
+        );
+
+        return normalizedFilter === '' || match; // Si el filtro está vacío, no aplicamos el filtro, si hay coincidencia, lo mostramos
+      }
+
+
+      // Para los demás filtros (campo general)
+      else {
+        const fieldValue = cita[filter.type];
+        if (!fieldValue) return false; // Si no existe el campo, lo excluimos
+        return normalizeStr(String(fieldValue)).includes(normalizeStr(filter.value));
+      }
     });
+
     return matchesSearch && matchesAdvanced;
   });
+
+
 
   const baseFilterOptions = ['cliente', 'servicio', 'canceladoPor'];
   const hasCanceladoPor = filters.some((f) => f.type === 'canceladoPor');
@@ -180,7 +200,11 @@ function CitasCanceladas() {
                         <option key={type} value={type}>
                           {type === 'nombreCancelador'
                             ? 'Nombre del cancelador'
-                            : type.charAt(0).toUpperCase() + type.slice(1)}
+                            : type === 'cliente'
+                              ? 'Nombre del Cliente'
+                              : type === 'servicio'
+                                ? 'Servicio'
+                                : type.charAt(0).toUpperCase() + type.slice(1)}
                         </option>
                       ))}
                   </select>
@@ -236,56 +260,53 @@ function CitasCanceladas() {
             {filteredCitas.length > 0 ? (
               <div className="cardCitas grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredCitas.map((cita) => (
-                  <div
-                    key={cita.id}
-                    className="reparacion-card card-transition"
-                  >
+                  <div key={cita.cita_id} className="reparacion-card card-transition">
                     <div className="mb-2">
                       <span className="detalle-label">Cliente: </span>
-                      <span className="detalle-costo">{cita.cliente}</span>
+                      <span className="detalle-costo">{cita.nombreCliente}</span>
                     </div>
                     <div className="mb-2">
-                      <span className="detalle-label">Servicio: </span>
-                      <span className="detalle-costo">{cita.servicio}</span>
+                      <span className="detalle-label">Estado de la cita: </span>
+                      <span className="detalle-costo">{cita.estadoCita}</span>
                     </div>
                     <div className="mb-2">
                       <span className="detalle-label">Fecha de la cita: </span>
-                      <span className="detalle-costo">{cita.fecha}</span>
+                      <span className="detalle-costo">{new Date(cita.fecha).toLocaleDateString()}</span>
                     </div>
                     <div className="mb-2">
                       <span className="detalle-label">Hora: </span>
                       <span className="detalle-costo">{cita.hora}</span>
                     </div>
-                    <div className="mb-2">
-                      <span className="detalle-label">Cancelado por: </span>
-                      {cita.canceladoPor === 'cliente' ? (
-                        <span className="detalle-costo">Cliente</span>
-                      ) : (
-                        <>
-                          <span className="detalle-costo">Empleado </span>
-                          <span className="detalle-costo">
-                            {cita.empleadoCancelador}
-                          </span>
-                        </>
-                      )}
-                    </div>
-                    {cita.mensajeCancelacion && (
-                      <div className="mb-2">
-                        <span className="detalle-label">
-                          Mensaje de cancelación:{' '}
-                        </span>
-                        <span className="detalle-costo">
-                          {cita.mensajeCancelacion}
-                        </span>
+
+                    {/* Mostrar detalles de las cancelaciones */}
+                    {cita.cancelaciones.map((cancelacion, index) => (
+                      <div key={index}>
+                        <div className="mb-2">
+                          <span className="detalle-label">Cancelado por: </span>
+                          <span className="detalle-costo">{cancelacion.canceladoPor}</span>
+                        </div>
+                        <div className="mb-2">
+                          <span className="detalle-label">Motivo: </span>
+                          <span className="detalle-costo">{cancelacion.motivo}</span>
+                        </div>
+                        <div className="mb-2">
+                          <span className="detalle-label">Fecha de cancelación: </span>
+                          <span className="detalle-costo">{new Date(cancelacion.canceladoEn).toLocaleString()}</span>
+                        </div>
                       </div>
-                    )}
+                    ))}
+
+                    {/* Mostrar los servicios */}
                     <div className="mb-2">
-                      <span className="detalle-label">
-                        Fecha de cancelación:{' '}
-                      </span>
-                      <span className="detalle-costo">
-                        {cita.fechaCancelacion}
-                      </span>
+                      <span className="detalle-label">Servicios:</span>
+                      <div>
+                        {cita.services.map((service) => (
+                          <div key={service.servicio_id} className="mb-2">
+                            <span className="detalle-costo">{service.servicio}</span>
+                            <span className="detalle-costo">{`Costo: ${service.costoServicio}`}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -295,6 +316,7 @@ function CitasCanceladas() {
                 No se encontraron citas canceladas con los filtros aplicados.
               </p>
             )}
+
           </div>
         </form>
       </div>
