@@ -64,9 +64,24 @@ export const getAppointmentById = async (appointmentId) => {
     }
 }
 
+export const getAppointmentsWithServicesID = async (employeeId) => {
+    try {
+        const url = employeeId
+            ? `/employ/appointments/full/${employeeId}`
+            : `/employ/appointments/full`; 
+
+        const response = await api.get(url);
+        return response.data;
+    } catch (error) {
+        console.error("Error en getAppointmentsWithServicesID:", error);
+        return null;
+    }
+};
+  
+
 export const getAppointmentsInWaiting = async () => {
     try {
-        const response = await api.get(`/employ/appointments/waiting`)
+        const response = await api.get('/employ/appointments/waiting')
         return response.data;
     } catch (error) {
         return handleError(error,'getAppointmentsInWaiting')
@@ -89,5 +104,14 @@ export const getAppointmentsCancelled = async () => {
         return responde.data;
     } catch (error) {
         return handleError(error,'getAppointmentsCancelled')
+    }
+};
+
+export const createRepair = async (repairData) => {
+    try {
+        const response = await api.post('/employ/repairs', repairData);
+        return response.data;
+    } catch (error) {
+        return handleError(error, 'createRepair');
     }
 };

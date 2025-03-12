@@ -100,6 +100,8 @@ function RegistroReparacion() {
   const [errors, setErrors] = useState({});
   const [showNormalConfirmation, setShowNormalConfirmation] = useState(false);
   const [showExtraConfirmation, setShowExtraConfirmation] = useState(false);
+  const [allServices, setAllServices] = useState([]);
+
 
   const pad = (num) => String(num).padStart(2, '0');
 
@@ -109,27 +111,55 @@ function RegistroReparacion() {
     { name: 'Registro reparacion', link: '/registroreparaciones' },
   ];
   useEffect(() => {
-    const storedCita = localStorage.getItem('selectedCita');
-    if (storedCita) {
-      const citaObj = JSON.parse(storedCita);
-      setCita(citaObj);
-      setComentario(citaObj.comentario || '');
-      setTempCost(parseFloat(citaObj.costo));
-      const serviciosIniciales = citaObj.servicio
-        ? citaObj.servicio.split('\n')
-        : [];
-      setTempServices(serviciosIniciales);
-      const ahora = new Date();
-      const formattedDateTime = `${pad(ahora.getDate())}/${pad(ahora.getMonth() + 1)}/${ahora.getFullYear()} ${pad(ahora.getHours())}:${pad(ahora.getMinutes())}`;
-      setAtencionDateTime(formattedDateTime);
-      setEmpleado('Pedro Pérez');
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('id');
+  
+    if (id) {
+      fetch(`http://localhost:3000/employ/appointment/${id}`)
+        .then((response) => response.json())
+        .then((data) => {
+          setCita(data);
+          setTempCost(parseFloat(data.total));
+          let serviciosIniciales = [];
+          if (data.services && Array.isArray(data.services)) {
+            serviciosIniciales = data.services.map((item) => item.servicio);
+          } else if (data.servicio) {
+            serviciosIniciales = data.servicio.split('\n');
+          }
+          setTempServices(serviciosIniciales);
+          const ahora = new Date();
+          const formattedDateTime = `${pad(ahora.getDate())}/${pad(
+            ahora.getMonth() + 1
+          )}/${ahora.getFullYear()} ${pad(ahora.getHours())}:${pad(
+            ahora.getMinutes()
+          )}`;
+          setAtencionDateTime(formattedDateTime);
+          setEmpleado(data.nombreEmpleado || 'Pedro Pérez');
+        })
+        .catch((error) => {
+          console.error("Error al obtener la cita:", error);
+        });
     } else {
       const ahora = new Date();
-      const formattedDateTime = `${ahora.getFullYear()}-${pad(ahora.getMonth() + 1)}-${pad(ahora.getDate())}T${pad(ahora.getHours())}:${pad(ahora.getMinutes())}`;
+      const formattedDateTime = `${ahora.getFullYear()}-${pad(
+        ahora.getMonth() + 1
+      )}-${pad(ahora.getDate())}T${pad(ahora.getHours())}:${pad(
+        ahora.getMinutes()
+      )}`;
       setAtencionDateTime(formattedDateTime);
       setTempCost(0);
     }
   }, []);
+  
+  useEffect(() => {
+    fetch("http://localhost:3000/admin/all-services")
+      .then((res) => res.json())
+      .then((data) => {
+        setAllServices(data);
+      })
+      .catch((error) => console.error("Error al obtener los servicios:", error));
+  }, []);
+  
 
   const handleSumarExtra = () => {
     const extraVal = parseFloat(extra) || 0;
@@ -150,14 +180,16 @@ function RegistroReparacion() {
     const inputValue = e.target.value;
     setServiciosExtra(inputValue);
     if (inputValue.trim() !== '') {
-      const filtered = allowedServices.filter((service) =>
-        service.toLowerCase().startsWith(inputValue.toLowerCase())
+      const filtered = allServices.filter((service) =>
+        service.nombre.toLowerCase().startsWith(inputValue.toLowerCase())
       );
-      setSuggestions(filtered);
+      // Extraemos solo el nombre del servicio para sugerirlo
+      setSuggestions(filtered.map((service) => service.nombre));
     } else {
       setSuggestions([]);
     }
   };
+  
 
   const handleSelectSuggestion = (suggestion) => {
     setServiciosExtra(suggestion);
@@ -166,10 +198,16 @@ function RegistroReparacion() {
 
   const handleAgregarServicio = () => {
     const servicio = serviciosExtra.trim();
-    if (servicio !== '' && allowedServices.includes(servicio)) {
+    const validService = allServices.find(
+      (service) => service.nombre.toLowerCase() === servicio.toLowerCase()
+    );
+  
+    if (servicio !== '' && validService) {
       if (
         tempServices.includes(servicio) ||
-        (cita && cita.servicio && cita.servicio.split('\n').includes(servicio))
+        (cita &&
+          cita.servicio &&
+          cita.servicio.split('\n').includes(servicio))
       ) {
         setErrors((prev) => ({
           ...prev,
@@ -188,6 +226,7 @@ function RegistroReparacion() {
       }));
     }
   };
+  
 
   const handleQuitarServicio = (servicio) => {
     setTempServices((prev) => prev.filter((s) => s !== servicio));
@@ -313,33 +352,33 @@ function RegistroReparacion() {
     return (
       <div>
         <Breadcrumbs paths={breadcrumbPaths} />
-        <div className="citasContainer">
+        <div className="form-container w-[680px] mx-auto">
           <form className="citasForm flex flex-col">
             <h1 className="form-title text-center">Registro de Reparación</h1>
             <div className="reparacion-card mb-4">
               {/* Datos automáticos */}
               <div className="mb-2">
                 <span className="detalle-label">Empleado: </span>
-                <span className="detalle-costo">{empleado}</span>
+                <span className="detalle-costo">{cita.nombreEmpleado || empleado}</span>
               </div>
               <div className="mb-4">
-                <span className="detalle-label">
-                  Fecha y Hora de Atención:{' '}
-                </span>
+                <span className="detalle-label">Fecha y Hora de Atención: </span>
                 <span className="detalle-costo">{atencionDateTime}</span>
                 {errors.atencionDateTime && (
-                  <div className="text-red-500 text-xs">
-                    {errors.atencionDateTime}
-                  </div>
+                  <div className="text-red-500 text-xs">{errors.atencionDateTime}</div>
                 )}
               </div>
               <div className="mb-2">
                 <span className="detalle-label">Cliente: </span>
-                <span className="detalle-costo">{cita.cliente}</span>
+                <span className="detalle-costo">{cita.nombreCliente}</span>
               </div>
               <div className="mb-2">
                 <span className="detalle-label">Servicio: </span>
-                <span className="detalle-costo">{cita.servicio}</span>
+                <span className="detalle-costo">
+                  {Array.isArray(cita.services)
+                    ? cita.services.map((item) => item.servicio).join(', ')
+                    : cita.servicio}
+                </span>
               </div>
               <div className="mb-2">
                 <span className="detalle-label">Fecha cita: </span>
@@ -350,8 +389,16 @@ function RegistroReparacion() {
                 <span className="detalle-costo">{cita.hora}</span>
               </div>
               <div className="mb-2">
+                <span className="detalle-label">Marca: </span>
+                <span className="detalle-costo">{cita.marca}</span>
+              </div>
+              <div className="mb-2">
+                <span className="detalle-label">Modelo: </span>
+                <span className="detalle-costo">{cita.modelo}</span>
+              </div>
+              <div className="mb-2">
                 <span className="detalle-label">Costo Actual: </span>
-                <span className="detalle-costo">{`$${cita.costo}`}</span>
+                <span className="detalle-costo">{`$${cita.total}`}</span>
               </div>
               <div className="mb-2">
                 <span className="detalle-label">Comentario: </span>
@@ -362,9 +409,7 @@ function RegistroReparacion() {
                   placeholder="Escribe un comentario sobre la reparación..."
                 />
                 {errors.comentario && (
-                  <div className="text-red-500 text-xs">
-                    {errors.comentario}
-                  </div>
+                  <div className="text-red-500 text-xs">{errors.comentario}</div>
                 )}
               </div>
               <div className="mb-2 flex flex-col sm:flex-row gap-2 items-center">
@@ -382,18 +427,10 @@ function RegistroReparacion() {
                     placeholder="Extra"
                   />
                 </div>
-                <button
-                  type="button"
-                  className="btn-aceptar mt-5"
-                  onClick={handleSumarExtra}
-                >
+                <button type="button" className="btn-aceptar mt-5" onClick={handleSumarExtra}>
                   Sumar
                 </button>
-                <button
-                  type="button"
-                  className="btn-cancelar mt-5"
-                  onClick={handleRestarExtra}
-                >
+                <button type="button" className="btn-cancelar mt-5" onClick={handleRestarExtra}>
                   Restar
                 </button>
               </div>
@@ -410,27 +447,17 @@ function RegistroReparacion() {
                   {suggestions.length > 0 && (
                     <div className="absolute z-10 bg-white border border-gray-300 w-48 text-black">
                       {suggestions.map((sug, idx) => (
-                        <div
-                          key={idx}
-                          className="p-1 cursor-pointer text-sm"
-                          onClick={() => handleSelectSuggestion(sug)}
-                        >
+                        <div key={idx} className="p-1 cursor-pointer text-sm" onClick={() => handleSelectSuggestion(sug)}>
                           {sug}
                         </div>
                       ))}
                     </div>
                   )}
                   {errors.serviciosExtra && (
-                    <div className="text-red-500 text-xs">
-                      {errors.serviciosExtra}
-                    </div>
+                    <div className="text-red-500 text-xs">{errors.serviciosExtra}</div>
                   )}
                 </div>
-                <button
-                  type="button"
-                  className="btn-aceptar mt-5"
-                  onClick={handleAgregarServicio}
-                >
+                <button type="button" className="btn-aceptar mt-5" onClick={handleAgregarServicio}>
                   Añadir Servicio
                 </button>
               </div>
@@ -439,10 +466,7 @@ function RegistroReparacion() {
                   <span className="detalle-label">Servicios: </span>
                   <ul className="detalle-costo text-sm">
                     {tempServices.map((serv, idx) => (
-                      <li
-                        key={idx}
-                        className="grid grid-cols-[1fr_20px] items-center gap-1 px-2 rounded"
-                      >
+                      <li key={idx} className="grid grid-cols-[1fr_20px] items-center gap-1 px-2 rounded">
                         <span>{serv}</span>
                         <button
                           type="button"
@@ -455,9 +479,7 @@ function RegistroReparacion() {
                     ))}
                   </ul>
                   {errors.tempServices && (
-                    <div className="text-red-500 text-xs">
-                      {errors.tempServices}
-                    </div>
+                    <div className="text-red-500 text-xs">{errors.tempServices}</div>
                   )}
                 </div>
               )}
@@ -467,18 +489,10 @@ function RegistroReparacion() {
               </div>
             </div>
             <div className="flex gap-4 justify-center">
-              <button
-                type="button"
-                className="btn-aceptar"
-                onClick={handleSubmitNormal}
-              >
+              <button type="button" className="btn-aceptar" onClick={handleSubmitNormal}>
                 Guardar
               </button>
-              <button
-                type="button"
-                className="btn-cancelar"
-                onClick={handleCancelar}
-              >
+              <button type="button" className="btn-cancelar" onClick={handleCancelar}>
                 Cancelar
               </button>
             </div>
@@ -486,11 +500,7 @@ function RegistroReparacion() {
         </div>
         {showNormalConfirmation && (
           <ConfirmationModal
-            title={
-              <span className="text-yellow-500">
-                Confirmación de Registro de Reparación
-              </span>
-            }
+            title={<span className="text-yellow-500">Confirmación de Registro de Reparación</span>}
             message={<>¿Está seguro de guardar el registro de reparación?</>}
             onConfirm={() => {
               saveReparacion();
@@ -507,9 +517,7 @@ function RegistroReparacion() {
         <Breadcrumbs paths={breadcrumbPaths} />
         <div className="form-container w-[680px] mx-auto">
           <form className="citasForm flex flex-col">
-            <h1 className="form-title text-center mb-1">
-              Registro de Reparación Extra
-            </h1>
+            <h1 className="form-title text-center mb-1">Registro de Reparación Extra</h1>
             <div className="">
               <label className="detalle-label" htmlFor="atencionDateTime">
                 Fecha y Hora de Atención:
@@ -522,9 +530,7 @@ function RegistroReparacion() {
                 onChange={(e) => setAtencionDateTime(e.target.value)}
               />
               {errors.atencionDateTime && (
-                <div className="text-red-500 text-xs">
-                  {errors.atencionDateTime}
-                </div>
+                <div className="text-red-500 text-xs">{errors.atencionDateTime}</div>
               )}
             </div>
             <div className="relative">
@@ -570,9 +576,7 @@ function RegistroReparacion() {
                 </div>
               )}
               {errors.selectedClient && (
-                <div className="text-red-500 text-xs">
-                  {errors.selectedClient}
-                </div>
+                <div className="text-red-500 text-xs">{errors.selectedClient}</div>
               )}
             </div>
             {selectedClient && (
@@ -598,9 +602,7 @@ function RegistroReparacion() {
                     ))}
                   </select>
                   {errors.selectedMarca && (
-                    <div className="text-red-500 text-xs">
-                      {errors.selectedMarca}
-                    </div>
+                    <div className="text-red-500 text-xs">{errors.selectedMarca}</div>
                   )}
                 </div>
                 {selectedMarca && (
@@ -624,9 +626,7 @@ function RegistroReparacion() {
                         ))}
                     </select>
                     {errors.selectedModelo && (
-                      <div className="text-red-500 text-xs">
-                        {errors.selectedModelo}
-                      </div>
+                      <div className="text-red-500 text-xs">{errors.selectedModelo}</div>
                     )}
                   </div>
                 )}
@@ -668,16 +668,10 @@ function RegistroReparacion() {
                   </div>
                 )}
                 {errors.serviciosExtra && (
-                  <div className="text-red-500 text-xs">
-                    {errors.serviciosExtra}
-                  </div>
+                  <div className="text-red-500 text-xs">{errors.serviciosExtra}</div>
                 )}
               </div>
-              <button
-                type="button"
-                className="btn-aceptar mt-5"
-                onClick={handleAgregarServicio}
-              >
+              <button type="button" className="btn-aceptar mt-5" onClick={handleAgregarServicio}>
                 Agregar
               </button>
             </div>
@@ -696,18 +690,10 @@ function RegistroReparacion() {
                   placeholder="Extra"
                 />
               </div>
-              <button
-                type="button"
-                className="btn-aceptar mt-5"
-                onClick={handleSumarExtra}
-              >
+              <button type="button" className="btn-aceptar mt-5" onClick={handleSumarExtra}>
                 Sumar
               </button>
-              <button
-                type="button"
-                className="btn-cancelar mt-5"
-                onClick={handleRestarExtra}
-              >
+              <button type="button" className="btn-cancelar mt-5" onClick={handleRestarExtra}>
                 Restar
               </button>
             </div>
@@ -716,10 +702,7 @@ function RegistroReparacion() {
                 <span className="detalle-label">Servicios: </span>
                 <ul className="detalle-costo text-sm">
                   {tempServices.map((serv, idx) => (
-                    <li
-                      key={idx}
-                      className="grid grid-cols-[1fr_20px] items-center gap-1 px-2 rounded"
-                    >
+                    <li key={idx} className="grid grid-cols-[1fr_20px] items-center gap-1 px-2 rounded">
                       <span>{serv}</span>
                       <button
                         type="button"
@@ -732,9 +715,7 @@ function RegistroReparacion() {
                   ))}
                 </ul>
                 {errors.tempServices && (
-                  <div className="text-red-500 text-xs">
-                    {errors.tempServices}
-                  </div>
+                  <div className="text-red-500 text-xs">{errors.tempServices}</div>
                 )}
               </div>
             )}
@@ -743,18 +724,10 @@ function RegistroReparacion() {
               <span className="detalle-costo">{`$${tempCost}`}</span>
             </div>
             <div className="flex gap-2 justify-center">
-              <button
-                type="button"
-                className="btn-aceptar"
-                onClick={handleSubmitExtra}
-              >
+              <button type="button" className="btn-aceptar" onClick={handleSubmitExtra}>
                 Guardar
               </button>
-              <button
-                type="button"
-                className="btn-cancelar"
-                onClick={handleCancelar}
-              >
+              <button type="button" className="btn-cancelar" onClick={handleCancelar}>
                 Cancelar
               </button>
             </div>
@@ -762,14 +735,8 @@ function RegistroReparacion() {
         </div>
         {showExtraConfirmation && (
           <ConfirmationModal
-            title={
-              <span className="text-yellow-500">
-                Confirmación de Registro de Reparación Extra
-              </span>
-            }
-            message={
-              <>¿Está seguro de guardar el registro de reparación extra?</>
-            }
+            title={<span className="text-yellow-500">Confirmación de Registro de Reparación Extra</span>}
+            message={<>¿Está seguro de guardar el registro de reparación extra?</>}
             onConfirm={() => {
               saveReparacion();
               setShowExtraConfirmation(false);
@@ -781,5 +748,7 @@ function RegistroReparacion() {
     );
   }
 }
+
+
 
 export default RegistroReparacion;
