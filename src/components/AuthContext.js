@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { jwtDecode } from 'jwt-decode';
-import { getRole } from '../api/client'; // Asegúrate de importar la función correcta
+import { getRole } from '../api/client'; 
 
 export const AuthContext = createContext();
 
@@ -10,6 +10,7 @@ export const AuthProvider = ({ children }) => {
   const updateAuth = () => {
     const getCookie = (name) => {
       const matches = document.cookie.match(
+        
         new RegExp(
           '(?:^|; )' +
             name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') +
