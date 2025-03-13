@@ -136,7 +136,6 @@ const AppRoutes = () => {
         }
       />
 
-
       {/* Rutas protegidas para Empleados */}
       <Route
         path="aprobacioncitas"
@@ -165,9 +164,8 @@ const AppRoutes = () => {
       <Route
         path="registroreparaciones"
         element={
-          <ProtectedRoute allowedRoles={['empleado']}>
             <RegistroReparaciones />
-          </ProtectedRoute>
+          
         }
       />
       <Route

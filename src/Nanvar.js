@@ -153,7 +153,19 @@ const Navbar = () => {
                         >
                           Asignación Cita
                         </Link>
+                        
                       </li>
+
+                      <li>
+                        <Link
+                          to="/registroreparaciones"
+                          className="navbar-dropdown-text"
+                        >
+                          registro
+                        </Link>
+                        
+                      </li>
+
                       <li>
                         <Link
                           to="/consultacitas"

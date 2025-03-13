@@ -4,13 +4,27 @@ import { AuthContext } from './components/AuthContext';
 
 const ProtectedRoute = ({ allowedRoles, children }) => {
   const { auth } = useContext(AuthContext);
+
+  // Si no hay usuario autenticado, redirige al login.
   if (!auth || !auth.user) {
     return <Navigate to="/login" replace />;
   }
-  if (allowedRoles && !allowedRoles.includes(auth.role)) {
+
+  // Mientras el rol sigue siendo 'publico' (valor inicial), podemos mostrar un indicador de carga.
+  if (auth.role === 'publico') {
+    return <div>Loading...</div>;
+  }
+  if (
+    allowedRoles &&
+    !allowedRoles
+      .map(role => role.toLowerCase())
+      .includes(auth.role.toLowerCase())
+  ) {
     return <Navigate to="/403" replace />;
   }
+
   return children;
 };
 
 export default ProtectedRoute;
+

@@ -39,7 +39,7 @@ function ConsultarCitas() {
         if (
           auth &&
           auth.user &&
-          (auth.role === "administrador" || auth.role === "empleado")
+          (auth.role === "admin" || auth.role === "empleado")
         ) {
           appointmentsData = await getAppointmentsWithServicesID(auth.user.id);
         } else {
