@@ -57,7 +57,7 @@ export const getAllServices = async () => {
 
 export const getAppointmentById = async (appointmentId) => {
     try {
-        const response = await api.get(`/employ/appointment/${appointmentId}`);
+        const response = await api.get(`s${appointmentId}`);
         return response.data
     } catch (error) {
         return handleError(error,'getAppointmentById');

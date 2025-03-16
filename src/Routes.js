@@ -47,6 +47,7 @@ import CrudServicios from './components/admin/CrudServicios';
 import DatosEstadisticos from './components/admin/DatosEstadisticos';
 import GestionFinanciera from './components/admin/GestionFinanciera';
 import CrudReparaciones from './components/admin/CrudReparaciones';
+import Demandas from './components/admin/Demandas';
 
 const AppRoutes = () => {
   return (
@@ -232,6 +233,13 @@ const AppRoutes = () => {
           <ProtectedRoute allowedRoles={['admin']}>
             <CrudReparaciones />
           </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="demandas"
+        element={
+            <Demandas/>
         }
       />
 

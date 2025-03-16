@@ -9,12 +9,31 @@ import {
   resetPassword,
 } from '../../api/users';
 
+const securityQuestions = [
+  '¿Qué color tenía tu primer automóvil?',
+  '¿Cuál es la marca y modelo de tu primer automóvil?',
+  '¿Cuál es la marca del automóvil que has llevado más veces a un taller?',
+  '¿Cuál es el nombre de tu primera mascota?',
+  '¿En qué ciudad naciste?',
+  '¿Cuál era tu plato favorito cuando eras niño/a?',
+  '¿Qué apodo te pusieron en tu infancia?',
+  '¿Cuál fue el nombre de tu mejor amigo/a de la infancia?',
+  '¿Cuál fue el nombre de tu escuela primaria?',
+  '¿Cuál es el nombre de la calle donde creciste?',
+];
+
 function Recuperacion() {
+  const [securityQuestion, setSecurityQuestion] = useState('');
+  const [securityAnswer, setSecurityAnswer] = useState('');
+  const [securityVerified, setSecurityVerified] = useState(false);
+
   const [email, setEmail] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errors, setErrors] = useState({
+    securityQuestion: '',
+    securityAnswer: '',
     email: '',
     verificationCode: '',
     newPassword: '',
@@ -39,6 +58,16 @@ function Recuperacion() {
     let error = '';
 
     switch (name) {
+      case 'securityQuestion':
+        if (!value) {
+          error = 'Seleccione una pregunta secreta.';
+        }
+        break;
+      case 'securityAnswer':
+        if (!value.trim()) {
+          error = 'La respuesta no puede estar vacía.';
+        }
+        break;
       case 'email':
         if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(value)) {
           error = 'Correo inválido. Debe tener un formato válido (ejemplo: usuario@dominio.com).';
@@ -78,19 +107,38 @@ function Recuperacion() {
   // Manejar el evento onBlur para validar los campos
   const handleBlur = (e) => {
     const { name, value } = e.target;
-    const error = validateInput(name, value.trim());
+    const error = validateInput(name, value);
     setErrors((prev) => ({ ...prev, [name]: error }));
   };
 
   // Manejar el evento onChange para actualizar los estados
   const handleChange = (e) => {
     const { name, value } = e.target;
+    if (name === 'securityQuestion') setSecurityQuestion(value);
+    if (name === 'securityAnswer') setSecurityAnswer(value);
     if (name === 'email') setEmail(value);
     if (name === 'verificationCode') setVerificationCode(value);
     if (name === 'newPassword') setNewPassword(value);
     if (name === 'confirmPassword') setConfirmPassword(value);
 
     setErrors((prev) => ({ ...prev, [name]: '' }));
+  };
+
+  // Enviar datos de la pregunta secreta (se validan pero no se envían a la BD)
+  const handleSecuritySubmit = (e) => {
+    e.preventDefault();
+    const questionError = validateInput('securityQuestion', securityQuestion);
+    const answerError = validateInput('securityAnswer', securityAnswer);
+    if (questionError || answerError) {
+      setErrors((prev) => ({
+        ...prev,
+        securityQuestion: questionError,
+        securityAnswer: answerError,
+      }));
+      return;
+    }
+    toast.success('Pregunta secreta y respuesta verificadas');
+    setSecurityVerified(true);
   };
 
   // Enviar el código de verificación
@@ -180,11 +228,19 @@ function Recuperacion() {
 
   // Cancelar el proceso
   const handleCancel = () => {
+    setSecurityQuestion('');
+    setSecurityAnswer('');
     setEmail('');
     setVerificationCode('');
-    setErrors((prev) => ({ ...prev, email: '' }));
+    setErrors((prev) => ({
+      ...prev,
+      securityQuestion: '',
+      securityAnswer: '',
+      email: '',
+    }));
     setShowNewInputs(false);
     setShowVerificationInput(false);
+    setSecurityVerified(false);
   };
 
   // Mostrar/ocultar contraseña
@@ -202,155 +258,222 @@ function Recuperacion() {
       <div className="form-container">
         <div className="form-card">
           <h1 className="form-title">Recuperación de Contraseña</h1>
-          <form onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label htmlFor="email" className="form-label">
-                Correo Electrónico
-              </label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={email}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                placeholder="Ingresa tu correo"
-                className="form-input"
-                disabled={isEmailVerified}
-              />
-              {errors.email && (
-                <p className="textError">
-                  <FiXCircle className="iconoError" />
-                  {errors.email}
-                </p>
-              )}
-            </div>
 
-            {showVerificationInput && (
+          {/* Sección de Pregunta Secreta */}
+          {!securityVerified && (
+            <form onSubmit={handleSecuritySubmit}>
               <div className="form-group">
-                <label htmlFor="verificationCode" className="form-label">
-                  Código de Verificación
+                <label htmlFor="securityQuestion" className="form-label">
+                  Pregunta Secreta
                 </label>
-                <input
-                  type="text"
-                  id="verificationCode"
-                  name="verificationCode"
-                  value={verificationCode}
+                <select
+                  id="securityQuestion"
+                  name="securityQuestion"
+                  value={securityQuestion}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  placeholder="Ingresa el código de verificación"
                   className="form-input"
-                />
-                {errors.verificationCode && (
+                >
+                  <option value="">Seleccione una pregunta</option>
+                  {securityQuestions.map((q, index) => (
+                    <option key={index} value={q}>
+                      {q}
+                    </option>
+                  ))}
+                </select>
+                {errors.securityQuestion && (
                   <p className="textError">
                     <FiXCircle className="iconoError" />
-                    {errors.verificationCode}
+                    {errors.securityQuestion}
                   </p>
                 )}
               </div>
-            )}
 
-            {showNewInputs && (
-              <>
-                <div className="form-group relative">
-                  <label htmlFor="newPassword" className="form-label">
-                    Nueva Contraseña
-                  </label>
-                  <input
-                    type={showNewPassword ? 'text' : 'password'}
-                    id="newPassword"
-                    name="newPassword"
-                    value={newPassword}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    placeholder="Ingresa tu nueva contraseña"
-                    className="form-input"
-                  />
-                  <button
-                    type="button"
-                    onClick={toggleNewPasswordVisibility}
-                    className="absolute right-3 top-9"
-                  >
-                    {showNewPassword ? (
-                      <FiEyeOff className="iconoVer" />
-                    ) : (
-                      <FiEye className="iconoVer" />
-                    )}
-                  </button>
-                  {errors.newPassword && (
-                    <p className="textError">
-                      <FiXCircle className="iconoError" />
-                      {errors.newPassword}
-                    </p>
-                  )}
-                </div>
+              <div className="form-group">
+                <label htmlFor="securityAnswer" className="form-label">
+                  Respuesta
+                </label>
+                <input
+                  type="text"
+                  id="securityAnswer"
+                  name="securityAnswer"
+                  value={securityAnswer}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  placeholder="Ingresa tu respuesta"
+                  className="form-input"
+                />
+                {errors.securityAnswer && (
+                  <p className="textError">
+                    <FiXCircle className="iconoError" />
+                    {errors.securityAnswer}
+                  </p>
+                )}
+              </div>
 
-                <div className="form-group relative">
-                  <label htmlFor="confirmPassword" className="form-label">
-                    Repetir Contraseña
-                  </label>
-                  <input
-                    type={showConfirmPassword ? 'text' : 'password'}
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    value={confirmPassword}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    placeholder="Repite tu nueva contraseña"
-                    className="form-input"
-                  />
-                  <button
-                    type="button"
-                    onClick={toggleConfirmPasswordVisibility}
-                    className="absolute right-3 top-9"
-                  >
-                    {showConfirmPassword ? (
-                      <FiEyeOff className="iconoVer" />
-                    ) : (
-                      <FiEye className="iconoVer" />
-                    )}
-                  </button>
-                  {errors.confirmPassword && (
-                    <p className="textError">
-                      <FiXCircle className="iconoError" />
-                      {errors.confirmPassword}
-                    </p>
-                  )}
-                </div>
-              </>
-            )}
-
-            <div className="form-group flex gap-4 mt-4">
-              {showNewInputs ? (
-                <button
-                  type="button"
-                  className="btn-aceptar"
-                  onClick={handleModalSubmit}
-                >
-                  Aceptar
-                </button>
-              ) : showVerificationInput ? (
-                <button
-                  type="button"
-                  className="btn-aceptar"
-                  onClick={handleVerificationSubmit}
-                >
-                  Verificar Código
-                </button>
-              ) : (
+              <div className="form-group flex gap-4 mt-4">
                 <button type="submit" className="btn-aceptar">
-                  Aceptar
+                  Enviar Respuesta
                 </button>
+                <button type="button" className="btn-cancelar" onClick={handleCancel}>
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* Resto del formulario solo se muestra si la pregunta secreta fue verificada */}
+          {securityVerified && (
+            <form onSubmit={handleSubmit}>
+              <div className="form-group">
+                <label htmlFor="email" className="form-label">
+                  Correo Electrónico
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={email}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  placeholder="Ingresa tu correo"
+                  className="form-input"
+                  disabled={isEmailVerified}
+                />
+                {errors.email && (
+                  <p className="textError">
+                    <FiXCircle className="iconoError" />
+                    {errors.email}
+                  </p>
+                )}
+              </div>
+
+              {showVerificationInput && (
+                <div className="form-group">
+                  <label htmlFor="verificationCode" className="form-label">
+                    Código de Verificación
+                  </label>
+                  <input
+                    type="text"
+                    id="verificationCode"
+                    name="verificationCode"
+                    value={verificationCode}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    placeholder="Ingresa el código de verificación"
+                    className="form-input"
+                  />
+                  {errors.verificationCode && (
+                    <p className="textError">
+                      <FiXCircle className="iconoError" />
+                      {errors.verificationCode}
+                    </p>
+                  )}
+                </div>
               )}
-              <button
-                type="button"
-                className="btn-cancelar"
-                onClick={handleCancel}
-              >
-                Cancelar
-              </button>
-            </div>
-          </form>
+
+              {showNewInputs && (
+                <>
+                  <div className="form-group relative">
+                    <label htmlFor="newPassword" className="form-label">
+                      Nueva Contraseña
+                    </label>
+                    <input
+                      type={showNewPassword ? 'text' : 'password'}
+                      id="newPassword"
+                      name="newPassword"
+                      value={newPassword}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      placeholder="Ingresa tu nueva contraseña"
+                      className="form-input"
+                    />
+                    <button
+                      type="button"
+                      onClick={toggleNewPasswordVisibility}
+                      className="absolute right-3 top-9"
+                    >
+                      {showNewPassword ? (
+                        <FiEyeOff className="iconoVer" />
+                      ) : (
+                        <FiEye className="iconoVer" />
+                      )}
+                    </button>
+                    {errors.newPassword && (
+                      <p className="textError">
+                        <FiXCircle className="iconoError" />
+                        {errors.newPassword}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="form-group relative">
+                    <label htmlFor="confirmPassword" className="form-label">
+                      Repetir Contraseña
+                    </label>
+                    <input
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      value={confirmPassword}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      placeholder="Repite tu nueva contraseña"
+                      className="form-input"
+                    />
+                    <button
+                      type="button"
+                      onClick={toggleConfirmPasswordVisibility}
+                      className="absolute right-3 top-9"
+                    >
+                      {showConfirmPassword ? (
+                        <FiEyeOff className="iconoVer" />
+                      ) : (
+                        <FiEye className="iconoVer" />
+                      )}
+                    </button>
+                    {errors.confirmPassword && (
+                      <p className="textError">
+                        <FiXCircle className="iconoError" />
+                        {errors.confirmPassword}
+                      </p>
+                    )}
+                  </div>
+                </>
+              )}
+
+              <div className="form-group flex gap-4 mt-4">
+                {showNewInputs ? (
+                  <button
+                    type="button"
+                    className="btn-aceptar"
+                    onClick={handleModalSubmit}
+                  >
+                    Aceptar
+                  </button>
+                ) : showVerificationInput ? (
+                  <button
+                    type="button"
+                    className="btn-aceptar"
+                    onClick={handleVerificationSubmit}
+                  >
+                    Verificar Código
+                  </button>
+                ) : (
+                  <button type="submit" className="btn-aceptar">
+                    Aceptar
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className="btn-cancelar"
+                  onClick={handleCancel}
+                >
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          )}
         </div>
         <ToastContainer />
       </div>
