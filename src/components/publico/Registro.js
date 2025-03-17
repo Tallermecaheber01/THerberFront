@@ -20,6 +20,22 @@ function Registro() {
   const telefonoReg = useRef(null);
   const contrasenaReg = useRef(null);
   const confirmacionContrasenaReg = useRef(null);
+  // para la se seguridad
+  const securityAnswerReg = useRef(null);
+
+  //las preguntas de seguridad
+  const securityQuestions = [
+    '¿Qué color tenía tu primer automóvil?',
+    '¿Cuál es la marca y modelo de tu primer automóvil?',
+    '¿Cuál es la marca del automóvil que has llevado más veces a un taller?',
+    '¿Cuál es el nombre de tu primera mascota?',
+    '¿En qué ciudad naciste?',
+    '¿Cuál era tu plato favorito cuando eras niño/a?',
+    '¿Qué apodo te pusieron en tu infancia?',
+    '¿Cuál fue el nombre de tu mejor amigo/a de la infancia?',
+    '¿Cuál fue el nombre de tu escuela primaria?',
+    '¿Cuál es el nombre de la calle donde creciste?',
+  ];
 
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
@@ -65,6 +81,11 @@ function Registro() {
       case 'confirmacionContrasena':
         if (value !== contrasenaReg.current.value) {
           return 'Las contraseñas no coinciden.';
+        }
+        break;
+      case 'securityAnswer':
+        if (!/^[a-zA-Z0-9áéíóúÁÉÍÓÚ\s]{3,15}$/.test(value)) {
+          return 'La respuesta debe tener entre 3 y 15 caracteres y no incluir caracteres especiales.';
         }
         break;
       default:
@@ -119,6 +140,8 @@ function Registro() {
     telefonoReg.current.value = '';
     contrasenaReg.current.value = '';
     confirmacionContrasenaReg.current.value = '';
+    // se limpian los nuevos campos 
+    if(securityAnswerReg.current) securityAnswerReg.current.value = '';
     setErrors({});
     setShowRequirements(false);
     setPasswordChecks({
@@ -152,6 +175,7 @@ function Registro() {
       'telefono',
       'contrasena',
       'confirmacionContrasena',
+      // poner lo securityAnswer y securityQuestion
     ];
 
     const newErrors = {};
@@ -197,206 +221,252 @@ function Registro() {
     <div>
       <Breadcrumbs paths={breadcrumbPaths} />
       <div className="form-container">
-        <div className="form-card">
+        <div className="form-card w-full max-w-4xl">
           <h1 className="form-title">Registro</h1>
           <form onSubmit={handleSubmit}>
-            {['nombre', 'apellidoPaterno', 'apellidoMaterno'].map((field) => (
-              <div className="form-group" key={field}>
-                <label htmlFor={field} className="form-label capitalize">
-                  {field.replace(/([A-Z])/g, ' $1')}
-                </label>
-                <input
-                  type="text"
-                  id={field}
-                  name={field}
-                  placeholder={`Ingresa tu ${field}`}
-                  className="form-input"
-                  ref={
-                    {
+            <div className="grid grid-cols-3 gap-4">
+              {['nombre', 'apellidoPaterno', 'apellidoMaterno'].map((field) => (
+                <div className="form-group flex flex-col" key={field}>
+                  <label htmlFor={field} className="form-label capitalize">
+                    {field.replace(/([A-Z])/g, ' $1')}
+                  </label>
+                  <input
+                    type="text"
+                    id={field}
+                    name={field}
+                    placeholder={`Ingresa tu ${field}`}
+                    className="form-input w-full"
+                    ref={{
                       nombre: nombreReg,
                       apellidoPaterno: apellidoPaternoReg,
                       apellidoMaterno: apellidoMaternoReg,
-                    }[field]
-                  }
+                    }[field]}
+                    onBlur={handleBlur}
+                  />
+                  {errors[field] && (
+                    <p className="textError">
+                      <FiXCircle className="iconoError" />
+                      {errors[field]}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+            <div className="grid grid-cols-2 gap-4 mt-4">
+              <div className="form-group flex flex-col">
+                <label htmlFor="correo" className="form-label">
+                  Correo Electrónico
+                </label>
+                <input
+                  type="email"
+                  id="correo"
+                  name="correo"
+                  placeholder="Ingresa tu correo"
+                  className="form-input w-full"
+                  ref={correoReg}
                   onBlur={handleBlur}
+                  onChange={handleChange}
                 />
-                {errors[field] && (
+                {errors.correo && (
                   <p className="textError">
                     <FiXCircle className="iconoError" />
-                    {errors[field]}
+                    {errors.correo}
                   </p>
                 )}
               </div>
-            ))}
-
-            <div className="form-group">
-              <label htmlFor="correo" className="form-label">
-                Correo Electrónico
-              </label>
-              <input
-                type="email"
-                id="correo"
-                name="correo"
-                placeholder="Ingresa tu correo"
-                className="form-input"
-                ref={correoReg}
-                onBlur={handleBlur}
-                onChange={handleChange}
-              />
-              {errors.correo && (
-                <p className="textError">
-                  <FiXCircle className="iconoError" />
-                  {errors.correo}
-                </p>
-              )}
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="telefono" className="form-label">
-                Teléfono
-              </label>
-              <input
-                type="tel"
-                id="telefono"
-                name="telefono"
-                placeholder="Ingresa tu número de teléfono"
-                className="form-input"
-                ref={telefonoReg}
-                onBlur={handleBlur}
-              />
-              {errors.telefono && (
-                <p className="textError">
-                  <FiXCircle className="iconoError" />
-                  {errors.telefono}
-                </p>
-              )}
-            </div>
-
-            <div className="form-group relative">
-              <label htmlFor="contrasena" className="form-label">
-                Contraseña
-              </label>
-              <input
-                type={showPassword ? 'text' : 'password'}
-                id="contrasena"
-                name="contrasena"
-                placeholder="Ingresa tu contraseña"
-                className="form-input"
-                ref={contrasenaReg}
-                onBlur={handleBlur}
-                onChange={handleChange}
-              />
-              <button
-                type="button"
-                onClick={() => togglePasswordVisibility('password')}
-                className="absolute right-3 top-9"
-              >
-                {showPassword ? (
-                  <FiEyeOff className="iconoVer" />
-                ) : (
-                  <FiEye className="iconoVer" />
+              <div className="form-group flex flex-col">
+                <label htmlFor="telefono" className="form-label">
+                  Teléfono
+                </label>
+                <input
+                  type="tel"
+                  id="telefono"
+                  name="telefono"
+                  placeholder="Ingresa tu número de teléfono"
+                  className="form-input w-full"
+                  ref={telefonoReg}
+                  onBlur={handleBlur}
+                />
+                {errors.telefono && (
+                  <p className="textError">
+                    <FiXCircle className="iconoError" />
+                    {errors.telefono}
+                  </p>
                 )}
-              </button>
-              {errors.contrasena && (
-                <p className="textError">
-                  <FiXCircle className="iconoError" />
-                  {errors.contrasena}
-                </p>
-              )}
-              {showRequirements && !allChecksSatisfied && (
-                <div className="requirements-list">
-                  <ul className="list-none p-0 m-0">
-                    <li className="flex items-center gap-2">
-                      {passwordChecks.minLength ? (
-                        <FiCheckCircle className="iconoCorrect" />
-                      ) : (
-                        <FiXCircle className="iconoError" />
-                      )}
-                      <span className="white-text">
-                        Mínimo 8 caracteres (máx. 20)
-                      </span>
-                    </li>
-                    <li className="flex items-center gap-2 ">
-                      {passwordChecks.upperCase ? (
-                        <FiCheckCircle className="iconoCorrect" />
-                      ) : (
-                        <FiXCircle className="iconoError" />
-                      )}
-                      <span className="white-text">Al menos una mayúscula</span>
-                    </li>
-                    <li className="flex items-center gap-2 ">
-                      {passwordChecks.lowerCase ? (
-                        <FiCheckCircle className="iconoCorrect" />
-                      ) : (
-                        <FiXCircle className="iconoError" />
-                      )}
-                      <span className="white-text">Al menos una minúscula</span>
-                    </li>
-                    <li className="flex items-center gap-2 ">
-                      {passwordChecks.number ? (
-                        <FiCheckCircle className="iconoCorrect" />
-                      ) : (
-                        <FiXCircle className="iconoError" />
-                      )}
-                      <span className="white-text">Al menos un número</span>
-                    </li>
-                    <li className="flex items-center gap-2 ">
-                      {passwordChecks.specialChar ? (
-                        <FiCheckCircle className="iconoCorrect" />
-                      ) : (
-                        <FiXCircle className="iconoError" />
-                      )}
-                      <span className="white-text">
-                        Al menos un carácter especial (!@#$%^&*)
-                      </span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      {passwordChecks.noSequence ? (
-                        <FiCheckCircle className="iconoCorrect" />
-                      ) : (
-                        <FiXCircle className="iconoError" />
-                      )}
-                      <span className="white-text">
-                        Sin secuencias obvias como "12345" o "abcd"
-                      </span>
-                    </li>
-                  </ul>
-                </div>
-              )}
+              </div>
             </div>
-
-            <div className="form-group relative">
-              <label htmlFor="confirmacionContrasena" className="form-label">
-                Confirmar Contraseña
-              </label>
-              <input
-                type={showConfirmPassword ? 'text' : 'password'}
-                id="confirmacionContrasena"
-                name="confirmacionContrasena"
-                placeholder="Confirma tu contraseña"
-                className="form-input"
-                ref={confirmacionContrasenaReg}
-                onBlur={handleBlur}
-              />
-              <button
-                type="button"
-                onClick={() => togglePasswordVisibility('confirm')}
-                className="absolute right-3 top-9"
-              >
-                {showConfirmPassword ? (
-                  <FiEyeOff className="iconoVer" />
-                ) : (
-                  <FiEye className="iconoVer" />
+  
+            {/*  Pregunta y Respuesta de Seguridad */}
+            <div className="grid grid-cols-2 gap-4 mt-4">
+              <div className="form-group flex flex-col">
+                <label htmlFor="securityQuestion" className="form-label">
+                  Pregunta de Seguridad
+                </label>
+                <select
+                  id="securityQuestion"
+                  name="securityQuestion"
+                  className="form-input w-full"
+                  defaultValue=""
+                >
+                  <option value="" disabled>
+                    Seleccione una pregunta
+                  </option>
+                  {securityQuestions.map((question, index) => (
+                    <option key={index} value={question}>
+                      {question}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="form-group flex flex-col">
+                <label htmlFor="securityAnswer" className="form-label">
+                  Respuesta de Seguridad
+                </label>
+                <input
+                  type="text"
+                  id="securityAnswer"
+                  name="securityAnswer"
+                  placeholder="Ingresa tu respuesta"
+                  className="form-input w-full"
+                  ref={securityAnswerReg}
+                  onBlur={handleBlur}
+                />
+                {errors.securityAnswer && (
+                  <p className="textError">
+                    <FiXCircle className="iconoError" />
+                    {errors.securityAnswer}
+                  </p>
                 )}
-              </button>
-              {errors.confirmacionContrasena && (
-                <p className="textError">
-                  <FiXCircle className="iconoError" />
-                  {errors.confirmacionContrasena}
-                </p>
-              )}
+              </div>
             </div>
-
+  
+            {/* aqui termina */}
+            <div className="grid grid-cols-2 gap-4 mt-4">
+              <div className="form-group relative flex flex-col">
+                <label htmlFor="contrasena" className="form-label">
+                  Contraseña
+                </label>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  id="contrasena"
+                  name="contrasena"
+                  placeholder="Ingresa tu contraseña"
+                  className="form-input w-full"
+                  ref={contrasenaReg}
+                  onBlur={handleBlur}
+                  onChange={handleChange}
+                />
+                <button
+                  type="button"
+                  onClick={() => togglePasswordVisibility('password')}
+                  className="absolute right-3 top-9"
+                >
+                  {showPassword ? (
+                    <FiEyeOff className="iconoVer" />
+                  ) : (
+                    <FiEye className="iconoVer" />
+                  )}
+                </button>
+                {errors.contrasena && (
+                  <p className="textError">
+                    <FiXCircle className="iconoError" />
+                    {errors.contrasena}
+                  </p>
+                )}
+                {showRequirements && !allChecksSatisfied && (
+                  <div className="requirements-list">
+                    <ul className="list-none p-0 m-0">
+                      <li className="flex items-center gap-2">
+                        {passwordChecks.minLength ? (
+                          <FiCheckCircle className="iconoCorrect" />
+                        ) : (
+                          <FiXCircle className="iconoError" />
+                        )}
+                        <span className="white-text">
+                          Mínimo 8 caracteres (máx. 20)
+                        </span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        {passwordChecks.upperCase ? (
+                          <FiCheckCircle className="iconoCorrect" />
+                        ) : (
+                          <FiXCircle className="iconoError" />
+                        )}
+                        <span className="white-text">Al menos una mayúscula</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        {passwordChecks.lowerCase ? (
+                          <FiCheckCircle className="iconoCorrect" />
+                        ) : (
+                          <FiXCircle className="iconoError" />
+                        )}
+                        <span className="white-text">Al menos una minúscula</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        {passwordChecks.number ? (
+                          <FiCheckCircle className="iconoCorrect" />
+                        ) : (
+                          <FiXCircle className="iconoError" />
+                        )}
+                        <span className="white-text">Al menos un número</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        {passwordChecks.specialChar ? (
+                          <FiCheckCircle className="iconoCorrect" />
+                        ) : (
+                          <FiXCircle className="iconoError" />
+                        )}
+                        <span className="white-text">
+                          Al menos un carácter especial (!@#$%^&*)
+                        </span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        {passwordChecks.noSequence ? (
+                          <FiCheckCircle className="iconoCorrect" />
+                        ) : (
+                          <FiXCircle className="iconoError" />
+                        )}
+                        <span className="white-text">
+                          Sin secuencias obvias como "12345" o "abcd"
+                        </span>
+                      </li>
+                    </ul>
+                  </div>
+                )}
+              </div>
+              <div className="form-group relative flex flex-col">
+                <label htmlFor="confirmacionContrasena" className="form-label">
+                  Confirmar Contraseña
+                </label>
+                <input
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  id="confirmacionContrasena"
+                  name="confirmacionContrasena"
+                  placeholder="Confirma tu contraseña"
+                  className="form-input w-full"
+                  ref={confirmacionContrasenaReg}
+                  onBlur={handleBlur}
+                />
+                <button
+                  type="button"
+                  onClick={() => togglePasswordVisibility('confirm')}
+                  className="absolute right-3 top-9"
+                >
+                  {showConfirmPassword ? (
+                    <FiEyeOff className="iconoVer" />
+                  ) : (
+                    <FiEye className="iconoVer" />
+                  )}
+                </button>
+                {errors.confirmacionContrasena && (
+                  <p className="textError">
+                    <FiXCircle className="iconoError" />
+                    {errors.confirmacionContrasena}
+                  </p>
+                )}
+              </div>
+            </div>
+    
             <div className="form-group flex gap-4 mt-4">
               <button type="submit" className="btn-aceptar">
                 Aceptar
@@ -415,6 +485,6 @@ function Registro() {
       </div>
     </div>
   );
-}
+}  
 
 export default Registro;

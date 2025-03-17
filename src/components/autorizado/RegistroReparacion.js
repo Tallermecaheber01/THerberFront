@@ -1,5 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import Breadcrumbs from '../Breadcrumbs';
+import {
+  createRepair // Asegúrate de importar createRepair desde '../../api/employ'
+} from '../../api/employ';
+import { AuthContext } from '../AuthContext'; // Ajusta la ruta si es necesario
 
 const ConfirmationModal = ({ title, message, onConfirm, onCancel }) => {
   return (
@@ -25,64 +29,11 @@ const ConfirmationModal = ({ title, message, onConfirm, onCancel }) => {
 };
 
 const clientes = [
-  {
-    id: 1,
-    nombre: 'Juan Pérez',
-    cars: [{ marca: 'Toyota', modelos: ['Corolla 2019', 'Camry 2020'] }],
-  },
-  {
-    id: 2,
-    nombre: 'María Gómez',
-    cars: [
-      { marca: 'Honda', modelos: ['Civic 2018', 'Accord 2019'] },
-      { marca: 'Ford', modelos: ['Focus 2020'] },
-    ],
-  },
-  {
-    id: 3,
-    nombre: 'Carlos López',
-    cars: [
-      { marca: 'Ford', modelos: ['Focus 2020', 'Mustang 2021'] },
-      { marca: 'Chevrolet', modelos: ['Spark 2018'] },
-    ],
-  },
-  {
-    id: 4,
-    nombre: 'Ana Martínez',
-    cars: [{ marca: 'Hyundai', modelos: ['Elantra 2019'] }],
-  },
-  {
-    id: 5,
-    nombre: 'Luis Rodríguez',
-    cars: [
-      { marca: 'Nissan', modelos: ['Sentra 2020', 'Altima 2021'] },
-      { marca: 'Toyota', modelos: ['RAV4 2022'] },
-    ],
-  },
-  {
-    id: 6,
-    nombre: 'Sofía García',
-    cars: [
-      { marca: 'Kia', modelos: ['Rio 2018'] },
-      { marca: 'Hyundai', modelos: ['Accent 2019', 'Elantra 2020'] },
-    ],
-  },
-  {
-    id: 7,
-    nombre: 'Miguel Torres',
-    cars: [{ marca: 'Chevrolet', modelos: ['Cruze 2019'] }],
-  },
+  // Tus clientes...
 ];
 
 function RegistroReparacion() {
-  const allowedServices = [
-    'Cambio de aceite',
-    'Revisión general',
-    'Cambio de llantas',
-    'Afinación',
-    'Cambio de pastillas',
-  ];
-
+  const { auth } = useContext(AuthContext); // Obtenemos el usuario autenticado
   const [cita, setCita] = useState(null);
   const [comentario, setComentario] = useState('');
   const [extra, setExtra] = useState(0);
@@ -102,7 +53,6 @@ function RegistroReparacion() {
   const [showExtraConfirmation, setShowExtraConfirmation] = useState(false);
   const [allServices, setAllServices] = useState([]);
 
-
   const pad = (num) => String(num).padStart(2, '0');
 
   const breadcrumbPaths = [
@@ -110,10 +60,11 @@ function RegistroReparacion() {
     { name: 'Consulta citas', link: '/consultacitas' },
     { name: 'Registro reparacion', link: '/registroreparaciones' },
   ];
+
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const id = urlParams.get('id');
-  
+
     if (id) {
       fetch(`http://localhost:3000/employ/appointment/${id}`)
         .then((response) => response.json())
@@ -127,13 +78,8 @@ function RegistroReparacion() {
             serviciosIniciales = data.servicio.split('\n');
           }
           setTempServices(serviciosIniciales);
-          const ahora = new Date();
-          const formattedDateTime = `${pad(ahora.getDate())}/${pad(
-            ahora.getMonth() + 1
-          )}/${ahora.getFullYear()} ${pad(ahora.getHours())}:${pad(
-            ahora.getMinutes()
-          )}`;
-          setAtencionDateTime(formattedDateTime);
+          // Convertir la fecha actual a ISO para envío
+          setAtencionDateTime(new Date().toISOString());
           setEmpleado(data.nombreEmpleado || 'Pedro Pérez');
         })
         .catch((error) => {
@@ -150,7 +96,7 @@ function RegistroReparacion() {
       setTempCost(0);
     }
   }, []);
-  
+
   useEffect(() => {
     fetch("http://localhost:3000/admin/all-services")
       .then((res) => res.json())
@@ -159,7 +105,6 @@ function RegistroReparacion() {
       })
       .catch((error) => console.error("Error al obtener los servicios:", error));
   }, []);
-  
 
   const handleSumarExtra = () => {
     const extraVal = parseFloat(extra) || 0;
@@ -183,13 +128,11 @@ function RegistroReparacion() {
       const filtered = allServices.filter((service) =>
         service.nombre.toLowerCase().startsWith(inputValue.toLowerCase())
       );
-      // Extraemos solo el nombre del servicio para sugerirlo
       setSuggestions(filtered.map((service) => service.nombre));
     } else {
       setSuggestions([]);
     }
   };
-  
 
   const handleSelectSuggestion = (suggestion) => {
     setServiciosExtra(suggestion);
@@ -201,7 +144,7 @@ function RegistroReparacion() {
     const validService = allServices.find(
       (service) => service.nombre.toLowerCase() === servicio.toLowerCase()
     );
-  
+
     if (servicio !== '' && validService) {
       if (
         tempServices.includes(servicio) ||
@@ -226,7 +169,6 @@ function RegistroReparacion() {
       }));
     }
   };
-  
 
   const handleQuitarServicio = (servicio) => {
     setTempServices((prev) => prev.filter((s) => s !== servicio));
@@ -237,7 +179,6 @@ function RegistroReparacion() {
       /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|ALTER|CREATE|EXEC)\b)|(--)|(;)/i;
     return pattern.test(input);
   };
-
 
   const validateNormal = () => {
     const newErrors = {};
@@ -278,32 +219,55 @@ function RegistroReparacion() {
     return newErrors;
   };
 
-  const saveReparacion = () => {
-    let reparacion;
+  // Función para preparar y enviar los datos de la reparación
+  const saveReparacion = async () => {
+    let repairPayload;
+    // Obtenemos el idEmpleado desde el contexto (asegúrate de que auth.user exista)
+    const idEmpleado = auth?.user?.id;
+    console.log("idEmpleado obtenido del AuthContext:", idEmpleado);
+
     if (cita) {
-      const serviciosFinales = tempServices.join('\n');
-      reparacion = {
-        ...cita,
-        comentario,
-        costo: tempCost,
-        servicio: serviciosFinales,
-        empleado,
-        atencionDateTime,
+      const costoInicial = parseFloat(cita.total);
+      const totalFinal = tempCost;
+      const extraCost = totalFinal - costoInicial;
+      repairPayload = {
+        idEmpleado: idEmpleado, // Se usa el id obtenido del contexto
+        idCliente: cita.idCliente, // Asegúrate de que este campo exista en la cita
+        idCita: cita.id,
+        fechaHoraAtencion: new Date(atencionDateTime).toISOString(),
+        servicio: tempServices,
+        fechaCita: cita.fecha,
+        horaCita: cita.hora,
+        costoInicial: costoInicial,
+        comentario: comentario,
+        extra: extraCost,
+        totalFinal: totalFinal,
       };
     } else {
-      const serviciosFinales = tempServices.join('\n');
-      reparacion = {
-        cliente: selectedClient.nombre,
-        marca: selectedMarca,
-        modelo: selectedModelo,
-        comentario,
-        costo: tempCost,
-        servicio: serviciosFinales,
-        empleado,
-        atencionDateTime,
+      const costoInicial = 0;
+      const totalFinal = tempCost;
+      const extraCost = totalFinal - costoInicial;
+      repairPayload = {
+        idEmpleado: idEmpleado, // Se usa el id obtenido del contexto
+        idCliente: selectedClient.id,
+        idCita: null,
+        fechaHoraAtencion: new Date(atencionDateTime).toISOString(),
+        servicio: tempServices,
+        fechaCita: "",
+        horaCita: "",
+        costoInicial: costoInicial,
+        comentario: comentario,
+        extra: extraCost,
+        totalFinal: totalFinal,
       };
     }
-    console.log('Datos de la reparación guardados:', reparacion);
+
+    try {
+      const response = await createRepair(repairPayload);
+      console.log("Reparación creada:", response);
+    } catch (error) {
+      console.error("Error al crear la reparación:", error);
+    }
     cerrarFormulario();
   };
 
@@ -748,7 +712,5 @@ function RegistroReparacion() {
     );
   }
 }
-
-
 
 export default RegistroReparacion;
