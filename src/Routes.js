@@ -75,7 +75,7 @@ const AppRoutes = () => {
       <Route
         path="atencioncliente"
         element={
-          <ProtectedRoute allowedRoles={['client']}>
+          <ProtectedRoute allowedRoles={['cliente']}>
             <AtencionCliente />
           </ProtectedRoute>
         }
@@ -83,7 +83,7 @@ const AppRoutes = () => {
       <Route
         path="consultacita"
         element={
-          <ProtectedRoute allowedRoles={['client']}>
+          <ProtectedRoute allowedRoles={['cliente']}>
             <ConsultaCita />
           </ProtectedRoute>
         }
@@ -91,7 +91,7 @@ const AppRoutes = () => {
       <Route
         path="feedback"
         element={
-          <ProtectedRoute allowedRoles={['client']}>
+          <ProtectedRoute allowedRoles={['cliente']}>
             <Feedback />
           </ProtectedRoute>
         }
@@ -99,7 +99,7 @@ const AppRoutes = () => {
       <Route
         path="historialreparaciones"
         element={
-          <ProtectedRoute allowedRoles={['client']}>
+          <ProtectedRoute allowedRoles={['cliente']}>
             <HistorialReparaciones />
           </ProtectedRoute>
         }
@@ -107,7 +107,7 @@ const AppRoutes = () => {
       <Route
         path="nuevovehiculo"
         element={
-          <ProtectedRoute allowedRoles={['client']}>
+          <ProtectedRoute allowedRoles={['cliente']}>
             <NuevoVehiculo />
           </ProtectedRoute>
         }
@@ -115,7 +115,7 @@ const AppRoutes = () => {
       <Route
         path="agregarcita"
         element={
-          <ProtectedRoute allowedRoles={['client']}>
+          <ProtectedRoute allowedRoles={['cliente']}>
             <AgregarCita />
           </ProtectedRoute>
         }
@@ -123,7 +123,7 @@ const AppRoutes = () => {
       <Route
         path="cambiarcita"
         element={
-          <ProtectedRoute allowedRoles={['client']}>
+          <ProtectedRoute allowedRoles={['cliente']}>
             <CambiarCita />
           </ProtectedRoute>
         }
@@ -131,7 +131,7 @@ const AppRoutes = () => {
       <Route
         path="Bienvenida"
         element={
-          <ProtectedRoute allowedRoles={['empleado', 'admin', 'client']}>
+          <ProtectedRoute allowedRoles={['empleado', 'admin', 'cliente']}>
             <Bienvenida />
           </ProtectedRoute>
         }
