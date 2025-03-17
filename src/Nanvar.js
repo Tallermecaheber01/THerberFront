@@ -79,7 +79,7 @@ const Navbar = () => {
             )}
 
             {/* Rutas para usuarios con rol "client" */}
-            {auth?.role === 'client' && (
+            {auth?.role === 'cliente' && (
               <>
                 <li>
                   <Link to="/atencioncliente" className="navbar-link">

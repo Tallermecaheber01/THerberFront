@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { FiXCircle, FiEye, FiEyeOff } from 'react-icons/fi';
 import { ToastContainer, toast } from 'react-toastify';
 import Breadcrumbs from '../Breadcrumbs';
-import { loginUser } from '../../api/users';
+import { login } from '../../api/public';
 import { AuthContext } from '../AuthContext';
 import ReCAPTCHA from 'react-google-recaptcha'; 
 
@@ -75,7 +75,7 @@ const Login = () => {
     }
 
     try {
-      const response = await loginUser({ correo: email, contrasena: password, captcha: captchaValue });
+      const response = await login({ correo: email, contrasena: password, captcha: captchaValue });
       if (response) {
         toast.success('¡Inicio de sesión exitoso!');
         updateAuth();

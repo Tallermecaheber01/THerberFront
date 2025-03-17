@@ -3,7 +3,7 @@ import { FiXCircle, FiEye, FiEyeOff, FiCheckCircle } from 'react-icons/fi';
 import { ToastContainer, toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import 'react-toastify/dist/ReactToastify.css';
-import { sendVerificationCode2 } from '../../api/users';
+import { sendVerificationCode } from '../../api/public';
 import Breadcrumbs from '../Breadcrumbs';
 
 function Registro() {
@@ -176,7 +176,7 @@ function Registro() {
     };
 
     try {
-      await sendVerificationCode2(userData.correo);
+      await sendVerificationCode(userData.correo);
       toast.success('¡Código de verificación enviado!');
 
       setTimeout(() => {

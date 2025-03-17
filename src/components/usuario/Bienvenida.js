@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { jwtDecode } from 'jwt-decode';
-import { getRole, getUserInfo } from '../../api/client';
+import { getUserInfo, getRole} from '../../api/public';
 import { useNavigate } from 'react-router-dom';
 
 function Bienvenida() {
@@ -32,14 +32,14 @@ function Bienvenida() {
       const decodedToken = jwtDecode(token);
 
       // Extraer el id del usuario desde el token
-      const { userId } = decodedToken;
+      const { email } = decodedToken;
 
       // Llamar a la función para obtener la información del usuario
-      getUserInfo(userId, navigate).then((data) => {
+      getUserInfo(email, navigate).then((data) => {
         if (data) {
           setUsuario(data);
           setLoading(false);
-          getRole(userId).then((role) => {});
+          getRole(email).then((role) => {});
         }
       });
     } catch (error) {

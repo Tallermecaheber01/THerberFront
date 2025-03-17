@@ -3,11 +3,12 @@ import { ToastContainer, toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { FiXCircle, FiEye, FiEyeOff } from 'react-icons/fi';
 import Breadcrumbs from '../Breadcrumbs';
+
 import {
-  sendVerificationCode,
-  verifyCode,
+  sendPasswordResetVerificationCode,
+  verifyPasswordResetCode,
   resetPassword,
-} from '../../api/users';
+} from '../../api/public';
 
 function Recuperacion() {
   const [email, setEmail] = useState('');
@@ -104,7 +105,7 @@ function Recuperacion() {
     }
 
     try {
-      await sendVerificationCode(email);
+      await sendPasswordResetVerificationCode(email);
       toast.success('¡Código para recuperar tu contraseña ha sido enviado!');
       setShowVerificationInput(true);
       setIsEmailVerified(true);
@@ -131,7 +132,7 @@ function Recuperacion() {
     }
 
     try {
-      await verifyCode(email, verificationCode);
+      await verifyPasswordResetCode(email, verificationCode);
       toast.success('¡Código verificado correctamente!');
       setShowNewInputs(true);
     } catch (error) {
