@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { jwtDecode } from 'jwt-decode';
-import { getRole } from '../api/client'; 
+import { getRole } from '../api/public'; 
 
 export const AuthContext = createContext();
 
@@ -25,21 +25,23 @@ export const AuthProvider = ({ children }) => {
     if (token) {
       try {
         const decoded = jwtDecode(token);
-        const userId = decoded.userId;
+        console.log("Token decodificado:", decoded);
+        const email = decoded.email;
 
         // Primero, establece el usuario sin el rol
         setAuth({
-          user: { id: userId, correo: decoded.email },
+          user: { email: decoded.email },
           role: 'publico', // Valor temporal hasta obtener el rol real
         });
 
         // Luego, consulta el rol en la base de datos
-        getRole(userId)
-          .then((role) => {
-            setAuth((prevAuth) => ({
-              ...prevAuth,
-              role: role || 'publico', // Actualiza solo el rol
-            }));
+        getRole(email)
+        .then((response) => {
+          const newRole = typeof response === 'string' ? response : response.rol;
+          setAuth((prevAuth) => ({
+            ...prevAuth,
+            role: newRole || 'publico', // Actualiza solo el rol
+          }));
           })
           .catch((error) => {
             console.error('Error obteniendo el rol:', error);
@@ -59,4 +61,4 @@ export const AuthProvider = ({ children }) => {
       {children}
     </AuthContext.Provider>
   );
-};
+}; 

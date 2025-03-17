@@ -17,8 +17,8 @@ const ProtectedRoute = ({ allowedRoles, children }) => {
   if (
     allowedRoles &&
     !allowedRoles
-      .map(role => role.toLowerCase())
-      .includes(auth.role.toLowerCase())
+      .map(role => String(role).toLowerCase())
+      .includes(String(auth.role).toLowerCase())
   ) {
     return <Navigate to="/403" replace />;
   }
