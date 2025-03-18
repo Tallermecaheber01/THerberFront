@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { jwtDecode } from 'jwt-decode';
-import { getRole } from '../api/public'; 
+import { getRole } from '../api/public';
 
 export const AuthContext = createContext();
 
@@ -11,11 +11,11 @@ export const AuthProvider = ({ children }) => {
   const updateAuth = () => {
     const getCookie = (name) => {
       const matches = document.cookie.match(
-        
+
         new RegExp(
           '(?:^|; )' +
-            name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') +
-            '=([^;]*)'
+          name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') +
+          '=([^;]*)'
         )
       );
       return matches ? decodeURIComponent(matches[1]) : undefined;
@@ -30,18 +30,18 @@ export const AuthProvider = ({ children }) => {
 
         // Primero, establece el usuario sin el rol
         setAuth({
-          user: { email: decoded.email },
+          user: { id: decoded.userId, email: decoded.email },
           role: 'publico', // Valor temporal hasta obtener el rol real
         });
 
         // Luego, consulta el rol en la base de datos
         getRole(email)
-        .then((response) => {
-          const newRole = typeof response === 'string' ? response : response.rol;
-          setAuth((prevAuth) => ({
-            ...prevAuth,
-            role: newRole || 'publico', // Actualiza solo el rol
-          }));
+          .then((response) => {
+            const newRole = typeof response === 'string' ? response : response.rol;
+            setAuth((prevAuth) => ({
+              ...prevAuth,
+              role: newRole || 'publico', // Actualiza solo el rol
+            }));
           })
           .catch((error) => {
             console.error('Error obteniendo el rol:', error);

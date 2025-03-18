@@ -115,3 +115,12 @@ export const createRepair = async (repairData) => {
         return handleError(error, 'createRepair');
     }
 };
+
+export const rejectAppointment = async (data) => {
+    try {
+        const response = await api.post('/employ/appointment/reject', data);
+        return response.data;
+    } catch (error) {
+        return handleError(error, 'rejectAppointment')
+    }
+}

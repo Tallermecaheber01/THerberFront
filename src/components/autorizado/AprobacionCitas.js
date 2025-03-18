@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Breadcrumbs from '../Breadcrumbs';
-import { getAppointmentsInWaiting, getAllEmployees, updateWaitingAppointment } from '../../api/employ';
+import { getAppointmentsInWaiting, getAllEmployees, updateWaitingAppointment, rejectAppointment } from '../../api/employ';
+import { AuthContext } from '../AuthContext';
 
 function AprobacionesCitas() {
+  const { auth } = useContext(AuthContext);
   const navigate = useNavigate();
   const [appoinmentInWaiting, setAppointmentInWaiting] = useState([]);
   const [employes, setEmployes] = useState([]);
@@ -230,12 +232,12 @@ function AprobacionesCitas() {
     console.log("Citas antes de la actualización:", appoinmentInWaiting);
     console.log("Cita seleccionada:", selectedCita);
     console.log("Total que se enviará:", Number(total));
-    console.log("Empleado:", selectedEmpleado);
+    console.log("Empleado:", Number(selectedEmpleado));
 
     try {
       // Llamar a la API para actualizar la cita en el backend
       const updatedAppointment = await updateWaitingAppointment(selectedCita.appointment_id, {
-        nombreEmpleado: selectedEmpleado, // Asigna el empleado seleccionado
+        IdPersonal: Number(selectedEmpleado), // Asigna el empleado seleccionado
         total: Number(total),
         estado: "Confirmada", // Se establece el nuevo estado
       });
@@ -289,14 +291,24 @@ function AprobacionesCitas() {
       return;
     }
 
-    try {
-      // Llamar a la API para actualizar el estado a "Rechazada"
-      const updatedAppointment = await updateWaitingAppointment(selectedCita.appointment_id, {
-        estado: "Rechazada",
-        razonRechazo, // Enviar la razón del rechazo al backend
-      });
+    const idPersonal = auth && auth.user ? auth.user.id : null;
 
-      console.log("Respuesta de la API:", updatedAppointment);
+    if (!idPersonal) {
+      console.error("No se encontró el ID del personal.");
+      return;
+    }
+
+    try {
+
+      const data = {
+        idCita: selectedCita.appointment_id,
+        motivo: razonRechazo,
+        idPersonal
+
+      }
+
+      const response = await rejectAppointment(data);
+      console.log("Respuesta de la API:", response);
 
       // Actualizar el estado en el frontend solo si la API responde correctamente
       setAppointmentInWaiting((prevCitas) =>
@@ -504,7 +516,7 @@ function AprobacionesCitas() {
                   >
                     <option value="">Seleccione un trabajador</option>
                     {employes.map((empleado) => (
-                      <option key={empleado.id} value={empleado.nombre}>
+                      <option key={empleado.id} value={empleado.id}>
                         {empleado.nombre}
                       </option>
                     ))}

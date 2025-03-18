@@ -5,7 +5,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import Breadcrumbs from '../Breadcrumbs';
 import { login } from '../../api/public';
 import { AuthContext } from '../AuthContext';
-import ReCAPTCHA from 'react-google-recaptcha'; 
+import ReCAPTCHA from 'react-google-recaptcha';
 
 const Login = () => {
   const breadcrumbPaths = [
@@ -76,9 +76,27 @@ const Login = () => {
 
     try {
       const response = await login({ correo: email, contrasena: password, captcha: captchaValue });
+
       if (response) {
         toast.success('¡Inicio de sesión exitoso!');
         updateAuth();
+
+        // Extraer el token de las cookies
+        const token = document.cookie
+          .split("; ")
+          .find(row => row.startsWith("authToken="))
+          ?.split("=")[1];
+
+        if (token) {
+          setTimeout(() => {
+            // Eliminar la cookie después de 1 hora
+            document.cookie = "authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            toast.info("Tu sesión ha expirado.");
+            navigate('/login'); // Redirigir a la página de login
+          }, 60 * 60 * 1000); // 1 hora
+        }
+
+
         setTimeout(() => navigate('/Bienvenida'), 3000);
       } else {
         toast.error('Credenciales incorrectas.');
@@ -95,6 +113,7 @@ const Login = () => {
       }
     }
   };
+
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -162,7 +181,7 @@ const Login = () => {
             <div className="form-group" style={{ display: 'flex', justifyContent: 'center' }}>
               <div style={{ transform: 'scale(0.8)', transformOrigin: 'center' }}>
                 <ReCAPTCHA
-                  sitekey="6LeG5PAqAAAAAEKr3HP3C_W5OiL5HpPHCFxY5pMK" 
+                  sitekey="6LeG5PAqAAAAAEKr3HP3C_W5OiL5HpPHCFxY5pMK"
                   onChange={onCaptchaChange}
                 />
               </div>
