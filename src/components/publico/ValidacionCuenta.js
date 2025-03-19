@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { registerUser } from '../../api/public';
+import { registerUser, verifyCode } from '../../api/public';
 
 function ValidacionCuenta() {
   const navigate = useNavigate();
   const location = useLocation();
   const [verificationCode, setVerificationCode] = useState('');
-  const userData = location.state?.userData; 
+  const userData = location.state?.userData;
 
   const handleVerificationSubmit = async (e) => {
     e.preventDefault();
@@ -22,11 +22,26 @@ function ValidacionCuenta() {
     }
 
     try {
-      await registerUser(userData);
-      toast.success('¡Usuario Registrado correctamente!');
-      setTimeout(() => {
-        navigate('/login');
-      }, 3000);
+
+      const verificationResponse = await verifyCode({
+        correo: userData.correo,
+        code: verificationCode
+      });
+
+      if (verificationResponse.success) { // Asegúrate de que la API devuelva esta propiedad
+        // Si el código es correcto, procede con el registro
+        await registerUser(userData);
+        toast.success('¡Usuario registrado correctamente!');
+
+        setTimeout(() => {
+          navigate('/login');
+        }, 3000);
+      } else {
+        toast.error('Código de verificación incorrecto', {
+          position: 'top-right',
+          autoClose: 3000,
+        });
+      }
     } catch (error) {
       toast.error('Error en la verificación', {
         position: 'top-right',

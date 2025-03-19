@@ -1,33 +1,35 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { FiXCircle, FiEye, FiEyeOff } from 'react-icons/fi';
 import Breadcrumbs from '../Breadcrumbs';
 
 import {
+  getAllQuestions,
   sendPasswordResetVerificationCode,
   verifyPasswordResetCode,
   resetPassword,
 } from '../../api/public';
 
-const securityQuestions = [
-  '¿Qué color tenía tu primer automóvil?',
-  '¿Cuál es la marca y modelo de tu primer automóvil?',
-  '¿Cuál es la marca del automóvil que has llevado más veces a un taller?',
-  '¿Cuál es el nombre de tu primera mascota?',
-  '¿En qué ciudad naciste?',
-  '¿Cuál era tu plato favorito cuando eras niño/a?',
-  '¿Qué apodo te pusieron en tu infancia?',
-  '¿Cuál fue el nombre de tu mejor amigo/a de la infancia?',
-  '¿Cuál fue el nombre de tu escuela primaria?',
-  '¿Cuál es el nombre de la calle donde creciste?',
-];
+/*const securityQuestions = [
+  { id: 1, pregunta: "¿Qué color tenía tu primer automóvil?" },
+  { id: 2, pregunta: "¿Cuál es la marca y modelo de tu primer automóvil?" },
+  { id: 3, pregunta: "¿Cuál es la marca del automóvil que has llevado más veces a un taller?" },
+  { id: 4, pregunta: "¿Cuál es el nombre de tu primera mascota?" },
+  { id: 5, pregunta: "¿En qué ciudad naciste?" },
+  { id: 6, pregunta: "¿Cuál era tu plato favorito cuando eras niño/a?" },
+  { id: 7, pregunta: "¿Qué apodo te pusieron en tu infancia?" },
+  { id: 8, pregunta: "¿Cuál fue el nombre de tu mejor amigo/a de la infancia?" },
+  { id: 9, pregunta: "¿Cuál fue el nombre de tu escuela primaria?" },
+  { id: 10, pregunta: "¿Cuál es el nombre de la calle donde creciste?" }
+];*/
 
 function Recuperacion() {
+  const [questions, setQuestions] = useState([]);
   const [securityQuestion, setSecurityQuestion] = useState('');
   const [securityAnswer, setSecurityAnswer] = useState('');
   const [securityVerified, setSecurityVerified] = useState(false);
-
+   const securityQuestionReg = useRef(null);
   const [email, setEmail] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -53,6 +55,20 @@ function Recuperacion() {
     { name: 'Login', link: '/login' },
     { name: 'Recuperación', link: '/recuperacion' },
   ];
+
+  const fetchData = async () => {
+    try {
+      const questionResponse = await getAllQuestions();
+      console.log("Preguntas obtenidas:", questionResponse);
+      setQuestions(questionResponse);
+    } catch (error) {
+      console.error("Error al obtener los datos:", error)
+    }
+  }
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   // Función para validar los campos
   const validateInput = (name, value) => {
@@ -270,15 +286,15 @@ function Recuperacion() {
                 <select
                   id="securityQuestion"
                   name="securityQuestion"
-                  value={securityQuestion}
-                  onChange={handleChange}
+                  className="form-input w-full"
+                  defaultValue=""
+                  ref={securityQuestionReg} // Asignar la referencia para acceder al valor seleccionado
                   onBlur={handleBlur}
-                  className="form-input"
                 >
                   <option value="">Seleccione una pregunta</option>
-                  {securityQuestions.map((q, index) => (
-                    <option key={index} value={q}>
-                      {q}
+                  {questions.map((question) => (
+                    <option key={question.id} value={question.id}>
+                      {question.pregunta}
                     </option>
                   ))}
                 </select>

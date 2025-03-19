@@ -33,23 +33,23 @@ export const sendVerificationCode = async (email) => {
     }
 };
 
-export const verifyCode = async (email, code) => {
+export const verifyCode = async ({ correo, code }) => {
     try {
         const response = await api.post('/public/register/verify-code', {
-            email,
-            code,
+            correo, // Ahora enviamos la propiedad "correo"
+            code,   // Y la propiedad "code"
         });
         console.log('Código verificado correctamente:', response.data);
-        // Verificar si la respuesta tiene la propiedad success
         return response.data;
     } catch (error) {
         console.error(
-            'error al verificar el codigo:',
+            'Error al verificar el código:',
             error.response ? error.response.data : error.message
         );
         throw error;
     }
 };
+
 
 export const login = async (loginData) => {
     try {
@@ -142,5 +142,17 @@ export const resetPassword = async (correo, newPassword) => {
             error.response ? error.response.data : error.message
         );
         throw error;
+    }
+}
+
+export const getAllQuestions = async () => {
+    try {
+        const response = await api.get('/public/questions/secret');
+        return response.data;
+    } catch (error) {
+        console.error(
+            'Error al obtener las preguntas:',
+            error.response ? error.response.data : error.message
+        )
     }
 }
