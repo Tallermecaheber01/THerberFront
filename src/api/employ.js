@@ -129,6 +129,7 @@ export const createRepair = async (repairData) => {
     
 };
 
+
 // Función para obtener todas las reparaciones
 export const getAllRepairs = async () => {
     try {
@@ -158,3 +159,13 @@ export const getAllRepairs = async () => {
     }
   };
   
+
+export const rejectAppointment = async (data) => {
+    try {
+        const response = await api.post('/employ/appointment/reject', data);
+        return response.data;
+    } catch (error) {
+        return handleError(error, 'rejectAppointment')
+    }
+}
+

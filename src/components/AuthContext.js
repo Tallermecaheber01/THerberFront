@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { jwtDecode } from 'jwt-decode';
-import { getRole } from '../api/public'; 
+import { getRole } from '../api/public';
 
 export const AuthContext = createContext();
 
@@ -12,8 +12,8 @@ export const AuthProvider = ({ children }) => {
       const matches = document.cookie.match(
         new RegExp(
           '(?:^|; )' +
-            name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') +
-            '=([^;]*)'
+          name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') +
+          '=([^;]*)'
         )
       );
       return matches ? decodeURIComponent(matches[1]) : undefined;

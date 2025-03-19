@@ -283,8 +283,8 @@ function AsignacionCita() {
 
     const appointmentData = {
       appointment: {
-        nombreCliente: clienteSeleccionado.user_nombre,
-        nombreEmpleado: empleadoSeleccionado,
+        IdCliente: clienteSeleccionado.user_id,
+        IdPersonal: Number(empleadoSeleccionado),
         fecha: fecha,
         hora: hora,
         costoExtra: extraAmount,
@@ -299,7 +299,7 @@ function AsignacionCita() {
     };
 
 
-    console.log("Aouto:", vehicleSeleccionado);
+    console.log("Auto:", vehicleSeleccionado);
     // Imprime en consola los valores de las variables relevantes
     console.log("Cliente seleccionado:", clienteSeleccionado.user_nombre);
     // Marca y modelo del auto seleccionado
@@ -468,7 +468,7 @@ function AsignacionCita() {
               >
                 <option value="">Seleccione un empleado</option>
                 {employ.map((empleado) => (
-                  <option key={empleado.id} value={empleado.nombre}>
+                  <option key={empleado.id} value={empleado.id}>
                     {empleado.nombre}
                   </option>
                 ))}

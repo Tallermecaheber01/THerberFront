@@ -78,7 +78,7 @@ function ConsultarCitas() {
     fetchData();
     
     // Configurar el intervalo para refrescar la consulta 
-    const intervalId = setInterval(fetchData, 5000);
+    const intervalId = setInterval(fetchData, 1000);
   
     // Limpiar el intervalo al desmontar el componente
     return () => clearInterval(intervalId);
