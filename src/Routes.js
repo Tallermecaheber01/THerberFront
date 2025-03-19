@@ -2,6 +2,7 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute';
+import TokenWatcher from './components/TokenWatcher';
 
 // Componentes Públicos
 import Home from './components/publico/Home';
@@ -51,201 +52,185 @@ import Demandas from './components/admin/Demandas';
 
 const AppRoutes = () => {
   return (
-    <Routes>
-      {/* Rutas Públicas */}
-      <Route path="/" element={<Home />} />
-      <Route path="registro" element={<Registro />} />
-      <Route path="login" element={<Login />} />
-      <Route path="consultaservicios" element={<ConsultaServicios />} />
-      <Route path="recuperacion" element={<Recuperacion />} />
-      <Route path="verDetalles/:id" element={<VerDetalles />} />
-      <Route path="acercade" element={<AcercaDe />} />
-      <Route path="politicadeprivacidad" element={<PoliticaDePrivacidad />} />
-      <Route path="terminosycondiciones" element={<TerminosYCondiciones />} />
-      <Route path="validacioncuenta" element={<ValidacionCuenta />} />
-      <Route path="Marcas" element={<Marcas />} />
+    <>
+      <TokenWatcher />
+      <Routes>
+        {/* Rutas Públicas */}
+        <Route path="/" element={<Home />} />
+        <Route path="registro" element={<Registro />} />
+        <Route path="login" element={<Login />} />
+        <Route path="consultaservicios" element={<ConsultaServicios />} />
+        <Route path="recuperacion" element={<Recuperacion />} />
+        <Route path="verDetalles/:id" element={<VerDetalles />} />
+        <Route path="acercade" element={<AcercaDe />} />
+        <Route path="politicadeprivacidad" element={<PoliticaDePrivacidad />} />
+        <Route path="terminosycondiciones" element={<TerminosYCondiciones />} />
+        <Route path="validacioncuenta" element={<ValidacionCuenta />} />
+        <Route path="Marcas" element={<Marcas />} />
 
-      {/* Páginas de error */}
-      <Route path="NotFound" element={<PageNotFound />} />
-      <Route path="500" element={<InternalServerError />} />
-      <Route path="403" element={<Unauthorized />} />
-      <Route path="400" element={<BadRequest />} />
+        {/* Páginas de error */}
+        <Route path="NotFound" element={<PageNotFound />} />
+        <Route path="500" element={<InternalServerError />} />
+        <Route path="403" element={<Unauthorized />} />
+        <Route path="400" element={<BadRequest />} />
 
-      {/* Rutas protegidas para Usuarios (Client) */}
-      <Route
-        path="atencioncliente"
-        element={
-          <ProtectedRoute allowedRoles={['cliente']}>
-            <AtencionCliente />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="consultacita"
-        element={
-          <ProtectedRoute allowedRoles={['cliente']}>
-            <ConsultaCita />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="feedback"
-        element={
-          <ProtectedRoute allowedRoles={['cliente']}>
-            <Feedback />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="historialreparaciones"
-        element={
-          <ProtectedRoute allowedRoles={['cliente']}>
-            <HistorialReparaciones />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="nuevovehiculo"
-        element={
-          <ProtectedRoute allowedRoles={['cliente']}>
-            <NuevoVehiculo />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="agregarcita"
-        element={
-          <ProtectedRoute allowedRoles={['cliente']}>
-            <AgregarCita />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="cambiarcita"
-        element={
-          <ProtectedRoute allowedRoles={['cliente']}>
-            <CambiarCita />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="Bienvenida"
-        element={
-          <ProtectedRoute allowedRoles={['empleado', 'admin', 'cliente']}>
-            <Bienvenida />
-          </ProtectedRoute>
-        }
-      />
+        {/* Rutas protegidas para Usuarios (Client) */}
+        <Route
+          path="atencioncliente"
+          element={
+            <ProtectedRoute allowedRoles={['cliente']}>
+              <AtencionCliente />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="consultacita"
+          element={
+            <ProtectedRoute allowedRoles={['cliente']}>
+              <ConsultaCita />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="feedback"
+          element={
+            <ProtectedRoute allowedRoles={['cliente']}>
+              <Feedback />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="historialreparaciones"
+          element={
+            <ProtectedRoute allowedRoles={['cliente']}>
+              <HistorialReparaciones />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="nuevovehiculo"
+          element={
+            <ProtectedRoute allowedRoles={['cliente']}>
+              <NuevoVehiculo />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="agregarcita"
+          element={
+            <ProtectedRoute allowedRoles={['cliente']}>
+              <AgregarCita />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="cambiarcita"
+          element={
+            <ProtectedRoute allowedRoles={['cliente']}>
+              <CambiarCita />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="Bienvenida" element={<Bienvenida />} />
 
-      {/* Rutas protegidas para Empleados */}
-      <Route
-        path="aprobacioncitas"
-        element={
-          <ProtectedRoute allowedRoles={['empleado']}>
-            <AprobacionCitas />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="asignacioncita"
-        element={
-          <ProtectedRoute allowedRoles={['empleado']}>
-            <AsignacionCita />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="consultacitas"
-        element={
-          <ProtectedRoute allowedRoles={['empleado']}>
-            <ConsultaCitas />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="registroreparaciones"
-        element={
-            <RegistroReparaciones />
-          
-        }
-      />
-      <Route
-        path="citasCanceladas"
-        element={
-          <ProtectedRoute allowedRoles={['empleado']}>
-            <CitasCanceladas />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="consultasreparaciones"
-        element={
-          <ProtectedRoute allowedRoles={['empleado']}>
-            <ConsultasReparaciones />
-          </ProtectedRoute>
-        }
-      />
+        {/* Rutas protegidas para Empleados */}
+        <Route
+          path="aprobacioncitas"
+          element={
+            <ProtectedRoute allowedRoles={['empleado']}>
+              <AprobacionCitas />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="asignacioncita"
+          element={
+            <ProtectedRoute allowedRoles={['empleado']}>
+              <AsignacionCita />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="consultacitas"
+          element={
+            <ProtectedRoute allowedRoles={['empleado']}>
+              <ConsultaCitas />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="registroreparaciones" element={<RegistroReparaciones />} />
+        <Route
+          path="citasCanceladas"
+          element={
+            <ProtectedRoute allowedRoles={['empleado']}>
+              <CitasCanceladas />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="consultasreparaciones"
+          element={
+            <ProtectedRoute allowedRoles={['empleado']}>
+              <ConsultasReparaciones />
+            </ProtectedRoute>
+          }
+        />
 
-      {/* Rutas protegidas para Administradores */}
-      <Route
-        path="analisisrendimiento"
-        element={
-          <ProtectedRoute allowedRoles={['admin']}>
-            <AnalisisRendimiento />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="crudregulatorios"
-        element={
-          <ProtectedRoute allowedRoles={['admin']}>
-            <CrudRegulatorios />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="crudservicios"
-        element={
-          <ProtectedRoute allowedRoles={['admin']}>
-            <CrudServicios />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="datosestadisticos"
-        element={
-          <ProtectedRoute allowedRoles={['admin']}>
-            <DatosEstadisticos />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="gestionfinanciera"
-        element={
-          <ProtectedRoute allowedRoles={['admin']}>
-            <GestionFinanciera />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="crudreparaciones"
-        element={
-          <ProtectedRoute allowedRoles={['admin']}>
-            <CrudReparaciones />
-          </ProtectedRoute>
-        }
-      />
+        {/* Rutas protegidas para Administradores */}
+        <Route
+          path="analisisrendimiento"
+          element={
+            <ProtectedRoute allowedRoles={['administrador']}>
+              <AnalisisRendimiento />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="crudregulatorios"
+          element={
+            <ProtectedRoute allowedRoles={['administrador']}>
+              <CrudRegulatorios />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="crudservicios"
+          element={
+            <ProtectedRoute allowedRoles={['administrador']}>
+              <CrudServicios />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="datosestadisticos"
+          element={
+            <ProtectedRoute allowedRoles={['administrador']}>
+              <DatosEstadisticos />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="gestionfinanciera"
+          element={
+            <ProtectedRoute allowedRoles={['administrador']}>
+              <GestionFinanciera />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="crudreparaciones"
+          element={
+            <ProtectedRoute allowedRoles={['administrador']}>
+              <CrudReparaciones />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="demandas" element={<Demandas />} />
 
-      <Route
-        path="demandas"
-        element={
-            <Demandas/>
-        }
-      />
-
-      {/* Ruta para páginas no encontradas */}
-      <Route path="*" element={<Navigate to="/NotFound" replace />} />
-    </Routes>
+        {/* Ruta para páginas no encontradas */}
+        <Route path="*" element={<Navigate to="/NotFound" replace />} />
+      </Routes>
+    </>
   );
 };
 

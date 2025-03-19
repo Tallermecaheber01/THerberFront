@@ -1,17 +1,16 @@
 import React, { useState, useEffect, useContext } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Breadcrumbs from '../Breadcrumbs';
-import {
-  createRepair // Asegúrate de importar createRepair desde '../../api/employ'
-} from '../../api/employ';
-import { AuthContext } from '../AuthContext'; // Ajusta la ruta si es necesario
+import { createRepair, getAppointmentById } from '../../api/employ';
+import { AuthContext } from '../AuthContext';
+import { getAllServices } from '../../api/admin';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const ConfirmationModal = ({ title, message, onConfirm, onCancel }) => {
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50">
-      <div
-        className="absolute inset-0 bg-black opacity-50"
-        onClick={onCancel}
-      ></div>
+      <div className="absolute inset-0 bg-black opacity-50" onClick={onCancel}></div>
       <div className="bg-white p-6 rounded shadow-lg z-10 max-w-md w-full">
         <h2 className="text-xl font-bold mb-4">{title}</h2>
         <div className="mb-4">{message}</div>
@@ -28,12 +27,28 @@ const ConfirmationModal = ({ title, message, onConfirm, onCancel }) => {
   );
 };
 
-const clientes = [
-  // Tus clientes...
-];
+const formatDateTime = (isoString) => {
+  if (!isoString) return '';
+  const date = new Date(isoString);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${year}-${month}-${day} ${hours}:${minutes}`;
+};
+
+const formatDate = (isoString) => {
+  if (!isoString) return '';
+  return isoString.split('T')[0];
+};
 
 function RegistroReparacion() {
-  const { auth } = useContext(AuthContext); // Obtenemos el usuario autenticado
+  const { auth } = useContext(AuthContext);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { id } = location.state || {}; // Se recibe el id desde el state
+
   const [cita, setCita] = useState(null);
   const [comentario, setComentario] = useState('');
   const [extra, setExtra] = useState(0);
@@ -43,14 +58,8 @@ function RegistroReparacion() {
   const [suggestions, setSuggestions] = useState([]);
   const [empleado, setEmpleado] = useState('Pedro Pérez');
   const [atencionDateTime, setAtencionDateTime] = useState('');
-  const [clientSearch, setClientSearch] = useState('');
-  const [filteredClients, setFilteredClients] = useState([]);
-  const [selectedClient, setSelectedClient] = useState(null);
-  const [selectedMarca, setSelectedMarca] = useState('');
-  const [selectedModelo, setSelectedModelo] = useState('');
   const [errors, setErrors] = useState({});
   const [showNormalConfirmation, setShowNormalConfirmation] = useState(false);
-  const [showExtraConfirmation, setShowExtraConfirmation] = useState(false);
   const [allServices, setAllServices] = useState([]);
 
   const pad = (num) => String(num).padStart(2, '0');
@@ -62,48 +71,38 @@ function RegistroReparacion() {
   ];
 
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const id = urlParams.get('id');
-
     if (id) {
-      fetch(`http://localhost:3000/employ/appointment/${id}`)
-        .then((response) => response.json())
+      // Obtenemos la cita usando el id recibido
+      getAppointmentById(id)
         .then((data) => {
-          setCita(data);
-          setTempCost(parseFloat(data.total));
+          const citaData =
+            Array.isArray(data) && data.length > 0 ? data[0] : data;
+          setCita(citaData);
+          setTempCost(parseFloat(citaData.total));
           let serviciosIniciales = [];
-          if (data.services && Array.isArray(data.services)) {
-            serviciosIniciales = data.services.map((item) => item.servicio);
-          } else if (data.servicio) {
-            serviciosIniciales = data.servicio.split('\n');
+          if (citaData.services && Array.isArray(citaData.services)) {
+            serviciosIniciales = citaData.services.map((item) => item.servicio);
+          } else if (citaData.servicio) {
+            serviciosIniciales = citaData.servicio.split('\n');
           }
           setTempServices(serviciosIniciales);
-          // Convertir la fecha actual a ISO para envío
           setAtencionDateTime(new Date().toISOString());
-          setEmpleado(data.nombreEmpleado || 'Pedro Pérez');
+          setEmpleado(citaData.nombreEmpleado || 'Pedro Pérez');
         })
         .catch((error) => {
           console.error("Error al obtener la cita:", error);
         });
-    } else {
-      const ahora = new Date();
-      const formattedDateTime = `${ahora.getFullYear()}-${pad(
-        ahora.getMonth() + 1
-      )}-${pad(ahora.getDate())}T${pad(ahora.getHours())}:${pad(
-        ahora.getMinutes()
-      )}`;
-      setAtencionDateTime(formattedDateTime);
-      setTempCost(0);
     }
-  }, []);
+  }, [id]);
 
   useEffect(() => {
-    fetch("http://localhost:3000/admin/all-services")
-      .then((res) => res.json())
+    getAllServices()
       .then((data) => {
         setAllServices(data);
       })
-      .catch((error) => console.error("Error al obtener los servicios:", error));
+      .catch((error) =>
+        console.error("Error al obtener los servicios:", error)
+      );
   }, []);
 
   const handleSumarExtra = () => {
@@ -142,7 +141,8 @@ function RegistroReparacion() {
   const handleAgregarServicio = () => {
     const servicio = serviciosExtra.trim();
     const validService = allServices.find(
-      (service) => service.nombre.toLowerCase() === servicio.toLowerCase()
+      (service) =>
+        service.nombre.toLowerCase() === servicio.toLowerCase()
     );
 
     if (servicio !== '' && validService) {
@@ -186,8 +186,7 @@ function RegistroReparacion() {
       newErrors.atencionDateTime = 'La fecha y hora de atención es requerida.';
     }
     if (tempServices.length === 0) {
-      newErrors.tempServices =
-        'Debe agregarse al menos un servicio para poder guardar el registro.';
+      newErrors.tempServices = 'Debe agregarse al menos un servicio para poder guardar el registro.';
     }
     if (comentario && containsSQLInjection(comentario)) {
       newErrors.comentario = 'El comentario contiene caracteres inválidos.';
@@ -195,45 +194,17 @@ function RegistroReparacion() {
     return newErrors;
   };
 
-  const validateExtra = () => {
-    const newErrors = {};
-    if (!selectedClient) {
-      newErrors.selectedClient = 'Debe seleccionar un cliente.';
-    }
-    if (!selectedMarca) {
-      newErrors.selectedMarca = 'Debe seleccionar una marca.';
-    }
-    if (!selectedModelo) {
-      newErrors.selectedModelo = 'Debe seleccionar un modelo.';
-    }
-    if (!atencionDateTime) {
-      newErrors.atencionDateTime = 'La fecha y hora de atención es requerida.';
-    }
-    if (tempServices.length === 0) {
-      newErrors.tempServices =
-        'Debe agregarse al menos un servicio para poder guardar el registro.';
-    }
-    if (comentario && containsSQLInjection(comentario)) {
-      newErrors.comentario = 'El comentario contiene caracteres inválidos.';
-    }
-    return newErrors;
-  };
-
-  // Función para preparar y enviar los datos de la reparación
   const saveReparacion = async () => {
     let repairPayload;
-    // Obtenemos el idEmpleado desde el contexto (asegúrate de que auth.user exista)
     const idEmpleado = auth?.user?.id;
-    console.log("idEmpleado obtenido del AuthContext:", idEmpleado);
-
     if (cita) {
       const costoInicial = parseFloat(cita.total);
       const totalFinal = tempCost;
       const extraCost = totalFinal - costoInicial;
       repairPayload = {
-        idEmpleado: idEmpleado, // Se usa el id obtenido del contexto
-        idCliente: cita.idCliente, // Asegúrate de que este campo exista en la cita
-        idCita: cita.id,
+        idEmpleado: idEmpleado,
+        idCliente: cita.clienteId,
+        idCita: cita.appointment_id,
         fechaHoraAtencion: new Date(atencionDateTime).toISOString(),
         servicio: tempServices,
         fechaCita: cita.fecha,
@@ -243,31 +214,22 @@ function RegistroReparacion() {
         extra: extraCost,
         totalFinal: totalFinal,
       };
-    } else {
-      const costoInicial = 0;
-      const totalFinal = tempCost;
-      const extraCost = totalFinal - costoInicial;
-      repairPayload = {
-        idEmpleado: idEmpleado, // Se usa el id obtenido del contexto
-        idCliente: selectedClient.id,
-        idCita: null,
-        fechaHoraAtencion: new Date(atencionDateTime).toISOString(),
-        servicio: tempServices,
-        fechaCita: "",
-        horaCita: "",
-        costoInicial: costoInicial,
-        comentario: comentario,
-        extra: extraCost,
-        totalFinal: totalFinal,
-      };
     }
 
+    // En la función saveReparacion
     try {
       const response = await createRepair(repairPayload);
       console.log("Reparación creada:", response);
+      toast.success("Reparación guardada correctamente");
+      // Redirigir después de 6 segundos
+      setTimeout(() => {
+        navigate("/consultacitas");
+      }, 1000); // Corregido a 6000 ms
     } catch (error) {
       console.error("Error al crear la reparación:", error);
+      toast.error(error.message || "Error al guardar la reparación"); // Mensaje más descriptivo
     }
+        
     cerrarFormulario();
   };
 
@@ -279,16 +241,6 @@ function RegistroReparacion() {
     }
     setErrors({});
     setShowNormalConfirmation(true);
-  };
-
-  const handleSubmitExtra = () => {
-    const validationErrors = validateExtra();
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      return;
-    }
-    setErrors({});
-    setShowExtraConfirmation(true);
   };
 
   const handleCancelar = () => {
@@ -304,322 +256,117 @@ function RegistroReparacion() {
     setTempServices([]);
     setSuggestions([]);
     setAtencionDateTime('');
-    setClientSearch('');
-    setFilteredClients([]);
-    setSelectedClient(null);
-    setSelectedMarca('');
-    setSelectedModelo('');
     setErrors({});
   };
 
-  if (cita) {
+  if (!cita) {
     return (
       <div>
         <Breadcrumbs paths={breadcrumbPaths} />
         <div className="form-container w-[680px] mx-auto">
-          <form className="citasForm flex flex-col">
-            <h1 className="form-title text-center">Registro de Reparación</h1>
-            <div className="reparacion-card mb-4">
-              {/* Datos automáticos */}
-              <div className="mb-2">
-                <span className="detalle-label">Empleado: </span>
-                <span className="detalle-costo">{cita.nombreEmpleado || empleado}</span>
-              </div>
-              <div className="mb-4">
-                <span className="detalle-label">Fecha y Hora de Atención: </span>
-                <span className="detalle-costo">{atencionDateTime}</span>
-                {errors.atencionDateTime && (
-                  <div className="text-red-500 text-xs">{errors.atencionDateTime}</div>
-                )}
-              </div>
-              <div className="mb-2">
-                <span className="detalle-label">Cliente: </span>
-                <span className="detalle-costo">{cita.nombreCliente}</span>
-              </div>
-              <div className="mb-2">
-                <span className="detalle-label">Servicio: </span>
-                <span className="detalle-costo">
-                  {Array.isArray(cita.services)
-                    ? cita.services.map((item) => item.servicio).join(', ')
-                    : cita.servicio}
-                </span>
-              </div>
-              <div className="mb-2">
-                <span className="detalle-label">Fecha cita: </span>
-                <span className="detalle-costo">{cita.fecha}</span>
-              </div>
-              <div className="mb-2">
-                <span className="detalle-label">Hora cita: </span>
-                <span className="detalle-costo">{cita.hora}</span>
-              </div>
-              <div className="mb-2">
-                <span className="detalle-label">Marca: </span>
-                <span className="detalle-costo">{cita.marca}</span>
-              </div>
-              <div className="mb-2">
-                <span className="detalle-label">Modelo: </span>
-                <span className="detalle-costo">{cita.modelo}</span>
-              </div>
-              <div className="mb-2">
-                <span className="detalle-label">Costo Actual: </span>
-                <span className="detalle-costo">{`$${cita.total}`}</span>
-              </div>
-              <div className="mb-2">
-                <span className="detalle-label">Comentario: </span>
-                <textarea
-                  className="form-input w-full"
-                  value={comentario}
-                  onChange={(e) => setComentario(e.target.value)}
-                  placeholder="Escribe un comentario sobre la reparación..."
-                />
-                {errors.comentario && (
-                  <div className="text-red-500 text-xs">{errors.comentario}</div>
-                )}
-              </div>
-              <div className="mb-2 flex flex-col sm:flex-row gap-2 items-center">
-                <div>
-                  <span className="detalle-label">Extra: </span>
-                  <input
-                    type="number"
-                    min="0"
-                    className="form-input w-32 text-right"
-                    value={extra}
-                    onChange={(e) => {
-                      const val = parseFloat(e.target.value) || 0;
-                      setExtra(val < 0 ? 0 : val);
-                    }}
-                    placeholder="Extra"
-                  />
-                </div>
-                <button type="button" className="btn-aceptar mt-5" onClick={handleSumarExtra}>
-                  Sumar
-                </button>
-                <button type="button" className="btn-cancelar mt-5" onClick={handleRestarExtra}>
-                  Restar
-                </button>
-              </div>
-              <div className="mb-2 flex flex-col sm:flex-row gap-2 items-center">
-                <div className="relative">
-                  <span className="detalle-label">Servicio Extra: </span>
-                  <input
-                    type="text"
-                    className="form-input w-48 text-right"
-                    value={serviciosExtra}
-                    onChange={handleServicioExtraChange}
-                    placeholder="Ej: Afinación"
-                  />
-                  {suggestions.length > 0 && (
-                    <div className="absolute z-10 bg-white border border-gray-300 w-48 text-black">
-                      {suggestions.map((sug, idx) => (
-                        <div key={idx} className="p-1 cursor-pointer text-sm" onClick={() => handleSelectSuggestion(sug)}>
-                          {sug}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  {errors.serviciosExtra && (
-                    <div className="text-red-500 text-xs">{errors.serviciosExtra}</div>
-                  )}
-                </div>
-                <button type="button" className="btn-aceptar mt-5" onClick={handleAgregarServicio}>
-                  Añadir Servicio
-                </button>
-              </div>
-              {tempServices.length > 0 && (
-                <div className="mb-2">
-                  <span className="detalle-label">Servicios: </span>
-                  <ul className="detalle-costo text-sm">
-                    {tempServices.map((serv, idx) => (
-                      <li key={idx} className="grid grid-cols-[1fr_20px] items-center gap-1 px-2 rounded">
-                        <span>{serv}</span>
-                        <button
-                          type="button"
-                          className="btn-cancelar text-xs flex justify-center items-center"
-                          onClick={() => handleQuitarServicio(serv)}
-                        >
-                          X
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                  {errors.tempServices && (
-                    <div className="text-red-500 text-xs">{errors.tempServices}</div>
-                  )}
-                </div>
-              )}
-              <div className="mb-2">
-                <span className="detalle-label">Total Final: </span>
-                <span className="detalle-costo">{`$${tempCost}`}</span>
-              </div>
-            </div>
-            <div className="flex gap-4 justify-center">
-              <button type="button" className="btn-aceptar" onClick={handleSubmitNormal}>
-                Guardar
-              </button>
-              <button type="button" className="btn-cancelar" onClick={handleCancelar}>
-                Cancelar
-              </button>
-            </div>
-          </form>
+          <h1 className="form-title text-center">No hay cita seleccionada, selecciona una cita para finalizar</h1>
         </div>
-        {showNormalConfirmation && (
-          <ConfirmationModal
-            title={<span className="text-yellow-500">Confirmación de Registro de Reparación</span>}
-            message={<>¿Está seguro de guardar el registro de reparación?</>}
-            onConfirm={() => {
-              saveReparacion();
-              setShowNormalConfirmation(false);
-            }}
-            onCancel={() => setShowNormalConfirmation(false)}
-          />
-        )}
+        <ToastContainer autoClose={6000} />
       </div>
     );
-  } else {
-    return (
-      <div>
-        <Breadcrumbs paths={breadcrumbPaths} />
-        <div className="form-container w-[680px] mx-auto">
-          <form className="citasForm flex flex-col">
-            <h1 className="form-title text-center mb-1">Registro de Reparación Extra</h1>
-            <div className="">
-              <label className="detalle-label" htmlFor="atencionDateTime">
-                Fecha y Hora de Atención:
-              </label>
-              <input
-                id="atencionDateTime"
-                type="datetime-local"
-                className="form-input w-full text-sm"
-                value={atencionDateTime}
-                onChange={(e) => setAtencionDateTime(e.target.value)}
-              />
+  }
+
+  return (
+    <div>
+      <Breadcrumbs paths={breadcrumbPaths} />
+      <div className="form-container w-[680px] mx-auto">
+        <form className="citasForm flex flex-col">
+          <h1 className="form-title text-center">Registro de Reparación</h1>
+          <div className="reparacion-card mb-4">
+            <div className="mb-2">
+              <span className="detalle-label">Empleado: </span>
+              <span className="detalle-costo">{cita.nombreEmpleado || empleado}</span>
+            </div>
+            <div className="mb-4">
+              <span className="detalle-label">Fecha y Hora de Atención: </span>
+              <span className="detalle-costo">{formatDateTime(atencionDateTime)}</span>
               {errors.atencionDateTime && (
                 <div className="text-red-500 text-xs">{errors.atencionDateTime}</div>
               )}
             </div>
-            <div className="relative">
-              <label className="detalle-label" htmlFor="clientSearch">
-                Buscar Cliente:
-              </label>
-              <input
-                id="clientSearch"
-                type="text"
-                className="form-input w-full text-sm"
-                value={clientSearch}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setClientSearch(value);
-                  if (value.trim() !== '') {
-                    const filtered = clientes.filter((client) =>
-                      client.nombre.toLowerCase().includes(value.toLowerCase())
-                    );
-                    setFilteredClients(filtered);
-                  } else {
-                    setFilteredClients([]);
-                  }
-                }}
-                placeholder="Nombre..."
-              />
-              {filteredClients.length > 0 && (
-                <div className="absolute bg-white border border-gray-300 text-black w-full z-10">
-                  {filteredClients.map((client) => (
-                    <div
-                      key={client.id}
-                      className="cursor-pointer text-sm p-1"
-                      onClick={() => {
-                        setSelectedClient(client);
-                        setClientSearch(client.nombre);
-                        setFilteredClients([]);
-                        setSelectedMarca('');
-                        setSelectedModelo('');
-                      }}
-                    >
-                      {client.nombre}
-                    </div>
-                  ))}
-                </div>
-              )}
-              {errors.selectedClient && (
-                <div className="text-red-500 text-xs">{errors.selectedClient}</div>
-              )}
+            <div className="mb-2">
+              <span className="detalle-label">Cliente: </span>
+              <span className="detalle-costo">{cita.nombreCliente}</span>
             </div>
-            {selectedClient && (
-              <>
-                <div className="mb-1">
-                  <label className="detalle-label" htmlFor="marcaSelect">
-                    Marca:
-                  </label>
-                  <select
-                    id="marcaSelect"
-                    className="form-input w-full text-sm"
-                    value={selectedMarca}
-                    onChange={(e) => {
-                      setSelectedMarca(e.target.value);
-                      setSelectedModelo('');
-                    }}
-                  >
-                    <option value="">Selecciona una marca</option>
-                    {selectedClient.cars.map((car) => (
-                      <option key={car.marca} value={car.marca}>
-                        {car.marca}
-                      </option>
-                    ))}
-                  </select>
-                  {errors.selectedMarca && (
-                    <div className="text-red-500 text-xs">{errors.selectedMarca}</div>
-                  )}
-                </div>
-                {selectedMarca && (
-                  <div className="mb-1">
-                    <label className="detalle-label" htmlFor="modeloSelect">
-                      Modelo:
-                    </label>
-                    <select
-                      id="modeloSelect"
-                      className="form-input w-full text-sm"
-                      value={selectedModelo}
-                      onChange={(e) => setSelectedModelo(e.target.value)}
-                    >
-                      <option value="">Selecciona un modelo</option>
-                      {selectedClient.cars
-                        .find((car) => car.marca === selectedMarca)
-                        .modelos.map((modelo) => (
-                          <option key={modelo} value={modelo}>
-                            {modelo}
-                          </option>
-                        ))}
-                    </select>
-                    {errors.selectedModelo && (
-                      <div className="text-red-500 text-xs">{errors.selectedModelo}</div>
-                    )}
-                  </div>
-                )}
-              </>
-            )}
-            <div className="mb-1">
+            <div className="mb-2">
+              <span className="detalle-label">Servicio: </span>
+              <span className="detalle-costo">
+                {Array.isArray(cita.services)
+                  ? cita.services.map((item) => item.servicio).join(', ')
+                  : cita.servicio}
+              </span>
+            </div>
+            <div className="mb-2">
+              <span className="detalle-label">Fecha cita: </span>
+              <span className="detalle-costo">{formatDate(cita.fecha)}</span>
+            </div>
+            <div className="mb-2">
+              <span className="detalle-label">Hora cita: </span>
+              <span className="detalle-costo">{cita.hora}</span>
+            </div>
+            <div className="mb-2">
+              <span className="detalle-label">Marca: </span>
+              <span className="detalle-costo">{cita.marca}</span>
+            </div>
+            <div className="mb-2">
+              <span className="detalle-label">Modelo: </span>
+              <span className="detalle-costo">{cita.modelo}</span>
+            </div>
+            <div className="mb-2">
+              <span className="detalle-label">Costo Actual: </span>
+              <span className="detalle-costo">{`$${cita.total}`}</span>
+            </div>
+            <div className="mb-2">
               <span className="detalle-label">Comentario: </span>
               <textarea
-                className="form-input w-full text-sm"
+                className="form-input w-full"
                 value={comentario}
                 onChange={(e) => setComentario(e.target.value)}
-                placeholder="Comentario..."
+                placeholder="Escribe un comentario sobre la reparación..."
               />
               {errors.comentario && (
                 <div className="text-red-500 text-xs">{errors.comentario}</div>
               )}
             </div>
-            <div className="mb-1 flex flex-col sm:flex-row gap-1 items-center">
+            <div className="mb-2 flex flex-col sm:flex-row gap-2 items-center">
+              <div>
+                <span className="detalle-label">Extra: </span>
+                <input
+                  type="number"
+                  min="0"
+                  className="form-input w-32 text-right"
+                  value={extra}
+                  onChange={(e) => {
+                    const val = parseFloat(e.target.value) || 0;
+                    setExtra(val < 0 ? 0 : val);
+                  }}
+                  placeholder="Extra"
+                />
+              </div>
+              <button type="button" className="btn-aceptar mt-5" onClick={handleSumarExtra}>
+                Sumar
+              </button>
+              <button type="button" className="btn-cancelar mt-5" onClick={handleRestarExtra}>
+                Restar
+              </button>
+            </div>
+            <div className="mb-2 flex flex-col sm:flex-row gap-2 items-center">
               <div className="relative">
-                <span className="detalle-label">Añadir servicio: </span>
+                <span className="detalle-label">Servicio Extra: </span>
                 <input
                   type="text"
-                  className="form-input w-full text-sm"
+                  className="form-input w-48 text-right"
                   value={serviciosExtra}
                   onChange={handleServicioExtraChange}
                   placeholder="Ej: Afinación"
                 />
                 {suggestions.length > 0 && (
-                  <div className="absolute bg-white border border-gray-300 text-black w-full z-10">
+                  <div className="absolute z-10 bg-white border border-gray-300 w-48 text-black">
                     {suggestions.map((sug, idx) => (
                       <div
                         key={idx}
@@ -636,33 +383,11 @@ function RegistroReparacion() {
                 )}
               </div>
               <button type="button" className="btn-aceptar mt-5" onClick={handleAgregarServicio}>
-                Agregar
-              </button>
-            </div>
-            <div className="mb-1 flex flex-col sm:flex-row gap-1 items-center">
-              <div>
-                <span className="detalle-label">Costo: </span>
-                <input
-                  type="number"
-                  min="0"
-                  className="form-input w-full text-sm"
-                  value={extra}
-                  onChange={(e) => {
-                    const val = parseFloat(e.target.value) || 0;
-                    setExtra(val < 0 ? 0 : val);
-                  }}
-                  placeholder="Extra"
-                />
-              </div>
-              <button type="button" className="btn-aceptar mt-5" onClick={handleSumarExtra}>
-                Sumar
-              </button>
-              <button type="button" className="btn-cancelar mt-5" onClick={handleRestarExtra}>
-                Restar
+                Añadir Servicio
               </button>
             </div>
             {tempServices.length > 0 && (
-              <div className="mb-1">
+              <div className="mb-2">
                 <span className="detalle-label">Servicios: </span>
                 <ul className="detalle-costo text-sm">
                   {tempServices.map((serv, idx) => (
@@ -683,34 +408,35 @@ function RegistroReparacion() {
                 )}
               </div>
             )}
-            <div className="mb-1">
+            <div className="mb-2">
               <span className="detalle-label">Total Final: </span>
               <span className="detalle-costo">{`$${tempCost}`}</span>
             </div>
-            <div className="flex gap-2 justify-center">
-              <button type="button" className="btn-aceptar" onClick={handleSubmitExtra}>
-                Guardar
-              </button>
-              <button type="button" className="btn-cancelar" onClick={handleCancelar}>
-                Cancelar
-              </button>
-            </div>
-          </form>
-        </div>
-        {showExtraConfirmation && (
-          <ConfirmationModal
-            title={<span className="text-yellow-500">Confirmación de Registro de Reparación Extra</span>}
-            message={<>¿Está seguro de guardar el registro de reparación extra?</>}
-            onConfirm={() => {
-              saveReparacion();
-              setShowExtraConfirmation(false);
-            }}
-            onCancel={() => setShowExtraConfirmation(false)}
-          />
-        )}
+          </div>
+          <div className="flex gap-4 justify-center">
+            <button type="button" className="btn-aceptar" onClick={handleSubmitNormal}>
+              Guardar
+            </button>
+            <button type="button" className="btn-cancelar" onClick={handleCancelar}>
+              Cancelar
+            </button>
+          </div>
+        </form>
       </div>
-    );
-  }
+      {showNormalConfirmation && (
+        <ConfirmationModal
+          title={<span className="text-yellow-500">Confirmación de Registro de Reparación</span>}
+          message={<>¿Está seguro de guardar el registro de reparación?</>}
+          onConfirm={() => {
+            saveReparacion();
+            setShowNormalConfirmation(false);
+          }}
+          onCancel={() => setShowNormalConfirmation(false)}
+        />
+      )}
+      <ToastContainer autoClose={6000} />
+    </div>
+  );
 }
 
 export default RegistroReparacion;

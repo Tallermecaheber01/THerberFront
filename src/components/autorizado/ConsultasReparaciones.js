@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react'; 
 import Breadcrumbs from '../Breadcrumbs';
+import { AuthContext } from '../AuthContext';
+import { getAllRepairs, getAllServices, updateRepair,  getClientById} from '../../api/employ';
 
 const ConfirmationModal = ({ title, message, onConfirm, onCancel }) => {
   return (
@@ -25,48 +27,18 @@ const ConfirmationModal = ({ title, message, onConfirm, onCancel }) => {
 };
 
 function ConsultasReparaciones() {
+  const { auth } = useContext(AuthContext);
   const staticBreadcrumbs = [
     { name: 'Inicio', link: '/' },
     { name: 'Reparaciones Realizadas', link: '/ConsultasReparaciones' },
   ];
 
-  const [citas, setCitas] = useState([
-    {
-      id: 1,
-      cliente: 'Juan Pérez',
-      servicio: 'Cambio de aceite',
-      fecha: '2025-01-05',
-      hora: '10:00',
-      costo: 50,
-      marca: 'Toyota',
-      modelo: 'Corolla 2019',
-      comentario: '',
-    },
-    {
-      id: 2,
-      cliente: 'María Gómez',
-      servicio: 'Revisión general',
-      fecha: '2025-01-06',
-      hora: '12:00',
-      costo: 75,
-      marca: 'Honda',
-      modelo: 'Civic 2018',
-      comentario: '',
-    },
-    {
-      id: 3,
-      cliente: 'Carlos López',
-      servicio: 'Cambio de llantas',
-      fecha: '2025-01-05',
-      hora: '14:00',
-      costo: 100,
-      marca: 'Ford',
-      modelo: 'Focus 2020',
-      comentario: '',
-    },
-  ]);
+  // Estados para reparaciones y edición
+  const [reparaciones, setReparaciones] = useState([]);
+  const [repairSeleccionada, setRepairSeleccionada] = useState(null);
+  const [pendingEditRepair, setPendingEditRepair] = useState(null);
 
-  const [citaSeleccionada, setCitaSeleccionada] = useState(null);
+  // Estados para la edición
   const [comentario, setComentario] = useState('');
   const [extra, setExtra] = useState(0);
   const [tempCost, setTempCost] = useState(0);
@@ -76,31 +48,100 @@ function ConsultasReparaciones() {
   const [commentError, setCommentError] = useState('');
   const [serviceError, setServiceError] = useState('');
   const [isEditConfirmModalOpen, setIsEditConfirmModalOpen] = useState(false);
-  const [pendingEditCita, setPendingEditCita] = useState(null);
   const [isSaveConfirmModalOpen, setIsSaveConfirmModalOpen] = useState(false);
+
+  // Estados para filtros y búsqueda
   const [filters, setFilters] = useState([{ type: '', value: '' }]);
   const [searchQuery, setSearchQuery] = useState('');
-  const availableFilterTypes = [
-    'cliente',
-    'servicio',
-    'marca',
-    'modelo',
-    'costo',
-  ];
 
-  const allowedServices = [
-    'Cambio de aceite',
-    'Revisión general',
-    'Cambio de llantas',
-    'Afinación',
-    'Cambio de pastillas',
-  ];
+  // Estado para almacenar los servicios obtenidos de la API
+  const [allServices, setAllServices] = useState([]);
 
+  // Obtenemos los servicios disponibles al cargar el componente
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const servicesData = await getAllServices();
+        setAllServices(servicesData);
+      } catch (error) {
+        console.error("Error fetching services:", error);
+      }
+    };
+    fetchServices();
+  }, []);
+
+  // Obtenemos las reparaciones
+  useEffect(() => {
+    const fetchRepairs = async () => {
+      try {
+        let repairsData;
+        if (auth && auth.user && (auth.role === 'admin' || auth.role === 'empleado')) {
+          repairsData = await getAllRepairs(auth.user.id);
+        } else {
+          repairsData = await getAllRepairs();
+        }
+        console.log("Datos obtenidos de reparaciones:", repairsData);
+  
+        const formattedRepairs = await Promise.all(
+          repairsData.map(async (repair) => {
+            const costoNum = parseFloat(repair.costoInicial || repair.totalFinal || repair.total) || 0;
+            const serviciosArray = Array.isArray(repair.servicio)
+              ? repair.servicio
+              : (typeof repair.servicio === 'string'
+                  ? repair.servicio.split(', ')
+                  : []);
+  
+            // Si ya viene el nombre del cliente, se usa; de lo contrario, se hace la consulta
+            let clientName;
+            if (repair.nombreCliente) {
+              clientName = repair.nombreCliente;
+            } else {
+              try {
+                const clientData = await getClientById(repair.idCliente);
+                if (clientData) {
+                  clientName = `${clientData.nombre} ${clientData.apellido_paterno} ${clientData.apellido_materno}`;
+                } else {
+                  clientName = String(repair.idCliente);
+                }
+              } catch (error) {
+                clientName = String(repair.idCliente);
+              }
+            }
+  
+            return {
+              id: repair.id,
+              cliente: clientName || 'Sin nombre',
+              fecha: repair.fechaCita || (repair.fechaHoraAtencion ? new Date(repair.fechaHoraAtencion).toLocaleDateString() : 'N/A'),
+              hora: repair.horaCita || (repair.fechaHoraAtencion ? new Date(repair.fechaHoraAtencion).toLocaleTimeString() : 'N/A'),
+              fechaHoraAtencion: repair.fechaHoraAtencion ? new Date(repair.fechaHoraAtencion).toLocaleString() : 'N/A',
+              servicio: serviciosArray.join(', '),
+              serviciosArray,
+              costo: costoNum,
+              total: repair.totalFinal || repair.total || 'N/A',
+              comentario: repair.comentario || '',
+              marca: repair.marca || '',
+              modelo: repair.modelo || '',
+            };
+          })
+        );
+  
+        setReparaciones(formattedRepairs);
+      } catch (error) {
+        console.error("Error al obtener reparaciones:", error);
+      }
+    };
+  
+    fetchRepairs();
+  }, [auth]);
+  
+  
+  // Función para sanitizar entradas
   const sanitizeInput = (str) => {
     if (typeof str !== 'string') return str;
     return str.replace(/['";<>]/g, '');
   };
 
+  // Maneja los cambios en el comentario
   const handleCommentChange = (e) => {
     const value = e.target.value;
     const invalidChars = /[\'";<>]/;
@@ -112,27 +153,32 @@ function ConsultasReparaciones() {
     setComentario(value);
   };
 
-  const handleEditarReparacion = (cita) => {
-    setCitaSeleccionada(cita);
-    setComentario(cita.comentario || '');
+  // Inicia la edición de una reparación
+  const handleEditarReparacion = (repair) => {
+    setRepairSeleccionada(repair);
+    setComentario(repair.comentario || '');
     setExtra(0);
-    setTempCost(cita.costo);
-    const serviciosIniciales = cita.servicio ? cita.servicio.split('\n') : [];
+    setTempCost(Number(repair.costo));
+    const serviciosIniciales = repair.serviciosArray || 
+      (typeof repair.servicio === 'string'
+        ? repair.servicio.split(', ')
+        : []);
     setTempServices(serviciosIniciales);
     setServiciosExtra('');
     setSuggestions([]);
     setCommentError('');
     setServiceError('');
   };
-
+  
   const confirmEditarReparacion = () => {
-    if (pendingEditCita) {
-      handleEditarReparacion(pendingEditCita);
-      setPendingEditCita(null);
+    if (pendingEditRepair) {
+      handleEditarReparacion(pendingEditRepair);
+      setPendingEditRepair(null);
       setIsEditConfirmModalOpen(false);
     }
   };
 
+  // Funciones para sumar/restar extras
   const handleSumarExtra = () => {
     const extraVal = parseFloat(extra) || 0;
     setTempCost((prevCost) => prevCost + extraVal);
@@ -148,14 +194,15 @@ function ConsultasReparaciones() {
     setExtra(0);
   };
 
+  // Manejo del input para servicio extra, utilizando la propiedad "nombre"
   const handleServicioExtraChange = (e) => {
     const inputValue = e.target.value;
-    setServiceError(''); 
+    setServiceError('');
     setServiciosExtra(inputValue);
     if (inputValue.trim() !== '') {
-      const filtered = allowedServices.filter((service) =>
-        service.toLowerCase().includes(inputValue.toLowerCase())
-      );
+      const filtered = allServices.filter((service) => {
+        return service.nombre.toLowerCase().includes(inputValue.toLowerCase());
+      });
       setSuggestions(filtered);
     } else {
       setSuggestions([]);
@@ -163,22 +210,28 @@ function ConsultasReparaciones() {
   };
 
   const handleSelectSuggestion = (suggestion) => {
-    setServiciosExtra(suggestion);
+    // Se asigna el nombre del servicio seleccionado
+    setServiciosExtra(suggestion.nombre);
     setSuggestions([]);
   };
 
   const handleAgregarServicio = () => {
     const serviceTrimmed = serviciosExtra.trim();
     if (serviceTrimmed === '') return;
-    if (!allowedServices.includes(serviceTrimmed)) {
+  
+    const validService = allServices.find(
+      (service) => service.nombre.toLowerCase() === serviceTrimmed.toLowerCase()
+    );
+  
+    if (!validService) {
       setServiceError('El servicio ingresado no es válido.');
       return;
     }
-    if (tempServices.includes(serviceTrimmed)) {
+    if (tempServices.includes(validService.nombre)) {
       setServiceError('El servicio ya ha sido agregado.');
       return;
     }
-    setTempServices((prev) => [...prev, serviceTrimmed]);
+    setTempServices((prev) => [...prev, validService.nombre]);
     setServiciosExtra('');
     setSuggestions([]);
     setServiceError('');
@@ -188,28 +241,39 @@ function ConsultasReparaciones() {
     setTempServices((prev) => prev.filter((s) => s !== servicio));
   };
 
-  const handleGuardarReparacion = () => {
-    if (!citaSeleccionada) return;
+  // Al guardar la edición se arma el payload y se llama a updateRepair  
+  const handleGuardarReparacion = async () => {
+    if (!repairSeleccionada) return;
     const sanitizedComentario = sanitizeInput(comentario);
     const sanitizedTempServices = tempServices.map((s) => sanitizeInput(s));
-    const serviciosFinales = sanitizedTempServices.join('\n');
-
-    const citaActualizada = {
-      ...citaSeleccionada,
+    const payload = {
+      servicio: sanitizedTempServices,
+      costoInicial: repairSeleccionada.costo,
       comentario: sanitizedComentario,
-      costo: tempCost,
-      servicio: serviciosFinales,
+      extra: tempCost - repairSeleccionada.costo,
+      totalFinal: tempCost,
     };
 
-    const nuevasCitas = citas.map((c) =>
-      c.id === citaSeleccionada.id ? citaActualizada : c
-    );
-    setCitas(nuevasCitas);
-    cerrarFormulario();
+    try {
+      await updateRepair(repairSeleccionada.id, payload);
+      const repairActualizada = {
+         ...repairSeleccionada,
+         comentario: sanitizedComentario,
+         costo: tempCost,
+         servicio: sanitizedTempServices.join(', '),
+      };
+      const nuevasReparaciones = reparaciones.map((rep) =>
+        rep.id === repairSeleccionada.id ? repairActualizada : rep
+      );
+      setReparaciones(nuevasReparaciones);
+      cerrarFormulario();
+    } catch (error) {
+      console.error("Error updating repair:", error);
+    }
   };
 
   const cerrarFormulario = () => {
-    setCitaSeleccionada(null);
+    setRepairSeleccionada(null);
     setComentario('');
     setExtra(0);
     setServiciosExtra('');
@@ -233,11 +297,12 @@ function ConsultasReparaciones() {
     setIsSaveConfirmModalOpen(true);
   };
 
-  const confirmGuardarReparacion = () => {
-    handleGuardarReparacion();
+  const confirmGuardarReparacion = async () => {
+    await handleGuardarReparacion();
     setIsSaveConfirmModalOpen(false);
   };
 
+  // Funciones y lógica para filtros y búsqueda
   const normalizeStr = (str) =>
     str
       .normalize('NFD')
@@ -293,17 +358,17 @@ function ConsultasReparaciones() {
     setFilters(newFilters);
   };
 
-  const filteredCitas = citas.filter((cita) => {
+  const filteredRepairs = reparaciones.filter((repair) => {
     const matchesSearch =
       searchQuery === '' ||
-      Object.values(cita).some((val) =>
+      Object.values(repair).some((val) =>
         normalizeStr(String(val)).includes(normalizeStr(searchQuery))
       );
     const matchesAdvanced = filters.every((filter) => {
       if (filter.type.trim() === '' || filter.value.trim() === '') return true;
-      const citaField = cita[filter.type.toLowerCase()];
-      if (!citaField) return false;
-      return normalizeStr(String(citaField)).includes(
+      const repairField = repair[filter.type.toLowerCase()];
+      if (!repairField) return false;
+      return normalizeStr(String(repairField)).includes(
         normalizeStr(filter.value)
       );
     });
@@ -342,7 +407,7 @@ function ConsultasReparaciones() {
                     className="form-input w-64 text-right"
                   >
                     <option value="">Selecciona tipo de filtro</option>
-                    {availableFilterTypes
+                    {['cliente', 'servicio', 'marca', 'modelo', 'costo']
                       .filter((type) => {
                         if (filter.type === type) return true;
                         return !filters.some(
@@ -356,9 +421,7 @@ function ConsultasReparaciones() {
                       ))}
                   </select>
                   <input
-                    type={
-                      filter.type.toLowerCase() === 'costo' ? 'number' : 'text'
-                    }
+                    type={filter.type.toLowerCase() === 'costo' ? 'number' : 'text'}
                     placeholder="Busqueda"
                     value={filter.value}
                     onChange={(e) =>
@@ -391,58 +454,60 @@ function ConsultasReparaciones() {
             </div>
           </div>
           <div className="mt-8">
-            {filteredCitas.length > 0 ? (
+            {filteredRepairs.length > 0 ? (
               <div className="cardCitas grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredCitas.map((cita) => (
+                {filteredRepairs.map((repair) => (
                   <div
-                    key={cita.id}
+                    key={repair.id}
                     className="reparacion-card p-4 rounded-md card-transition"
                   >
                     <div className="mb-1">
+                      <span className="detalle-label">Fecha y Hora Atención: </span>
+                      <span className="detalle-costo">{repair.fechaHoraAtencion}</span>
+                    </div>
+                    <div className="mb-1">
                       <span className="detalle-label">Cliente: </span>
-                      <span className="detalle-costo">{cita.cliente}</span>
+                      <span className="detalle-costo">{repair.cliente}</span>
                     </div>
                     <div className="mb-1">
                       <span className="detalle-label">Servicio: </span>
-                      <span className="detalle-costo">
-                        {cita.servicio
-                          ? cita.servicio
-                              .split('\n')
-                              .map((serv, idx) => <div key={idx}>{serv}</div>)
-                          : 'N/A'}
-                      </span>
+                      <span className="detalle-costo">{repair.servicio}</span>
                     </div>
                     <div className="mb-1">
                       <span className="detalle-label">Fecha: </span>
-                      <span className="detalle-costo">{cita.fecha}</span>
+                      <span className="detalle-costo">{repair.fecha}</span>
                     </div>
                     <div className="mb-1">
                       <span className="detalle-label">Hora: </span>
-                      <span className="detalle-costo">{cita.hora}</span>
+                      <span className="detalle-costo">{repair.hora}</span>
                     </div>
-                    {cita.costo !== undefined && (
+                    <div className="mb-1">
+                      <span className="detalle-label">Total: </span>
+                      <span className="detalle-costo">${repair.total}</span>
+                    </div>
+                    {repair.comentario && (
                       <div className="mb-1">
-                        <span className="detalle-label">Costo: </span>
-                        <span className="detalle-costo">${cita.costo}</span>
+                        <span className="detalle-label">Comentario: </span>
+                        <span className="detalle-costo">{repair.comentario}</span>
                       </div>
                     )}
-                    {cita.marca && (
+                    {repair.marca && (
                       <div className="mb-1">
                         <span className="detalle-label">Marca: </span>
-                        <span className="detalle-costo">{cita.marca}</span>
+                        <span className="detalle-costo">{repair.marca}</span>
                       </div>
                     )}
-                    {cita.modelo && (
+                    {repair.modelo && (
                       <div className="mb-1">
                         <span className="detalle-label">Modelo: </span>
-                        <span className="detalle-costo">{cita.modelo}</span>
+                        <span className="detalle-costo">{repair.modelo}</span>
                       </div>
                     )}
                     <button
                       type="button"
                       className="btn-aceptar w-full mt-2"
                       onClick={() => {
-                        setPendingEditCita(cita);
+                        setPendingEditRepair(repair);
                         setIsEditConfirmModalOpen(true);
                       }}
                     >
@@ -457,15 +522,13 @@ function ConsultasReparaciones() {
               </p>
             )}
           </div>
-          {citaSeleccionada && (
+          {repairSeleccionada && (
             <div className="mt-8">
               <h2 className="cita-title text-center">Editar Reparación</h2>
               <div className="reparacion-card mb-4 p-4 rounded-md">
                 <div className="mb-1">
                   <span className="detalle-label">Costo Actual: </span>
-                  <span className="detalle-costo">
-                    ${citaSeleccionada.costo}
-                  </span>
+                  <span className="detalle-costo">${repairSeleccionada.costo}</span>
                 </div>
                 <div className="mb-1">
                   <span className="detalle-label">Comentario: </span>
@@ -524,7 +587,7 @@ function ConsultasReparaciones() {
                             className="p-1 cursor-pointer text-sm"
                             onClick={() => handleSelectSuggestion(sug)}
                           >
-                            {sug}
+                            {sug.nombre}
                           </div>
                         ))}
                       </div>
@@ -587,14 +650,14 @@ function ConsultasReparaciones() {
           )}
         </form>
       </div>
-      {isEditConfirmModalOpen && pendingEditCita && (
+      {isEditConfirmModalOpen && pendingEditRepair && (
         <ConfirmationModal
           title="Confirmar Edición"
-          message={`¿Está seguro de que desea editar la reparación de ${pendingEditCita.cliente}?`}
+          message={`¿Está seguro de que desea editar la reparación de ${pendingEditRepair.cliente}?`}
           onConfirm={confirmEditarReparacion}
           onCancel={() => {
             setIsEditConfirmModalOpen(false);
-            setPendingEditCita(null);
+            setPendingEditRepair(null);
           }}
         />
       )}

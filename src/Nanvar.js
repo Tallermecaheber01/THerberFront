@@ -194,7 +194,7 @@ const Navbar = () => {
             )}
 
             {/* Rutas para usuarios con rol "admin" */}
-            {auth?.role === 'admin' && (
+            {auth?.role === 'administrador' && (
               <>
                 <li>
                   <Link to="/analisisrendimiento" className="navbar-link">

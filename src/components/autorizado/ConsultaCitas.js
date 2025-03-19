@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useContext } from "react";
+import { useNavigate } from "react-router-dom";
 import Breadcrumbs from "../Breadcrumbs";
 import { AuthContext } from "../AuthContext"; 
 import { getAppointmentsWithServicesID } from "../../api/employ";
@@ -24,6 +25,7 @@ const ConfirmationModal = ({ title, message, onConfirm, onCancel }) => {
 
 function ConsultarCitas() {
   const { auth } = useContext(AuthContext);
+  const navigate = useNavigate();
   const staticBreadcrumbs = [
     { name: "Inicio", link: "/" },
     { name: "Consultar Citas", link: "/consultarcitas" },
@@ -46,9 +48,14 @@ function ConsultarCitas() {
           appointmentsData = await getAppointmentsWithServicesID();
         }
         console.log("Datos obtenidos de las citas:", appointmentsData);
-
+  
+        // Filtrar solo las citas con estado "Confirmada"
+        const confirmedAppointments = appointmentsData.filter(
+          (appointment) => appointment.estado === "Confirmada"
+        );
+  
         // Transformar los datos según la estructura requerida
-        const formattedAppointments = appointmentsData.map((appointment) => ({
+        const formattedAppointments = confirmedAppointments.map((appointment) => ({
           id: appointment.appointment_id,
           cliente: appointment.nombreCliente,
           servicio: appointment.services
@@ -60,15 +67,24 @@ function ConsultarCitas() {
           marca: appointment.marca,
           modelo: appointment.modelo,
         }));
-
+  
         setAppointments(formattedAppointments);
       } catch (error) {
-        
+        console.error("Error al obtener las citas:", error);
       }
     };
-
+  
+    // Llamada inicial
     fetchData();
+    
+    // Configurar el intervalo para refrescar la consulta 
+    const intervalId = setInterval(fetchData, 5000);
+  
+    // Limpiar el intervalo al desmontar el componente
+    return () => clearInterval(intervalId);
   }, [auth]);
+  
+  
 
   const [filters, setFilters] = useState([{ type: "", value: "" }]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -161,7 +177,7 @@ function ConsultarCitas() {
 
     const confirmFinalizarServicio = () => {
       if (selectedCitaForFinalize) {
-        window.location.href = `/registroreparaciones?id=${selectedCitaForFinalize.id}`;
+        navigate("/registroreparaciones", { state: { id: selectedCitaForFinalize.id } });
       }
     };
 
@@ -314,13 +330,13 @@ function ConsultarCitas() {
             )}
           </div>
           <div className="mt-8 flex justify-center">
-            <button
+            {/*<button
               type="button"
               className="btn-aceptar"
               onClick={handleReparacionExtraClick}
             >
               Registrar una Reparación Extra
-            </button>
+            </button>*/}
           </div>
         </form>
       </div>

@@ -46,6 +46,18 @@ export const getAllEmployees = async () => {
     }
 }
 
+export const getClientById = async (id) => {
+    try {
+      const response = await api.get(`/employ/clients/${id}`);
+      return response.data;
+    } catch (error) {
+      return handleError(error, 'getClientById');
+    }
+  }
+  
+  
+
+
 export const getAllServices = async () => {
     try {
         const response = await api.get('/employ/services');
@@ -57,7 +69,7 @@ export const getAllServices = async () => {
 
 export const getAppointmentById = async (appointmentId) => {
     try {
-        const response = await api.get(`s${appointmentId}`);
+        const response = await api.get(`/employ/appointment/${appointmentId}`);
         return response.data
     } catch (error) {
         return handleError(error,'getAppointmentById');
@@ -114,4 +126,35 @@ export const createRepair = async (repairData) => {
     } catch (error) {
         return handleError(error, 'createRepair');
     }
+    
 };
+
+// Función para obtener todas las reparaciones
+export const getAllRepairs = async () => {
+    try {
+      const response = await api.get('/employ/repairs');
+      return response.data;
+    } catch (error) {
+      return handleError(error, 'getAllRepairs');
+    }
+  };
+
+
+  export const getRepairById = async (repairId) => {
+    try {
+      const response = await api.get(`/employ/repairs/${repairId}`);
+      return response.data;
+    } catch (error) {
+      return handleError(error, 'getRepairById');
+    }
+  };
+
+  export const updateRepair = async (repairId, updateRepairDto) => {
+    try {
+      const response = await api.patch(`/employ/repairs/${repairId}`, updateRepairDto);
+      return response.data;
+    } catch (error) {
+      return handleError(error, 'updateRepair');
+    }
+  };
+  

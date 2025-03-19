@@ -4,14 +4,12 @@ import { getRole } from '../api/public';
 
 export const AuthContext = createContext();
 
-// eslint-disable-next-line react/prop-types
 export const AuthProvider = ({ children }) => {
-  const [auth, setAuth] = useState({ user: null, role: 'publico' });
+  const [auth, setAuth] = useState({ user: null, role: 'publico', loading: true });
 
   const updateAuth = () => {
     const getCookie = (name) => {
       const matches = document.cookie.match(
-        
         new RegExp(
           '(?:^|; )' +
             name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') +
@@ -28,27 +26,34 @@ export const AuthProvider = ({ children }) => {
         console.log("Token decodificado:", decoded);
         const email = decoded.email;
 
-        // Primero, establece el usuario sin el rol
+        // Establecemos el usuario temporalmente y mantenemos loading en true
         setAuth({
-          user: { email: decoded.email },
-          role: 'publico', // Valor temporal hasta obtener el rol real
+          user: { id: decoded.userId, email: decoded.email },
+          role: 'publico', // valor temporal
+          loading: true,
         });
 
-        // Luego, consulta el rol en la base de datos
+        // Consulta el rol en la base de datos
         getRole(email)
-        .then((response) => {
-          const newRole = typeof response === 'string' ? response : response.rol;
-          setAuth((prevAuth) => ({
-            ...prevAuth,
-            role: newRole || 'publico', // Actualiza solo el rol
-          }));
+          .then((response) => {
+            const newRole = typeof response === 'string' ? response : response.rol;
+            setAuth({
+              user: { id: decoded.userId, email: decoded.email },
+              role: newRole || 'publico',
+              loading: false, // finaliza la carga
+            });
           })
           .catch((error) => {
             console.error('Error obteniendo el rol:', error);
+            setAuth({ user: null, role: 'publico', loading: false });
           });
       } catch (error) {
         console.error('Error decodificando el token:', error);
+        setAuth({ user: null, role: 'publico', loading: false });
       }
+    } else {
+      // Si no hay token, actualiza el estado a "público" y finaliza la carga
+      setAuth({ user: null, role: 'publico', loading: false });
     }
   };
 
@@ -61,4 +66,5 @@ export const AuthProvider = ({ children }) => {
       {children}
     </AuthContext.Provider>
   );
-}; 
+};
+

@@ -76,9 +76,26 @@ const Login = () => {
 
     try {
       const response = await login({ correo: email, contrasena: password, captcha: captchaValue });
+
       if (response) {
         toast.success('¡Inicio de sesión exitoso!');
         updateAuth();
+
+        // Extraer el token de las cookies
+        const token = document.cookie
+          .split("; ")
+          .find(row => row.startsWith("authToken="))
+          ?.split("=")[1];
+
+        if (token) {
+          setTimeout(() => {
+            // Eliminar la cookie después de 1 minuto
+            document.cookie = "authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            toast.info("Tu sesión ha expirado.");
+            navigate('/login'); // Redirigir a la página de login
+          }, 60 * 1000 * 60); // 1 minuto
+        }
+
         setTimeout(() => navigate('/Bienvenida'), 3000);
       } else {
         toast.error('Credenciales incorrectas.');

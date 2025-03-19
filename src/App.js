@@ -4,11 +4,15 @@ import Navbar from './Nanvar';
 import AppRoutes from './Routes';
 import Footer from './Fotter';
 import { AuthProvider } from './components/AuthContext';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 function App() {
   return (
     <div className="min-h-screen flex flex-col">
       <AuthProvider>
         <Router>
+        <ToastContainer autoClose={6000} />
           <Navbar />
           <main className="flex-grow">
             <AppRoutes />
