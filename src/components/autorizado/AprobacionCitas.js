@@ -1,4 +1,4 @@
-import React, { useState, useEffect,useContext } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Breadcrumbs from '../Breadcrumbs';
 import { getAppointmentsInWaiting, getAllEmployees, updateWaitingAppointment, rejectAppointment } from '../../api/employ';
@@ -108,10 +108,8 @@ function AprobacionesCitas() {
       searchQuery === '' ||
       Object.values(cita).some((value) => {
         if (typeof value === 'string') {
-          // Verificar que sea un string antes de comparar
           return value.toLowerCase().includes(searchQuery.toLowerCase());
         } else if (Array.isArray(value)) {
-          // Verificar que sea un arreglo antes de intentar hacer join
           return value.length > 0 && value.join(' ').toLowerCase().includes(searchQuery.toLowerCase());
         }
         return false;
@@ -123,7 +121,7 @@ function AprobacionesCitas() {
 
       const field = filter.type.toLowerCase();
 
-      // Verificación especial para 'servicio', ahora buscamos dentro de 'services'
+      // Verificación especial para 'servicio', buscamos dentro de 'services'
       if (field === 'servicio') {
         return (
           Array.isArray(cita.services) &&
@@ -133,17 +131,11 @@ function AprobacionesCitas() {
         );
       }
 
-      // Verifica que el campo de la cita contiene el valor del filtro
       return cita[field]?.toLowerCase().includes(filter.value.toLowerCase());
     });
 
-    // Devuelve true si pasa tanto la búsqueda como los filtros
     return matchesSearch && matchesFilters;
   });
-
-
-
-
 
   useEffect(() => {
     if (
@@ -156,7 +148,7 @@ function AprobacionesCitas() {
 
   const handleSelectCita = (id) => {
     const citaSeleccionada = appoinmentInWaiting.find(cita => cita.appointment_id === id);
-    setSelectedCita(citaSeleccionada); // Esto actualiza el estado de la cita seleccionada
+    setSelectedCita(citaSeleccionada);
     setTotal('');
     setSelectedEmpleado('');
     setIsRejectionMode(false);
@@ -199,7 +191,6 @@ function AprobacionesCitas() {
     } else if (parseFloat(total) < 0) {
       errors.total = 'El total no puede ser negativo.';
     }
-    // Verificar que selectedEmpleado no esté vacío
     if (!selectedEmpleado) {
       errors.selectedEmpleado = 'Debe seleccionar un empleado.';
     }
@@ -218,42 +209,38 @@ function AprobacionesCitas() {
   };
 
   const confirmApprove = async () => {
-    // Verifica si se ha seleccionado un empleado
     if (!selectedEmpleado) {
       setApprovalErrors((prevErrors) => ({
         ...prevErrors,
-        empleado: "Por favor, seleccione un empleado", // Mensaje de error si no se seleccionó empleado
+        empleado: "Por favor, seleccione un empleado",
       }));
       console.log("Empleado no seleccionado.");
-      return; // Detiene el envío si no se ha seleccionado un empleado
+      return;
     }
 
-    // Imprimir el estado actual de las citas antes de actualizarlas
     console.log("Citas antes de la actualización:", appoinmentInWaiting);
     console.log("Cita seleccionada:", selectedCita);
     console.log("Total que se enviará:", Number(total));
     console.log("Empleado:", Number(selectedEmpleado));
 
     try {
-      // Llamar a la API para actualizar la cita en el backend
       const updatedAppointment = await updateWaitingAppointment(selectedCita.appointment_id, {
-        IdPersonal: Number(selectedEmpleado), // Asigna el empleado seleccionado
+        IdPersonal: Number(selectedEmpleado),
         total: Number(total),
-        estado: "Confirmada", // Se establece el nuevo estado
+        estado: "Confirmada",
       });
 
       console.log("Respuesta de la API:", updatedAppointment);
 
-      // Actualizar el estado de las citas en el frontend
       setAppointmentInWaiting((prevCitas) =>
         prevCitas.map((cita) =>
           cita.appointment_id === selectedCita.appointment_id
             ? {
-              ...cita,
-              estado: "Confirmada",
-              total: Number(total),
-              nombreEmpleado: selectedEmpleado, // Asigna el empleado seleccionado
-            }
+                ...cita,
+                estado: "Confirmada",
+                total: Number(total),
+                nombreEmpleado: selectedEmpleado,
+              }
             : cita
         )
       );
@@ -261,15 +248,12 @@ function AprobacionesCitas() {
       console.error("Error al actualizar la cita:", error);
     }
 
-    // Limpiar los campos después de la actualización
     setShowConfirmApproveModal(false);
     setSelectedCita(null);
     setTotal("");
     setSelectedEmpleado("");
     setApprovalErrors({});
   };
-
-
 
   const handleEnterRejection = () => {
     setIsRejectionMode(true);
@@ -299,18 +283,15 @@ function AprobacionesCitas() {
     }
 
     try {
-
       const data = {
         idCita: selectedCita.appointment_id,
         motivo: razonRechazo,
-        idPersonal
-
-      }
+        idPersonal,
+      };
 
       const response = await rejectAppointment(data);
       console.log("Respuesta de la API:", response);
 
-      // Actualizar el estado en el frontend solo si la API responde correctamente
       setAppointmentInWaiting((prevCitas) =>
         prevCitas.map((cita) =>
           cita.appointment_id === selectedCita.appointment_id
@@ -322,7 +303,6 @@ function AprobacionesCitas() {
       console.error("Error al rechazar la cita:", error);
     }
 
-    // Limpiar los campos después de la actualización
     setSelectedCita(null);
     setApprovalErrors({});
   };
@@ -331,6 +311,16 @@ function AprobacionesCitas() {
     setRazonRechazo('');
     setIsRejectionMode(false);
     setApprovalErrors({});
+  };
+
+  // Función para filtrar empleados según el rol del usuario autenticado
+  const getFilteredEmployees = () => {
+    if (auth.role === 'empleado') {
+      return employes.filter((empleado) => empleado.id === auth.user.id);
+    } else if (auth.role === 'administrador') {
+      return employes;
+    }
+    return [];
   };
 
   return (
@@ -482,7 +472,6 @@ function AprobacionesCitas() {
                   ? selectedCita.services.map(service => service.servicio).join(', ')
                   : 'No hay servicios'}
               </p>
-
             </div>
             {!isRejectionMode && (
               <>
@@ -515,15 +504,12 @@ function AprobacionesCitas() {
                     onChange={(e) => setSelectedEmpleado(e.target.value)}
                   >
                     <option value="">Seleccione un trabajador</option>
-                    {employes.map((empleado) => (
+                    {getFilteredEmployees().map((empleado) => (
                       <option key={empleado.id} value={empleado.id}>
                         {empleado.nombre}
                       </option>
                     ))}
                   </select>
-
-
-
                   {approvalErrors.selectedEmpleado && (
                     <p className="text-red-500 text-xs mt-1">
                       {approvalErrors.selectedEmpleado}
@@ -595,22 +581,21 @@ function AprobacionesCitas() {
       {showConfirmApproveModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="bg-white dark:bg-gray-800 p-6 rounded shadow-lg w-80">
-            <h2 className="text-xl  mb-4 text-yellow-500">
+            <h2 className="text-xl mb-4 text-yellow-500">
               Confirmación de Aprobación
             </h2>
             <p className="mb-4 text-gray-700 dark:text-gray-300">
-              ¿Está seguro de aprobar la cita con total de ${total} y asignar al
-              empleado {selectedEmpleado}?
+              ¿Está seguro de aprobar la cita con total de ${total} y asignar al empleado {selectedEmpleado}?
             </p>
             <div className="flex justify-end gap-4">
+              <button className="btn-aceptar" onClick={confirmApprove}>
+                Confirmar
+              </button>
               <button
-                className="btn-aceptar"
+                className="btn-cancelar"
                 onClick={() => setShowConfirmApproveModal(false)}
               >
                 Cancelar
-              </button>
-              <button className="btn-cancelar" onClick={confirmApprove}>
-                Confirmar
               </button>
             </div>
           </div>
