@@ -93,22 +93,38 @@ export const getRole = async (userData) => {
     }
 }
 
-export const sendPasswordResetVerificationCode = async (email) => {
+export const findUser = async (correo) => {
+    try {
+        const response = await api.post('/public/recover-password/find-user', { correo }); // Enviar como objeto
+        return response.data; // Devolver solo data
+    } catch (error) {
+        console.error('Error inesperado:', error);
+        return { success: false, message: 'Error en la búsqueda del usuario' }; // Devolver objeto en error
+    }
+};
+
+
+export const sendPasswordResetVerificationCode = async (email, idPreguntaSecreta, respuestaSecreta) => {
     try {
         const response = await api.post('/public/recover-password/send-verification-code', {
             correo: email,
+            idPreguntaSecreta: idPreguntaSecreta,
+            respuestaSecreta: respuestaSecreta
         });
-        console.log('codigo de vericación enviado:', response.data);
+
+        console.log('Código de verificación enviado:', response.data);
         return response.data;
+
     } catch (error) {
-        toast.error('El correo ya está en uso');
+        toast.error('Los datos ingresados no son correctos o el usuario no existe');
         console.error(
-            'error al enviar el codigo de verificacion:',
+            'Error al enviar el código de verificación:',
             error.response ? error.response.data : error.message
         );
         throw error;
     }
-}
+};
+
 
 export const verifyPasswordResetCode = async (correo, code) => {
     try {

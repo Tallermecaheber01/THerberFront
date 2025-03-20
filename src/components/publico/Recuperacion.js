@@ -1,35 +1,22 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
-import { FiXCircle, FiEye, FiEyeOff } from 'react-icons/fi';
+import { FiXCircle, FiEye, FiEyeOff, FiCheckCircle } from 'react-icons/fi';
 import Breadcrumbs from '../Breadcrumbs';
 
 import {
   getAllQuestions,
+  findUser,
   sendPasswordResetVerificationCode,
   verifyPasswordResetCode,
   resetPassword,
 } from '../../api/public';
-
-/*const securityQuestions = [
-  { id: 1, pregunta: "¿Qué color tenía tu primer automóvil?" },
-  { id: 2, pregunta: "¿Cuál es la marca y modelo de tu primer automóvil?" },
-  { id: 3, pregunta: "¿Cuál es la marca del automóvil que has llevado más veces a un taller?" },
-  { id: 4, pregunta: "¿Cuál es el nombre de tu primera mascota?" },
-  { id: 5, pregunta: "¿En qué ciudad naciste?" },
-  { id: 6, pregunta: "¿Cuál era tu plato favorito cuando eras niño/a?" },
-  { id: 7, pregunta: "¿Qué apodo te pusieron en tu infancia?" },
-  { id: 8, pregunta: "¿Cuál fue el nombre de tu mejor amigo/a de la infancia?" },
-  { id: 9, pregunta: "¿Cuál fue el nombre de tu escuela primaria?" },
-  { id: 10, pregunta: "¿Cuál es el nombre de la calle donde creciste?" }
-];*/
 
 function Recuperacion() {
   const [questions, setQuestions] = useState([]);
   const [securityQuestion, setSecurityQuestion] = useState('');
   const [securityAnswer, setSecurityAnswer] = useState('');
   const [securityVerified, setSecurityVerified] = useState(false);
-   const securityQuestionReg = useRef(null);
   const [email, setEmail] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -47,6 +34,16 @@ function Recuperacion() {
   const [showNewInputs, setShowNewInputs] = useState(false);
   const [showVerificationInput, setShowVerificationInput] = useState(false);
   const [isEmailVerified, setIsEmailVerified] = useState(false);
+  const [showRequirements, setShowRequirements] = useState(false);
+  const [passwordChecks, setPasswordChecks] = useState({
+    minLength: false,
+    upperCase: false,
+    lowerCase: false,
+    number: false,
+    specialChar: false,
+    noSequence: false,
+  });
+
 
   const navigate = useNavigate();
 
@@ -99,16 +96,6 @@ function Recuperacion() {
           error = 'El código de verificación debe ser un número de 6 dígitos.';
         }
         break;
-      case 'newPassword':
-        if (
-          !/^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,20}$/.test(
-            value
-          )
-        ) {
-          error =
-            'La contraseña debe tener 8-20 caracteres, con al menos un símbolo, una mayúscula, una minúscula y un número.';
-        }
-        break;
       case 'confirmPassword':
         if (value !== newPassword) {
           error = 'Las contraseñas no coinciden.';
@@ -128,48 +115,95 @@ function Recuperacion() {
     setErrors((prev) => ({ ...prev, [name]: error }));
   };
 
+  // Función para verificar los requisitos de la contraseña
+  const getPasswordChecks = (password) => {
+    return {
+      minLength: password.length >= 8 && password.length <= 20,
+      upperCase: /[A-Z]/.test(password),
+      lowerCase: /[a-z]/.test(password),
+      number: /\d/.test(password),
+      specialChar: /[!@#$%^&*]/.test(password),
+      noSequence: !/(12345|abcd)/.test(password),
+    };
+  };
+
   // Manejar el evento onChange para actualizar los estados
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    if (name === 'email') setEmail(value);
     if (name === 'securityQuestion') setSecurityQuestion(value);
     if (name === 'securityAnswer') setSecurityAnswer(value);
-    if (name === 'email') setEmail(value);
     if (name === 'verificationCode') setVerificationCode(value);
-    if (name === 'newPassword') setNewPassword(value);
+    if (name === 'newPassword') {
+      if (!showRequirements && value.length > 0) {
+        setShowRequirements(true);
+      }
+
+      const checks = getPasswordChecks(value);
+      setPasswordChecks(checks);
+
+      // 🔹 Siempre actualizamos la contraseña para que el usuario vea lo que escribe
+      setNewPassword(value);
+    }
+
     if (name === 'confirmPassword') setConfirmPassword(value);
 
     setErrors((prev) => ({ ...prev, [name]: '' }));
   };
 
-  // Enviar datos de la pregunta secreta (se validan pero no se envían a la BD)
-  const handleSecuritySubmit = (e) => {
-    e.preventDefault();
-    const questionError = validateInput('securityQuestion', securityQuestion);
-    const answerError = validateInput('securityAnswer', securityAnswer);
-    if (questionError || answerError) {
-      setErrors((prev) => ({
-        ...prev,
-        securityQuestion: questionError,
-        securityAnswer: answerError,
-      }));
-      return;
-    }
-    toast.success('Pregunta secreta y respuesta verificadas');
-    setSecurityVerified(true);
-  };
-
-  // Enviar el código de verificación
-  const handleSubmit = async (e) => {
+  // Enviar el correo a la Api para saber si existe en la BD
+  const handleSecuritySubmit = async (e) => {
     e.preventDefault();
 
     const emailError = validateInput('email', email);
+
     if (emailError) {
       setErrors({ email: emailError });
       return;
     }
 
     try {
-      await sendPasswordResetVerificationCode(email);
+      const response = await findUser(email); // Llamar a la API para buscar el usuario
+      // Verificar si el usuario existe
+      if (!response.success) {
+        toast.error('El correo no está registrado.');
+        return;
+      }
+
+      toast.success('Correo verificado correctamente');
+      setSecurityQuestion(response.securityQuestion); // Guardamos la pregunta secreta en el estado
+      setSecurityVerified(true);
+    } catch (error) {
+      toast.error('Error verificando usuario. Inténtalo de nuevo.');
+      console.error('Error inesperado:', error);
+    }
+  };
+
+
+
+  // Enviar el código de verificación
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const emailError = validateInput('email', email);
+    const questionError = validateInput('securityQuestion', securityQuestion);
+    const answerError = validateInput('securityAnswer', securityAnswer);
+
+    if (emailError || questionError || answerError) {
+      setErrors({
+        email: emailError,
+        securityQuestion: questionError,
+        securityAnswer: answerError,
+      });
+      return;
+    }
+
+    try {
+
+      // Convertir el ID de la pregunta secreta a número
+      //const idPreguntaSecreta = Number(securityQuestion);
+      await sendPasswordResetVerificationCode(email, securityQuestion.id, securityAnswer);
       toast.success('¡Código para recuperar tu contraseña ha sido enviado!');
       setShowVerificationInput(true);
       setIsEmailVerified(true);
@@ -214,16 +248,17 @@ function Recuperacion() {
   // Cambiar la contraseña
   const handleModalSubmit = async (e) => {
     e.preventDefault();
-    const newPasswordError = validateInput('newPassword', newPassword);
-    const confirmPasswordError = validateInput('confirmPassword', confirmPassword);
-
-    if (newPasswordError || confirmPasswordError) {
-      setErrors({
-        newPassword: newPasswordError,
-        confirmPassword: confirmPasswordError,
-      });
+    if (!Object.values(passwordChecks).every(Boolean)) {
+      toast.error('La contraseña no cumple con todos los requisitos.');
       return;
     }
+
+    if (newPassword !== confirmPassword) {
+      toast.error('Las contraseñas no coinciden.');
+      return;
+    }
+
+
 
     try {
       await resetPassword(email, newPassword);
@@ -269,6 +304,9 @@ function Recuperacion() {
     setShowConfirmPassword(!showConfirmPassword);
   };
 
+  const totalChecks = Object.values(passwordChecks).filter(Boolean).length;
+  const allChecksSatisfied = totalChecks === 6;
+
   return (
     <div>
       <Breadcrumbs paths={breadcrumbPaths} />
@@ -276,28 +314,60 @@ function Recuperacion() {
         <div className="form-card">
           <h1 className="form-title">Recuperación de Contraseña</h1>
 
-          {/* Sección de Pregunta Secreta */}
+          {/* Resto del formulario solo se muestra si la pregunta secreta fue verificada */}
           {!securityVerified && (
             <form onSubmit={handleSecuritySubmit}>
+              <div className="form-group">
+                <label htmlFor="email" className="form-label">
+                  Correo Electrónico
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={email}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  placeholder="Ingresa tu correo"
+                  className="form-input"
+                  disabled={isEmailVerified}
+                />
+                {errors.email && (
+                  <p className="textError">
+                    <FiXCircle className="iconoError" />
+                    {errors.email}
+                  </p>
+                )}
+              </div>
+
+              <div className="form-group flex gap-4 mt-4">
+                <button type="submit" className="btn-aceptar">
+                  Aceptar
+                </button>
+                <button type="button" className="btn-cancelar" onClick={handleCancel}>
+                  Cancelar
+                </button>
+              </div>
+
+
+            </form>
+          )}
+
+          {/* Sección de Pregunta Secreta */}
+          {securityVerified && (
+            <form onSubmit={handleSubmit}>
               <div className="form-group">
                 <label htmlFor="securityQuestion" className="form-label">
                   Pregunta Secreta
                 </label>
-                <select
+                <input
                   id="securityQuestion"
                   name="securityQuestion"
                   className="form-input w-full"
-                  defaultValue=""
-                  ref={securityQuestionReg} // Asignar la referencia para acceder al valor seleccionado
-                  onBlur={handleBlur}
-                >
-                  <option value="">Seleccione una pregunta</option>
-                  {questions.map((question) => (
-                    <option key={question.id} value={question.id}>
-                      {question.pregunta}
-                    </option>
-                  ))}
-                </select>
+                  type="text"
+                  value={securityQuestion} // Muestra la pregunta secreta
+                  readOnly // Bloquea la edición
+                />
                 {errors.securityQuestion && (
                   <p className="textError">
                     <FiXCircle className="iconoError" />
@@ -324,43 +394,6 @@ function Recuperacion() {
                   <p className="textError">
                     <FiXCircle className="iconoError" />
                     {errors.securityAnswer}
-                  </p>
-                )}
-              </div>
-
-              <div className="form-group flex gap-4 mt-4">
-                <button type="submit" className="btn-aceptar">
-                  Enviar Respuesta
-                </button>
-                <button type="button" className="btn-cancelar" onClick={handleCancel}>
-                  Cancelar
-                </button>
-              </div>
-            </form>
-          )}
-
-          {/* Resto del formulario solo se muestra si la pregunta secreta fue verificada */}
-          {securityVerified && (
-            <form onSubmit={handleSubmit}>
-              <div className="form-group">
-                <label htmlFor="email" className="form-label">
-                  Correo Electrónico
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={email}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  placeholder="Ingresa tu correo"
-                  className="form-input"
-                  disabled={isEmailVerified}
-                />
-                {errors.email && (
-                  <p className="textError">
-                    <FiXCircle className="iconoError" />
-                    {errors.email}
                   </p>
                 )}
               </div>
@@ -422,6 +455,67 @@ function Recuperacion() {
                         {errors.newPassword}
                       </p>
                     )}
+
+                    {showRequirements && !allChecksSatisfied && (
+                      <div className="requirements-list">
+                        <ul className="list-none p-0 m-0">
+                          <li className="flex items-center gap-2">
+                            {passwordChecks.minLength ? (
+                              <FiCheckCircle className="iconoCorrect" />
+                            ) : (
+                              <FiXCircle className="iconoError" />
+                            )}
+                            <span className="white-text">
+                              Mínimo 8 caracteres (máx. 20)
+                            </span>
+                          </li>
+                          <li className="flex items-center gap-2">
+                            {passwordChecks.upperCase ? (
+                              <FiCheckCircle className="iconoCorrect" />
+                            ) : (
+                              <FiXCircle className="iconoError" />
+                            )}
+                            <span className="white-text">Al menos una mayúscula</span>
+                          </li>
+                          <li className="flex items-center gap-2">
+                            {passwordChecks.lowerCase ? (
+                              <FiCheckCircle className="iconoCorrect" />
+                            ) : (
+                              <FiXCircle className="iconoError" />
+                            )}
+                            <span className="white-text">Al menos una minúscula</span>
+                          </li>
+                          <li className="flex items-center gap-2">
+                            {passwordChecks.number ? (
+                              <FiCheckCircle className="iconoCorrect" />
+                            ) : (
+                              <FiXCircle className="iconoError" />
+                            )}
+                            <span className="white-text">Al menos un número</span>
+                          </li>
+                          <li className="flex items-center gap-2">
+                            {passwordChecks.specialChar ? (
+                              <FiCheckCircle className="iconoCorrect" />
+                            ) : (
+                              <FiXCircle className="iconoError" />
+                            )}
+                            <span className="white-text">
+                              Al menos un carácter especial (!@#$%^&*)
+                            </span>
+                          </li>
+                          <li className="flex items-center gap-2">
+                            {passwordChecks.noSequence ? (
+                              <FiCheckCircle className="iconoCorrect" />
+                            ) : (
+                              <FiXCircle className="iconoError" />
+                            )}
+                            <span className="white-text">
+                              Sin secuencias obvias como "12345" o "abcd"
+                            </span>
+                          </li>
+                        </ul>
+                      </div>
+                    )}
                   </div>
 
                   <div className="form-group relative">
@@ -478,7 +572,7 @@ function Recuperacion() {
                   </button>
                 ) : (
                   <button type="submit" className="btn-aceptar">
-                    Aceptar
+                    Enviar Respuesta
                   </button>
                 )}
                 <button
@@ -489,8 +583,12 @@ function Recuperacion() {
                   Cancelar
                 </button>
               </div>
+
+
             </form>
           )}
+
+
         </div>
         <ToastContainer />
       </div>
