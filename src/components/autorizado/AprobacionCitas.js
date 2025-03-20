@@ -334,7 +334,7 @@ function AprobacionesCitas() {
   };
 
   return (
-    <div>
+    <div className="pt-20">
       <Breadcrumbs
         paths={getDynamicBreadcrumbs()}
         onCrumbClick={handleBreadcrumbClick}

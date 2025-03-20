@@ -1,28 +1,33 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useLocation, Link, useNavigate } from 'react-router-dom';
 import Breadcrumbs from '../Breadcrumbs';
 import { getServiceById } from '../../api/admin';
 
 function VerDetalles() {
-  // Se extrae el id de la URL
-  const { id } = useParams();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const serviceId = location.state?.serviceId; // Extrae el id desde state
   const [servicio, setServicio] = useState(null);
   const [error, setError] = useState(null);
+
+  // Si no hay serviceId (por recarga o acceso directo), redirigir
+  useEffect(() => {
+    if (!serviceId) {
+      navigate('/consultaservicios'); // Redirige si no se encuentra el id
+    }
+  }, [serviceId, navigate]);
 
   // Breadcrumbs estáticos para navegación
   const breadcrumbPaths = [
     { name: 'Inicio', link: '/' },
     { name: 'Consulta Servicios', link: '/consultaservicios' },
-    { name: 'Detalles', link: `/verDetalles/${id}` },
+    { name: 'Detalles', link: '#' },
   ];
 
   useEffect(() => {
     const fetchService = async () => {
       try {
-        // getServiceById debe recibir el id y devolver los datos del servicio
-        const data = await getServiceById(id);
-        // Se asume que la API retorna un arreglo y se toma el primer elemento,
-        // o directamente un objeto si así está implementado la API.
+        const data = await getServiceById(serviceId);
         const servicioData = Array.isArray(data) ? data[0] : data;
         setServicio(servicioData);
       } catch (err) {
@@ -31,11 +36,12 @@ function VerDetalles() {
       }
     };
 
-    if (id) {
+    if (serviceId) {
       fetchService();
     }
-  }, [id]);
+  }, [serviceId]);
 
+  if (!serviceId) return null;
   if (error) return <div>{error}</div>;
   if (!servicio) return <div>Cargando...</div>;
 
@@ -44,15 +50,11 @@ function VerDetalles() {
       <Breadcrumbs paths={breadcrumbPaths} />
       <section className="services-section">
         <div className="detalle-container">
-          <img
-            src={servicio.imagen}
-            alt={servicio.nombre}
-            className="detalle-img"
-          />
+          <img src={servicio.imagen} alt={servicio.nombre} className="detalle-img" />
           <div className="detalle-content">
             <h2 className="detalle-title">{servicio.nombre}</h2>
             <p className="detalle-descripcion">{servicio.descripcion}</p>
-            {/* Si la API trae más propiedades como costo, categoría o duración, se pueden mostrar aquí */}
+
             {servicio.costo && (
               <p className="detalle-costo">
                 <span className="detalle-label">Costo:</span> {servicio.costo}
@@ -86,7 +88,7 @@ function VerDetalles() {
             <div className="detalle-boton">
               <Link to="/consultaservicios">
                 <button className="btn-aceptar w-auto text-sm py-2 px-1">
-                  Volver al catalogo
+                  Volver al catálogo
                 </button>
               </Link>
             </div>

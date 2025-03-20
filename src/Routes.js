@@ -49,6 +49,8 @@ import DatosEstadisticos from './components/admin/DatosEstadisticos';
 import GestionFinanciera from './components/admin/GestionFinanciera';
 import CrudReparaciones from './components/admin/CrudReparaciones';
 import Demandas from './components/admin/Demandas';
+import InformacionEmpresa from './components/admin/InformacionEmpresa';
+import Contactos from './components/admin/CrudContactos';
 
 const AppRoutes = () => {
   return (
@@ -61,7 +63,7 @@ const AppRoutes = () => {
         <Route path="login" element={<Login />} />
         <Route path="consultaservicios" element={<ConsultaServicios />} />
         <Route path="recuperacion" element={<Recuperacion />} />
-        <Route path="verDetalles/:id" element={<VerDetalles />} />
+        <Route path="verDetalles" element={<VerDetalles />} />
         <Route path="acercade" element={<AcercaDe />} />
         <Route path="politicadeprivacidad" element={<PoliticaDePrivacidad />} />
         <Route path="terminosycondiciones" element={<TerminosYCondiciones />} />
@@ -137,7 +139,7 @@ const AppRoutes = () => {
         <Route
           path="aprobacioncitas"
           element={
-            <ProtectedRoute allowedRoles={['empleado']}>
+            <ProtectedRoute allowedRoles={['empleado', 'administrador']}>
               <AprobacionCitas />
             </ProtectedRoute>
           }
@@ -145,7 +147,7 @@ const AppRoutes = () => {
         <Route
           path="asignacioncita"
           element={
-            <ProtectedRoute allowedRoles={['empleado']}>
+            <ProtectedRoute allowedRoles={['empleado', 'administrador']}>
               <AsignacionCita />
             </ProtectedRoute>
           }
@@ -153,16 +155,25 @@ const AppRoutes = () => {
         <Route
           path="consultacitas"
           element={
-            <ProtectedRoute allowedRoles={['empleado']}>
+            <ProtectedRoute allowedRoles={['empleado', 'administrador']}>
               <ConsultaCitas />
             </ProtectedRoute>
           }
         />
-        <Route path="registroreparaciones" element={<RegistroReparaciones />} />
+
+        <Route 
+        path="registroreparaciones" 
+        element={
+          <ProtectedRoute allowedRoles={['empleado', 'administrador']}>
+            <RegistroReparaciones />
+          </ProtectedRoute>
+         }
+         />
+
         <Route
           path="citasCanceladas"
           element={
-            <ProtectedRoute allowedRoles={['empleado']}>
+            <ProtectedRoute allowedRoles={['empleado', 'administrador']}>
               <CitasCanceladas />
             </ProtectedRoute>
           }
@@ -170,7 +181,7 @@ const AppRoutes = () => {
         <Route
           path="consultasreparaciones"
           element={
-            <ProtectedRoute allowedRoles={['empleado']}>
+            <ProtectedRoute allowedRoles={['empleado', 'administrador']}>
               <ConsultasReparaciones />
             </ProtectedRoute>
           }
@@ -225,7 +236,32 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
-        <Route path="demandas" element={<Demandas />} />
+
+        <Route 
+        path="demandas" 
+        element={
+          <ProtectedRoute allowedRoles={['administrador']}>
+             <Demandas />
+          </ProtectedRoute>
+        } />
+
+        <Route 
+          path="informacionempresa" 
+            element={
+              <ProtectedRoute allowedRoles={['administrador']}>
+                <InformacionEmpresa/>
+                </ProtectedRoute>
+               }
+            />
+
+        <Route 
+          path="contactos" 
+            element={
+              <ProtectedRoute allowedRoles={['administrador']}>
+                <Contactos/>
+                  </ProtectedRoute>
+                } 
+            />
 
         {/* Ruta para páginas no encontradas */}
         <Route path="*" element={<Navigate to="/NotFound" replace />} />

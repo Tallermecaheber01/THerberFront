@@ -56,7 +56,7 @@ function Bienvenida() {
   };
 
   return (
-    <div className="flex flex-col justify-start items-center">
+    <div className="flex flex-col justify-start items-center pt-20">
       <div className="form-card">
         {usuario ? (
           <>

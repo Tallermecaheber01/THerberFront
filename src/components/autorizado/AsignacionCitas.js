@@ -1,16 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { createNewAppointment, getAllUsersClient, getAllEmployees, getAllServices } from '../../api/employ';
+import { AuthContext } from "../AuthContext"; 
 import Breadcrumbs from "../Breadcrumbs";
 
 function AsignacionCita() {
+  const { auth } = useContext(AuthContext);
 
   const [usersClient, setUserClient] = useState([]);
   const [service, setService] = useState([]);
   const [employ, setEmploy] = useState([]);
+  const [diagnosticoSelected, setDiagnosticoSelected] = useState(false);
 
   const fetchData = async () => {
     try {
-      // Ejecutar las llamadas a las APIs de forma concurrente
       const [usersResponse, servicesResponse, employeesResponse] = await Promise.all([
         getAllUsersClient(),
         getAllServices(),
@@ -21,7 +23,6 @@ function AsignacionCita() {
       console.log("Servicios:", servicesResponse);
       console.log("Empleados:", employeesResponse);
 
-      // Actualizar los estados con los datos obtenidos
       setUserClient(usersResponse);
       setService(servicesResponse);
       setEmploy(employeesResponse);
@@ -30,50 +31,27 @@ function AsignacionCita() {
     }
   };
 
-  // Ejecutar la función fetchData cuando el componente se monta
   useEffect(() => {
     fetchData();
-  }, []); // El array vacío asegura que solo se ejecute una vez cuando el componente se monta
+  }, []);
 
-  // Datos fijos
-  const [clientes] = useState([
-    {
-      id: 1,
-      nombre: 'Juan Pérez',
-      cars: [
-        { marca: 'Toyota', modelos: ['Corolla 2019', 'Camry 2020'] },
-        { marca: 'Honda', modelos: ['Civic 2018', 'Accord 2019'] },
-      ],
-    },
-    {
-      id: 2,
-      nombre: 'María Gómez',
-      cars: [
-        { marca: 'Ford', modelos: ['Focus 2020', 'Fiesta 2019'] },
-        { marca: 'Chevrolet', modelos: ['Malibu 2020'] },
-      ],
-    },
-    {
-      id: 3,
-      nombre: 'Carlos López',
-      cars: [
-        { marca: 'Nissan', modelos: ['Sentra 2020', 'Altima 2021'] },
-        { marca: 'Mazda', modelos: ['Mazda3 2021'] },
-      ],
-    },
-  ]);
-
-  const empleados = [
-    { id: 1, nombre: 'Pedro' },
-    { id: 2, nombre: 'Pablo' },
-    { id: 3, nombre: 'Matias' },
-  ];
-
-  const serviciosDisponibles = [
-    { nombre: 'Cambio de aceite' },
-    { nombre: 'Cambio de llantas' },
-    { nombre: 'Revisión general' },
-  ];
+  const handleDiagnosticoChange = (e) => {
+    const checked = e.target.checked;
+    setDiagnosticoSelected(checked);
+    if (checked) {
+      const diagnosticoService = { nombre: 'Diagnostico', costo: 0 };
+      const yaExiste = serviciosSeleccionados.find(
+        (s) => s.nombre.toLowerCase() === 'diagnostico'
+      );
+      if (!yaExiste) {
+        setServiciosSeleccionados((prev) => [...prev, diagnosticoService]);
+      }
+    } else {
+      setServiciosSeleccionados((prev) =>
+        prev.filter((s) => s.nombre.toLowerCase() !== 'diagnostico')
+      );
+    }
+  };
 
   const breadcrumbPaths = [
     { name: 'Inicio', link: '/' },
@@ -93,7 +71,6 @@ function AsignacionCita() {
   const [servicioCosto, setServicioCosto] = useState('');
   const [serviciosSeleccionados, setServiciosSeleccionados] = useState([]);
 
-  // Estados para el formulario de cita
   const [empleadoSeleccionado, setEmpleadoSeleccionado] = useState('');
   const [fecha, setFecha] = useState('');
   const [hora, setHora] = useState('');
@@ -200,6 +177,7 @@ function AsignacionCita() {
     setExtraAmount('');
     setTotalCosto(0);
     setFormErrors({});
+    setDiagnosticoSelected(false);
   };
 
   const [formErrors, setFormErrors] = useState({});
@@ -218,21 +196,13 @@ function AsignacionCita() {
   const validateAsignacion = () => {
     const errors = {};
 
-    // Validación de cliente
     if (!clienteSeleccionado) errors.cliente = "Debe seleccionar un cliente.";
 
-    // Validación de autos y selección de marca y modelo
     if (clienteSeleccionado && clienteSeleccionado.vehicles && clienteSeleccionado.vehicles.length > 0) {
       if (!selectedMarca) errors.marca = "Debe seleccionar la marca del auto.";
-
       if (selectedMarca) {
-        // Buscar el auto con la marca seleccionada
         const car = clienteSeleccionado.vehicles.find((vehicle) => vehicle.vehicle_marca === selectedMarca);
-
-        // Validar que se haya seleccionado un modelo, solo si se encontró un vehículo con la marca seleccionada
         if (car && !selectedModelo) errors.modelo = "Debe seleccionar un modelo.";
-
-        // Si se encontró el vehículo con la marca seleccionada, valida el modelo
         if (car && selectedModelo) {
           const modelSelected = car.modelos.find((modelo) => modelo.vehicle_modelo === selectedModelo);
           if (!modelSelected) errors.modelo = "El modelo seleccionado no existe para esta marca.";
@@ -240,22 +210,18 @@ function AsignacionCita() {
       }
     }
 
-    // Validación de empleado
     if (!empleadoSeleccionado) errors.empleado = 'Debe seleccionar un empleado.';
     if (empleadoSeleccionado && !isInputSecure(empleadoSeleccionado))
       errors.empleado = 'El empleado seleccionado contiene caracteres no permitidos.';
 
-    // Validación de fecha y hora
     if (!fecha) errors.fecha = 'Debe seleccionar una fecha.';
     if (!hora) errors.hora = 'Debe seleccionar una hora.';
 
-    // Validación de servicios seleccionados
     if (serviciosSeleccionados.length === 0)
       errors.servicios = 'Debe agregar al menos un servicio.';
 
     return errors;
   };
-
 
   const [showConfirmAssignModal, setShowConfirmAssignModal] = useState(false);
 
@@ -271,11 +237,10 @@ function AsignacionCita() {
   };
 
   serviciosSeleccionados.forEach((servicio, index) => {
-    //console.log(`Servicio ${index + 1}:`, servicio);
+    // console.log(`Servicio ${index + 1}:`, servicio);
   });
 
   const confirmAsignacion = async () => {
-    // Busca el vehículo dentro de los vehículos del cliente que coincide con la marca y el modelo seleccionados
     const vehicleSeleccionado = clienteSeleccionado.vehicles.find(
       (vehiculo) =>
         vehiculo.vehicle_marca === selectedMarca && vehiculo.vehicle_modelo === selectedModelo
@@ -298,32 +263,24 @@ function AsignacionCita() {
       }))
     };
 
-
     console.log("Auto:", vehicleSeleccionado);
-    // Imprime en consola los valores de las variables relevantes
     console.log("Cliente seleccionado:", clienteSeleccionado.user_nombre);
-    // Marca y modelo del auto seleccionado
     console.log("Marca del auto seleccionada:", selectedMarca);
     console.log("Modelo del auto seleccionado:", selectedModelo);
     console.log("Empleado seleccionado:", empleadoSeleccionado);
     console.log("Fecha:", fecha);
     console.log("Hora:", hora);
     console.log("Servicios seleccionados:", serviciosSeleccionados);
-    console.log("Marca del auto seleccionada:", selectedMarca);
-    console.log("Modelo del auto seleccionado:", selectedModelo);
-
     console.log("Extra:", extraAmount);
     console.log("Costo total:", totalCosto);
     try {
       const response = await createNewAppointment(appointmentData);
       if (response) {
-        // Si la cita fue creada exitosamente, muestra el mensaje y limpia los campos
         alert("Cita asignada exitosamente.");
         console.log('data:', appointmentData);
         limpiarCampos();
         setShowConfirmAssignModal(false);
       } else {
-        // Si hubo un error en la creación de la cita, maneja el error aquí
         alert("Hubo un error al asignar la cita. Intente nuevamente.");
       }
     } catch (error) {
@@ -338,7 +295,7 @@ function AsignacionCita() {
   };
 
   return (
-    <div>
+    <div className='p-20'>
       <Breadcrumbs paths={breadcrumbPaths} />
       <div className="citasContainer">
         <form className="citasForm">
@@ -393,7 +350,6 @@ function AsignacionCita() {
               )}
             </div>
 
-            {/* Selección de auto */}
             {clienteSeleccionado && clienteSeleccionado.vehicles && (
               <>
                 <div className="form-group">
@@ -405,8 +361,8 @@ function AsignacionCita() {
                     className="form-input"
                     value={selectedMarca}
                     onChange={(e) => {
-                      setSelectedMarca(e.target.value); // Actualizamos la marca seleccionada
-                      setSelectedModelo(''); // Limpiamos la selección de modelo al cambiar la marca
+                      setSelectedMarca(e.target.value);
+                      setSelectedModelo('');
                     }}
                   >
                     <option value="">Selecciona una marca</option>
@@ -432,7 +388,7 @@ function AsignacionCita() {
                       id="modeloSelect"
                       className="form-input"
                       value={selectedModelo}
-                      onChange={(e) => setSelectedModelo(e.target.value)} // Actualizamos el modelo seleccionado
+                      onChange={(e) => setSelectedModelo(e.target.value)}
                     >
                       <option value="">Selecciona un modelo</option>
                       {clienteSeleccionado.vehicles
@@ -453,8 +409,7 @@ function AsignacionCita() {
               </>
             )}
 
-
-            {/* Selección de empleado, fecha y hora */}
+            {/* Select para Empleado */}
             <div className="form-group">
               <label htmlFor="empleado" className="form-label">
                 Empleado
@@ -467,11 +422,19 @@ function AsignacionCita() {
                 disabled={!clienteSeleccionado}
               >
                 <option value="">Seleccione un empleado</option>
-                {employ.map((empleado) => (
-                  <option key={empleado.id} value={empleado.id}>
-                    {empleado.nombre}
-                  </option>
-                ))}
+                {auth.role === 'empleado'
+                  ? employ
+                      .filter((empleado) => empleado.id === auth.user.id)
+                      .map((empleado) => (
+                        <option key={empleado.id} value={empleado.id}>
+                          {empleado.nombre}
+                        </option>
+                      ))
+                  : employ.map((empleado) => (
+                      <option key={empleado.id} value={empleado.id}>
+                        {empleado.nombre}
+                      </option>
+                    ))}
               </select>
               {formErrors.empleado && (
                 <p className="text-red-500 text-xs mt-1">
@@ -511,6 +474,22 @@ function AsignacionCita() {
                 <p className="text-red-500 text-xs mt-1">{formErrors.hora}</p>
               )}
             </div>
+
+            {/* Checkbox para Diagnostico */}
+            <div className="form-group">
+              <label htmlFor="diagnostico" className="form-label text-2xl">
+                <input
+                  id="diagnostico"
+                  type="checkbox"
+                  checked={diagnosticoSelected}
+                  onChange={handleDiagnosticoChange}
+                  disabled={!clienteSeleccionado}
+                  style={{ transform: "scale(1.5)", marginRight: "8px" }}
+                />
+                Diagnostico
+              </label>
+            </div>
+
             <div className="form-group">
               <label htmlFor="busquedaServicio" className="form-label">
                 Buscar Servicio
@@ -576,7 +555,9 @@ function AsignacionCita() {
                 {serviciosSeleccionados.map((servicio, index) => (
                   <li key={index} className="resumCita mb-4">
                     <span className="text-lg">
-                      {servicio.nombre} - ${servicio.costo}
+                      {servicio.nombre.toLowerCase() === 'diagnostico'
+                        ? 'Diagnostico'
+                        : `${servicio.nombre} - $${servicio.costo}`}
                     </span>
                     <div className="serviciosSelecc">
                       <button
@@ -653,14 +634,14 @@ function AsignacionCita() {
               total de <strong>${totalCosto}</strong>?
             </p>
             <div className="flex justify-end gap-4">
+              <button className="btn-aceptar" onClick={confirmAsignacion}>
+                Confirmar
+              </button>
               <button
-                className="btn-aceptar"
+                className="btn-cancelar"
                 onClick={() => setShowConfirmAssignModal(false)}
               >
                 Cancelar
-              </button>
-              <button className="btn-cancelar" onClick={confirmAsignacion}>
-                Confirmar
               </button>
             </div>
           </div>
@@ -671,3 +652,4 @@ function AsignacionCita() {
 }
 
 export default AsignacionCita;
+

@@ -114,12 +114,6 @@ export const deleteService = async (id) => {
     } catch (error) {
         return handleError(error, 'deleteService');
     }
-  try {
-    const response = await api.delete(`/admin/delete-service/${id}`);
-    return response.data; // Devuelve la respuesta del backend
-  } catch (error) {
-    return handleError(error, 'deleteService');
-  }
 };
 
 export const deleteVehicleType = async (id) => {
@@ -137,5 +131,87 @@ export const deleteBrand = async (id) => {
     return response.data;
   } catch (error) {
     return handleError(error, 'deleteBrand');
+  }
+
+  
+};
+
+export const updateCorporateImage = async (corporateImageId, corporateImageData) => {
+  try {
+    const response = await api.patch(
+      `/admin/updatecorporateimage/${corporateImageId}`,
+      corporateImageData
+    );
+    return response.data;
+  } catch (error) {
+    return handleError(error, 'updateCorporateImage');
+  }
+};
+
+export const createContact = async (contactData) => {
+  try {
+    const response = await api.post('/admin/newcontact', contactData);
+    return response.data; // Devuelve la respuesta del backend
+  } catch (error) {
+    return handleError(error, 'createContact');
+  }
+};
+
+
+export const updateContact = async (contactId, contactData) => {
+  try {
+    const response = await api.patch(
+      `/admin/updatecontact/${contactId}`,
+      contactData
+    );
+    return response.data;
+  } catch (error) {
+    return handleError(error, 'updateContact');
+  }
+};
+
+
+export const getAllContacts = async () => {
+  try {
+    const response = await api.get('/admin/all-contacts');
+    return response.data;
+  } catch (error) {
+    return handleError(error, 'getAllContacts');
+  }
+};
+
+export const getContactById = async (id) => {
+  try {
+    const response = await api.get(`/admin/contact/${id}`);
+    return response.data;
+  } catch (error) {
+    return handleError(error, 'getContactById');
+  }
+};
+
+export const deleteContact = async (id) => {
+  try {
+    const response = await api.delete(`/admin/deletecontact/${id}`);
+    return response.data;
+  } catch (error) {
+    return handleError(error, 'deleteContact');
+  }
+};
+
+export const getCorporateImageById = async (id) => {
+  try {
+    const response = await api.get(`/admin/corporateimage/${id}`);
+    return response.data;
+  } catch (error) {
+    return handleError(error, 'getCorporateImageById');
+  }
+};
+
+export const getAllCorporateImages = async () => {
+  try {
+    const response = await api.get('/admin/allcorporateimages');
+    return response.data;
+  } catch (error) {
+    return handleError(error, 'getAllCorporateImages');
   }
 };

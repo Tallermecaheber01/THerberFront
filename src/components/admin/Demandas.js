@@ -364,7 +364,7 @@ export default function App() {
   };
 
   return (
-    <div className="max-w-[900px] mx-auto p-5 font-sans bg-fondoClaro dark:bg-fondoObscuro">
+    <div className="max-w-[900px] mx-auto p-40 font-sans bg-fondoClaro dark:bg-fondoObscuro">
       <h1 className="text-center navbar-title text-yellow-400">Aplicación del Taller</h1>
       
       {/* Row con selección e información */}

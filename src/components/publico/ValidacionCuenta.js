@@ -51,7 +51,7 @@ function ValidacionCuenta() {
   };
 
   return (
-    <div className="form-container">
+    <div className="form-container pt-40">
       <div className="form-card mt-6">
         <h2 className="form-title">Verificación</h2>
         <form onSubmit={handleVerificationSubmit}>

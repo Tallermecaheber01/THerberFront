@@ -1,20 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
-import { 
-  FaInstagram, 
-  FaFacebook, 
-  FaTwitter, 
-  FaWhatsapp, 
-  FaLinkedin, 
+import {
+  FaInstagram,
+  FaFacebook,
+  FaTwitter,
+  FaWhatsapp,
+  FaLinkedin,
   FaEnvelope,
   FaPhone,
-  FaLink 
+  FaLink
 } from 'react-icons/fa';
 import { siInstagram, siFacebook, siTwitter, siWhatsapp, siLinkedin } from 'simple-icons';
 import 'react-toastify/dist/ReactToastify.css';
+import { deleteContact, getAllContacts, updateContact, createContact } from '../../api/admin';
 
-
-// Componente principal de Contactos
 const Contactos = () => {
   const [contacts, setContacts] = useState([]);
   const [newSocialName, setNewSocialName] = useState('');
@@ -23,7 +22,21 @@ const Contactos = () => {
   const [editSocialName, setEditSocialName] = useState('');
   const [editData, setEditData] = useState('');
 
-  // Validaciones
+  useEffect(() => {
+    fetchContacts();
+  }, []);
+
+  const fetchContacts = async () => {
+    try {
+      const response = await getAllContacts();
+      console.log("Respuesta de getAllContacts:", response);
+      setContacts(response || []);
+    } catch (error) {
+      toast.error("Error al cargar los contactos.");
+      setContacts([]);
+    }
+  };
+
   const allowedNamePattern = /^[a-zA-Z0-9À-ÿ\s]+$/;
   const validateName = (name) => {
     if (name.trim().length < 1) {
@@ -50,171 +63,175 @@ const Contactos = () => {
     return true;
   };
 
-  // Obtener el icono de la red social
   const socialIcons = {
     instagram: { component: FaInstagram, color: `#${siInstagram.hex}` },
     facebook: { component: FaFacebook, color: `#${siFacebook.hex}` },
-    twitter: { component: FaTwitter, color: "#1DA1F2" }, // Color manual para Twitter (X)
+    twitter: { component: FaTwitter, color: "#1DA1F2" },
     whatsapp: { component: FaWhatsapp, color: `#${siWhatsapp.hex}` },
     wpp: { component: FaWhatsapp, color: `#${siWhatsapp.hex}` },
     correo: { component: FaEnvelope, color: "#D44638" },
-    telefono: { component: FaPhone, color: "#000000" },
-    phone: { component: FaPhone, color: "#000000" },
-  };
-  
-  
-  
-  // Obtener el icono de la red social
-  const getSocialIcon = (name) => {
-    const lowerName = name.toLowerCase().trim();
-    const iconData = socialIcons[lowerName] || socialIcons.whatsapp; 
-    if (iconData) {
-      const IconComponent = iconData.component;
-      return <IconComponent className="text-2xl" style={{ color: iconData.color }} />;
-    }
-    return <FaLink className="text-2xl" />;
+    telefono: { component: FaPhone, color: "#00a33d" },
+    phone: { component: FaPhone, color: "#00a33d" },
   };
 
-  // Agregar nuevo contacto
-// Ejemplo al agregar un nuevo contacto
-const handleAddContact = (e) => {
+  const getSocialIcon = (name) => {
+    const lowerName = name.toLowerCase().trim();
+    const iconData = socialIcons[lowerName] || socialIcons.whatsapp;
+    if (iconData) {
+      const IconComponent = iconData.component;
+      return <IconComponent className="text-xl" style={{ color: iconData.color }} />;
+    }
+    return <FaLink className="text-xl" />;
+  };
+
+  const handleAddContact = async (e) => {
     e.preventDefault();
     if (!validateName(newSocialName) || !validateData(newData)) return;
     
     const formattedSocialName = newSocialName.trim().toLowerCase().includes("whatsapp")
-      ? "whatsapp"  // Si contiene "whatsapp", usar solo "whatsapp" como nombre
+      ? "whatsapp"
       : newSocialName.trim();
-  
-    const newContact = {
-      id: Date.now(),
-      socialName: formattedSocialName,  // Aquí asignamos el nombre formateado
-      data: newData.trim(),
+    
+    const payload = {
+      nombre: formattedSocialName,
+      informacion: newData.trim(),
     };
-  
-    setContacts([...contacts, newContact]);
-    setNewSocialName('');
-    setNewData('');
-    toast.success("Contacto agregado.");
-  };
-  
-
-  // Eliminar contacto
-  const handleDelete = (id) => {
-    setContacts(contacts.filter(contact => contact.id !== id));
-    toast.success("Contacto eliminado.");
+    
+    try {
+      await createContact(payload);
+      toast.success("Contacto agregado.");
+      setNewSocialName('');
+      setNewData('');
+      fetchContacts();
+    } catch (error) {
+      toast.error("Error al agregar el contacto.");
+    }
   };
 
-  // Editar contacto
+  const handleDelete = async (id) => {
+    try {
+      await deleteContact(id);
+      toast.success("Contacto eliminado.");
+      fetchContacts();
+    } catch (error) {
+      toast.error("Error al eliminar el contacto.");
+    }
+  };
+
   const handleEdit = (contact) => {
     setEditingId(contact.id);
-    setEditSocialName(contact.socialName);
-    setEditData(contact.data);
+    setEditSocialName(contact.nombre);
+    setEditData(contact.informacion);
   };
 
-  // Guardar edición
-  const handleSaveEdit = (id) => {
+  const handleSaveEdit = async (id) => {
     if (!validateName(editSocialName) || !validateData(editData)) return;
-    setContacts(contacts.map(contact =>
-      contact.id === id 
-        ? { ...contact, socialName: editSocialName.trim(), data: editData.trim() } 
-        : contact
-    ));
-    setEditingId(null);
-    toast.success("Contacto actualizado.");
+    const payload = {
+      nombre: editSocialName.trim(),
+      informacion: editData.trim(),
+    };
+    try {
+      await updateContact(id, payload);
+      toast.success("Contacto actualizado.");
+      setEditingId(null);
+      fetchContacts();
+    } catch (error) {
+      toast.error("Error al actualizar el contacto.");
+    }
   };
 
-  // Cancelar edición
   const handleCancelEdit = () => {
     setEditingId(null);
   };
 
   return (
-    <div className="p-4 max-w-2xl mx-auto">
+    <div className="p-4 max-w-4xl mx-auto pt-40">
       <h2 className="form-title text-center mb-4">Gestión de Contactos</h2>
-      
-      {/* Formulario para agregar nuevo contacto */}
       <form onSubmit={handleAddContact} className="mb-6 p-4 border border-gray-400 rounded-lg shadow-lg">
         <h3 className="text-xl font-bold text-yellow-400 mb-2">Agregar Nuevo Contacto</h3>
         <div className="mb-4">
-          <label className="form-label">Nombre de la Red Social</label>
+          <label className="form-label">Nombre del contacto</label>
           <input
             type="text"
             value={newSocialName}
             onChange={(e) => setNewSocialName(e.target.value)}
             className="form-input"
-            placeholder="Ej: Instagram, WhatsApp, etc."
+            placeholder="Como Instagram, WhatsApp, etc."
           />
         </div>
         <div className="mb-4">
-          <label className="form-label">Dato (número, enlace, etc.)</label>
+          <label className="form-label">Dato (número, enlace, usuario)</label>
           <input
             type="text"
             value={newData}
             onChange={(e) => setNewData(e.target.value)}
             className="form-input"
-            placeholder="Ej: @usuario, +123456789 o un link completo"
+            placeholder="Agrega un numero, usuario, o enlace de pagina o perfil"
           />
         </div>
         <button type="submit" className="btn-aceptar">Agregar Contacto</button>
       </form>
 
-      {/* Lista de contactos */}
-      <div className="space-y-4">
+      {/* Lista de contactos  */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {contacts.map(contact => (
-     <div key={contact.id} className="p-4 border border-gray-400 rounded-lg shadow-lg flex flex-col gap-4">
-     <div className="flex items-center gap-4">
-       {/* Icono social */}
-       {getSocialIcon(contact.socialName)}
-   
-       {/* Información editable o normal */}
-       {editingId === contact.id ? (
-         <div className="flex flex-col gap-2">
-           <input 
-             type="text" 
-             value={editSocialName} 
-             onChange={(e) => setEditSocialName(e.target.value)}
-             className="form-input mb-2"
-             placeholder="Nombre de la red social"
-           />
-           <input 
-             type="text" 
-             value={editData} 
-             onChange={(e) => setEditData(e.target.value)}
-             className="form-input"
-             placeholder="Dato del contacto"
-           />
-         </div>
-       ) : (
-         <div className="flex flex-col">
-           <p className="detalle-title">{contact.socialName}</p>
-           {/* Añadimos 'break-words' para evitar el desbordamiento en enlaces largos */}
-           <p className="detalle-descripcion">{contact.data}</p>
-         </div>
-       )}
-     </div>
-   
-     {/* Botones debajo */}
-     <div className="flex gap-2 mt-4">
-       {editingId === contact.id ? (
-         <>
-           <button onClick={() => handleSaveEdit(contact.id)} className="btn-aceptar px-4 py-2">Guardar</button>
-           <button onClick={handleCancelEdit} className="btn-cancelar px-4 py-2">Cancelar</button>
-         </>
-       ) : (
-         <>
-           <button onClick={() => handleEdit(contact)} className="btn-aceptar px-4 py-2">Editar</button>
-           <button onClick={() => handleDelete(contact.id)} className="btn-cancelar px-4 py-2">Eliminar</button>
-         </>
-       )}
-     </div>
-   </div>
-   
-   
+          <div
+            key={contact.id}
+            className="border border-gray-300 rounded shadow p-3 h-48 flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                {getSocialIcon(contact.nombre)}
+                {editingId === contact.id ? (
+                  <input
+                    type="text"
+                    value={editSocialName}
+                    onChange={(e) => setEditSocialName(e.target.value)}
+                    className="form-input text-base"
+                    placeholder="Nombre"
+                  />
+                ) : (
+                  <span className="text-yellow-400 text-base font-bold">{contact.nombre}</span>
+                )}
+              </div>
+              <div className="mb-2">
+                {editingId === contact.id ? (
+                  <textarea
+                    value={editData}
+                    onChange={(e) => setEditData(e.target.value)}
+                    className="form-input text-base max-h-20 overflow-y-auto scrollbar-hide break-all"
+                    placeholder="Información"
+                  />
+                ) : (
+                  <div className="text-white text-base max-h-20 overflow-y-auto scrollbar-hide break-all">
+                    {contact.informacion}
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="flex gap-2 mt-2">
+              {editingId === contact.id ? (
+                <>
+                  <button onClick={() => handleSaveEdit(contact.id)} className="btn-aceptar text-base">Guardar</button>
+                  <button onClick={handleCancelEdit} className="btn-cancelar text-base">Cancelar</button>
+                </>
+              ) : (
+                <>
+                  <button onClick={() => handleEdit(contact)} className="btn-aceptar text-base">Editar</button>
+                  <button onClick={() => handleDelete(contact.id)} className="btn-cancelar text-base">Eliminar</button>
+                </>
+              )}
+            </div>
+          </div>
         ))}
       </div>
+
       <ToastContainer />
     </div>
   );
 };
 
 export default Contactos;
+
+
+

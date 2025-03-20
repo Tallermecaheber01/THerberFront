@@ -1,9 +1,59 @@
-import React, { useState } from 'react'; // Agregado useState
+import React, { useState, useEffect } from 'react';
 import './stylos.css';
-import { FaFacebook, FaTwitter, FaInstagram } from 'react-icons/fa'; // Iconos de redes sociales
+import { FaFacebook, FaTwitter, FaInstagram, FaEnvelope, FaPhone } from 'react-icons/fa';
+import { SocialIcon } from 'react-social-icons'; 
+import { getAllContacts } from './api/admin';
 
 function Footer() {
   const [theme, setTheme] = useState('light');
+  const [contacts, setContacts] = useState([]);
+
+  useEffect(() => {
+    const loadContacts = () => {
+      getAllContacts().then(data => setContacts(data));
+    };
+    loadContacts();
+    const interval = setInterval(() => {
+      loadContacts();
+    }, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const contactInfo = contacts.filter(c => {
+    const nombre = c.nombre.toLowerCase();
+    return (
+      nombre === 'correo' ||
+      nombre === 'telefono' ||
+      nombre === 'dirección' ||
+      nombre === 'direccion'
+    );
+  });
+
+  const socialContacts = contacts.filter(c => {
+    const nombre = c.nombre.toLowerCase();
+    return (
+      nombre !== 'correo' &&
+      nombre !== 'telefono' &&
+      nombre !== 'dirección' &&
+      nombre !== 'direccion'
+    );
+  });
+
+  const socialLinks = socialContacts.filter(c => c.informacion.startsWith('http'));
+  const socialUser = socialContacts.filter(c => !c.informacion.startsWith('http'));
+
+  const getSocialIcon = (name) => {
+    switch (name.toLowerCase()) {
+      case 'facebook':
+        return <FaFacebook size={24} />;
+      case 'instagram':
+        return <FaInstagram size={24} />;
+      case 'twitter':
+        return <FaTwitter size={24} />;
+      default:
+        return null;
+    }
+  };
 
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
@@ -21,7 +71,6 @@ function Footer() {
       <footer className="footer">
         <div className="footerContainer">
           <div className="gridContainer">
-            {/* Sección de Navegación */}
             <div>
               <h3 className="subtitlefooter">Navegación</h3>
               <ul>
@@ -42,49 +91,55 @@ function Footer() {
                 </li>
               </ul>
             </div>
-
-            {/* Sección de Contacto */}
             <div>
               <h3 className="subtitlefooter">Contacto</h3>
               <ul>
-                <li>
-                  <p className="resumCita">
-                    Correo: tallermecanicoheber@gmail.com
-                  </p>
-                </li>
-                <li>
-                  <p className="resumCita">Teléfono: +52 7712342721</p>
-                </li>
-                <li>
-                  <p className="resumCita">Dirección: Col.Tepeyac</p>
-                </li>
+                {contactInfo.map((c) => {
+                  const lowerName = c.nombre.toLowerCase();
+                  let icon = null;
+                  if (lowerName === 'correo') {
+                    icon = <FaEnvelope />;
+                  } else if (lowerName === 'telefono') {
+                    icon = <FaPhone />;
+                  }
+
+                  return (
+                    <li key={c.id} style={{ marginBottom: '0.5rem' }}>
+                      <div className="flex items-center">
+                        {icon && <span style={{ marginRight: '0.5rem' }}>{icon}</span>}
+                        <span className="navbar-link">{c.nombre}:</span>
+                        <span style={{ marginLeft: '0.4rem', color: '#fff' }}>
+                          {c.informacion}
+                        </span>
+                      </div>
+                    </li>
+                  );
+                })}
+                {socialUser.map((c) => (
+                  <li key={c.id} style={{ marginBottom: '0.5rem' }}>
+                    <div className="flex items-center">
+                      <span style={{ marginRight: '0.5rem' }}>{getSocialIcon(c.nombre)}</span>
+                      <span className="navbar-link">{c.nombre}:</span>
+                      <span style={{ marginLeft: '0.4rem', color: '#fff' }}>
+                        {c.informacion}
+                      </span>
+                    </div>
+                  </li>
+                ))}
               </ul>
             </div>
-
-            {/* Sección de Redes Sociales */}
             <div>
               <h3 className="subtitlefooter">Síguenos</h3>
               <div className="flex space-x-4">
-                <a
-                  href="https://www.facebook.com/share/1EWcqDpwQs/"
-                  className="text-blue-600 hover:text-blue-800"
-                >
-                  <FaFacebook size={24} />
-                </a>
-                <a
-                  href="https://x.com/Yolo_adrian07?t=SlJLujbAUpXPKzcuU_jhzg&s=09"
-                  className="text-blue-400 hover:text-blue-600"
-                >
-                  <FaTwitter size={24} />
-                </a>
-                <a
-                  href="https://www.instagram.com/yolo_adrian?igsh=MXUxZWhteXR2ZDh1aw=="
-                  className="text-pink-500 hover:text-pink-700"
-                >
-                  <FaInstagram size={24} />
-                </a>
+                {socialLinks.map((c) => (
+                  <SocialIcon
+                    key={c.id}
+                    url={c.informacion}
+                    style={{ height: 24, width: 24 }}
+                  />
+                ))}
               </div>
-              <h3 className="subtitlefooter mt-4 ">Dejanos saber tu opinion</h3>
+              <h3 className="subtitlefooter mt-4">Déjanos saber tu opinión</h3>
               <ul>
                 <li>
                   <a href="feedback" className="navbar-link">

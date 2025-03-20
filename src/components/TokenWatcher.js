@@ -14,17 +14,15 @@ const TokenWatcher = () => {
     '/registro', 
     '/consultaservicios', 
     '/recuperacion',
-    'verDetalles/:id',
+    '/verDetalles',
     '/acercade', 
     '/politicadeprivacidad', 
     '/terminosycondiciones', 
     '/validacioncuenta', 
-    '/Marcas',
     '/NotFound',
     '/500',
     '/403',
     '/400',
-    '/demandas'
   ];
 
   useEffect(() => {
@@ -33,14 +31,13 @@ const TokenWatcher = () => {
         .split("; ")
         .some(row => row.startsWith("authToken="));
       if (!tokenExists) {
-        updateAuth(); // Actualiza el estado a público
-        // Si la ruta actual NO es una ruta pública, redirige a /login
+        updateAuth(); 
         if (!publicRoutes.includes(location.pathname)) {
           navigate('/login');
         }
         clearInterval(interval);
       }
-    }, 1000); // Comprueba cada segundo
+    }, 1000); 
 
     return () => clearInterval(interval);
   }, [updateAuth, navigate, location.pathname]);

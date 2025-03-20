@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useContext } from 'react'; 
 import Breadcrumbs from '../Breadcrumbs';
 import { AuthContext } from '../AuthContext';
-import { getAllRepairs, getAllServices, updateRepair,  getClientById} from '../../api/employ';
+import { getAllRepairs, getAllServices, updateRepair, getClientById } from '../../api/employ';
 
 const ConfirmationModal = ({ title, message, onConfirm, onCancel }) => {
   return (
@@ -70,16 +70,19 @@ function ConsultasReparaciones() {
     fetchServices();
   }, []);
 
-  // Obtenemos las reparaciones
+  // Obtenemos las reparaciones y se filtran según el rol del usuario:
+  // Si el usuario es empleado, se muestran solo sus reparaciones.
   useEffect(() => {
     const fetchRepairs = async () => {
       try {
-        let repairsData;
-        if (auth && auth.user && (auth.role === 'admin' || auth.role === 'empleado')) {
-          repairsData = await getAllRepairs(auth.user.id);
-        } else {
-          repairsData = await getAllRepairs();
+        let repairsData = await getAllRepairs();
+        // Filtra solo las reparaciones del usuario logueado si es empleado.
+        if (auth && auth.user && auth.user.id && auth.role === 'empleado') {
+          repairsData = repairsData.filter(
+            (repair) => repair.idEmpleado === auth.user.id
+          );
         }
+        
         console.log("Datos obtenidos de reparaciones:", repairsData);
   
         const formattedRepairs = await Promise.all(
@@ -91,7 +94,6 @@ function ConsultasReparaciones() {
                   ? repair.servicio.split(', ')
                   : []);
   
-            // Si ya viene el nombre del cliente, se usa; de lo contrario, se hace la consulta
             let clientName;
             if (repair.nombreCliente) {
               clientName = repair.nombreCliente;
@@ -133,7 +135,6 @@ function ConsultasReparaciones() {
   
     fetchRepairs();
   }, [auth]);
-  
   
   // Función para sanitizar entradas
   const sanitizeInput = (str) => {
@@ -210,7 +211,6 @@ function ConsultasReparaciones() {
   };
 
   const handleSelectSuggestion = (suggestion) => {
-    // Se asigna el nombre del servicio seleccionado
     setServiciosExtra(suggestion.nombre);
     setSuggestions([]);
   };
@@ -674,3 +674,4 @@ function ConsultasReparaciones() {
 }
 
 export default ConsultasReparaciones;
+

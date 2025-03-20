@@ -5,7 +5,7 @@ import { createRepair, getAppointmentById } from '../../api/employ';
 import { AuthContext } from '../AuthContext';
 import { getAllServices } from '../../api/admin';
 import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+
 
 const ConfirmationModal = ({ title, message, onConfirm, onCancel }) => {
   return (
@@ -221,7 +221,6 @@ function RegistroReparacion() {
       const response = await createRepair(repairPayload);
       console.log("Reparación creada:", response);
       toast.success("Reparación guardada correctamente");
-      // Redirigir después de 6 segundos
       setTimeout(() => {
         navigate("/consultacitas");
       }, 1000); // Corregido a 6000 ms
@@ -261,7 +260,7 @@ function RegistroReparacion() {
 
   if (!cita) {
     return (
-      <div>
+      <div className="pt-20">
         <Breadcrumbs paths={breadcrumbPaths} />
         <div className="form-container w-[680px] mx-auto">
           <h1 className="form-title text-center">No hay cita seleccionada, selecciona una cita para finalizar</h1>
@@ -272,7 +271,7 @@ function RegistroReparacion() {
   }
 
   return (
-    <div>
+    <div className="pt-20">
       <Breadcrumbs paths={breadcrumbPaths} />
       <div className="form-container w-[680px] mx-auto">
         <form className="citasForm flex flex-col">

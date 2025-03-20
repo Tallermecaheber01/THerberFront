@@ -129,17 +129,15 @@ export const createRepair = async (repairData) => {
     
 };
 
-
 // Función para obtener todas las reparaciones
 export const getAllRepairs = async () => {
     try {
       const response = await api.get('/employ/repairs');
       return response.data;
-    } catch (error) {
+    } catch (error) { 
       return handleError(error, 'getAllRepairs');
     }
   };
-
 
   export const getRepairById = async (repairId) => {
     try {

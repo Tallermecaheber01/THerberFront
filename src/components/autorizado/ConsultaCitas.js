@@ -41,7 +41,7 @@ function ConsultarCitas() {
         if (
           auth &&
           auth.user &&
-          (auth.role === "admin" || auth.role === "empleado")
+          (auth.role === "administrador" || auth.role === "empleado")
         ) {
           appointmentsData = await getAppointmentsWithServicesID(auth.user.id);
         } else {
@@ -51,7 +51,8 @@ function ConsultarCitas() {
   
         // Filtrar solo las citas con estado "Confirmada"
         const confirmedAppointments = appointmentsData.filter(
-          (appointment) => appointment.estado === "Confirmada"
+           (appointment) => appointment.estado === "Confirmada" || appointment.estado === "Asignada"
+          
         );
   
         // Transformar los datos según la estructura requerida
@@ -330,13 +331,6 @@ function ConsultarCitas() {
             )}
           </div>
           <div className="mt-8 flex justify-center">
-            {/*<button
-              type="button"
-              className="btn-aceptar"
-              onClick={handleReparacionExtraClick}
-            >
-              Registrar una Reparación Extra
-            </button>*/}
           </div>
         </form>
       </div>

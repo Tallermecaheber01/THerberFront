@@ -12,6 +12,9 @@ import {
   resetPassword,
 } from '../../api/public';
 
+
+
+
 function Recuperacion() {
   const [questions, setQuestions] = useState([]);
   const [securityQuestion, setSecurityQuestion] = useState('');
@@ -308,7 +311,7 @@ function Recuperacion() {
   const allChecksSatisfied = totalChecks === 6;
 
   return (
-    <div>
+    <div className="pt-20">
       <Breadcrumbs paths={breadcrumbPaths} />
       <div className="form-container">
         <div className="form-card">

@@ -1,28 +1,77 @@
 import React, { useContext, useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FiLogOut } from 'react-icons/fi';
-import { AuthContext } from './components/AuthContext'; // Ajusta la ruta según tu estructura
+import { AuthContext } from './components/AuthContext';
 import './stylos.css';
 
 const Navbar = () => {
   const { auth, setAuth } = useContext(AuthContext);
   const navigate = useNavigate();
+  const [isVisible, setIsVisible] = useState(false);
 
-  // Estados para el dropdown de "Citas"
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isDropdownClicked, setIsDropdownClicked] = useState(false);
-  const dropdownRef = useRef(null);
+  // Dropdown "Citas" para admin
+  const [isAdminCitasDropdownOpen, setIsAdminCitasDropdownOpen] = useState(false);
+  const [isAdminCitasClicked, setIsAdminCitasClicked] = useState(false);
+  const adminCitasDropdownRef = useRef(null);
 
-  // Cierra el dropdown al hacer click fuera
+  // Dropdown "Gestión Empresarial" para admin
+  const [isGestDropdownOpen, setIsGestDropdownOpen] = useState(false);
+  const [isGestClicked, setIsGestClicked] = useState(false);
+  const gestDropdownRef = useRef(null);
+
+  // Dropdown "Documentación" para admin
+  const [isDocDropdownOpen, setIsDocDropdownOpen] = useState(false);
+  const [isDocClicked, setIsDocClicked] = useState(false);
+  const docDropdownRef = useRef(null);
+
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsDropdownOpen(false);
-        setIsDropdownClicked(false);
+    setIsVisible(true);
+  }, []);
+
+  // Manejo de clicks fuera del dropdown "Citas"
+  useEffect(() => {
+    const handleClickOutsideCitas = (event) => {
+      if (
+        adminCitasDropdownRef.current &&
+        !adminCitasDropdownRef.current.contains(event.target)
+      ) {
+        setIsAdminCitasDropdownOpen(false);
+        setIsAdminCitasClicked(false);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutsideCitas);
+    return () =>
+      document.removeEventListener('mousedown', handleClickOutsideCitas);
+  }, []);
+
+  // Manejo de clicks fuera del dropdown "Gestión Empresarial"
+  useEffect(() => {
+    const handleClickOutsideGest = (event) => {
+      if (
+        gestDropdownRef.current &&
+        !gestDropdownRef.current.contains(event.target)
+      ) {
+        setIsGestDropdownOpen(false);
+        setIsGestClicked(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutsideGest);
+    return () => document.removeEventListener('mousedown', handleClickOutsideGest);
+  }, []);
+
+  // Manejo de clicks fuera del dropdown "Documentación"
+  useEffect(() => {
+    const handleClickOutsideDoc = (event) => {
+      if (
+        docDropdownRef.current &&
+        !docDropdownRef.current.contains(event.target)
+      ) {
+        setIsDocDropdownOpen(false);
+        setIsDocClicked(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutsideDoc);
+    return () => document.removeEventListener('mousedown', handleClickOutsideDoc);
   }, []);
 
   const handleLogout = () => {
@@ -34,7 +83,11 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="navbar">
+    <nav
+      className={`navbar fixed top-0 w-full z-50 transform transition-transform duration-500 ${
+        isVisible ? 'translate-y-0' : '-translate-y-full'
+      }`}
+    >
       <div className="navbar-container">
         <div className="navbar-logo-title">
           <div className="navbar-logo">
@@ -51,13 +104,11 @@ const Navbar = () => {
           </div>
         </div>
         <div className="navbar-text">
-          <p className="navbar-subtitle">
-            Expertos en motor, aliados de tu motor
-          </p>
+          <p className="navbar-subtitle">Expertos en motor, aliados de tu motor</p>
         </div>
         <div className="navbar-nav">
           <ul className="navbar-list">
-            {/* Rutas para usuarios "publico" */}
+            {/* Rutas públicas */}
             {auth?.role === 'publico' && (
               <>
                 <li>
@@ -78,7 +129,7 @@ const Navbar = () => {
               </>
             )}
 
-            {/* Rutas para usuarios con rol "client" */}
+            {/* Rutas cliente */}
             {auth?.role === 'cliente' && (
               <>
                 <li>
@@ -109,33 +160,35 @@ const Navbar = () => {
               </>
             )}
 
-            {/* Rutas para usuarios con rol "empleado" */}
+            {/* Rutas empleado */}
             {auth?.role === 'empleado' && (
               <>
-                {/* Dropdown de "Citas" */}
-                <li className="relative" ref={dropdownRef}>
+                {/* Dropdown "Citas" para empleado */}
+                <li className="relative" ref={adminCitasDropdownRef}>
                   <span
                     className="navbar-link cursor-pointer"
-                    onMouseEnter={() => setIsDropdownOpen(true)}
+                    onMouseEnter={() => setIsAdminCitasDropdownOpen(true)}
                     onMouseLeave={() => {
-                      if (!isDropdownClicked) setIsDropdownOpen(false);
+                      if (!isAdminCitasClicked)
+                        setIsAdminCitasDropdownOpen(false);
                     }}
                     onClick={() =>
-                      setIsDropdownClicked((prev) => {
+                      setIsAdminCitasClicked((prev) => {
                         const newState = !prev;
-                        setIsDropdownOpen(newState);
+                        setIsAdminCitasDropdownOpen(newState);
                         return newState;
                       })
                     }
                   >
                     Citas
                   </span>
-                  {isDropdownOpen && (
+                  {isAdminCitasDropdownOpen && (
                     <ul
                       className="navbar-dropdown"
-                      onMouseEnter={() => setIsDropdownOpen(true)}
+                      onMouseEnter={() => setIsAdminCitasDropdownOpen(true)}
                       onMouseLeave={() => {
-                        if (!isDropdownClicked) setIsDropdownOpen(false);
+                        if (!isAdminCitasClicked)
+                          setIsAdminCitasDropdownOpen(false);
                       }}
                     >
                       <li>
@@ -153,19 +206,7 @@ const Navbar = () => {
                         >
                           Asignación Cita
                         </Link>
-                        
                       </li>
-
-                      <li>
-                        <Link
-                          to="/registroreparaciones"
-                          className="navbar-dropdown-text"
-                        >
-                          registro
-                        </Link>
-                        
-                      </li>
-
                       <li>
                         <Link
                           to="/consultacitas"
@@ -193,37 +234,193 @@ const Navbar = () => {
               </>
             )}
 
-            {/* Rutas para usuarios con rol "admin" */}
+            {/* Rutas administrador */}
             {auth?.role === 'administrador' && (
               <>
-                <li>
-                  <Link to="/analisisrendimiento" className="navbar-link">
-                    Rendimiento
-                  </Link>
+                {/* Dropdown "Citas" */}
+                <li className="relative" ref={adminCitasDropdownRef}>
+                  <span
+                    className="navbar-link cursor-pointer"
+                    onMouseEnter={() => setIsAdminCitasDropdownOpen(true)}
+                    onMouseLeave={() => {
+                      if (!isAdminCitasClicked)
+                        setIsAdminCitasDropdownOpen(false);
+                    }}
+                    onClick={() =>
+                      setIsAdminCitasClicked((prev) => {
+                        const newState = !prev;
+                        setIsAdminCitasDropdownOpen(newState);
+                        return newState;
+                      })
+                    }
+                  >
+                    Citas
+                  </span>
+                  {isAdminCitasDropdownOpen && (
+                    <ul
+                      className="navbar-dropdown"
+                      onMouseEnter={() => setIsAdminCitasDropdownOpen(true)}
+                      onMouseLeave={() => {
+                        if (!isAdminCitasClicked)
+                          setIsAdminCitasDropdownOpen(false);
+                      }}
+                    >
+                      <li>
+                        <Link
+                          to="/aprobacioncitas"
+                          className="navbar-dropdown-text"
+                        >
+                          Aprobación Citas
+                        </Link>
+                      </li>
+                      <li>
+                        <Link
+                          to="/asignacioncita"
+                          className="navbar-dropdown-text"
+                        >
+                          Asignación Cita
+                        </Link>
+                      </li>
+                      <li>
+                        <Link
+                          to="/consultacitas"
+                          className="navbar-dropdown-text"
+                        >
+                          Consulta Citas
+                        </Link>
+                      </li>
+                      <li>
+                        <Link
+                          to="/citasCanceladas"
+                          className="navbar-dropdown-text"
+                        >
+                          Citas Canceladas
+                        </Link>
+                      </li>
+                    </ul>
+                  )}
                 </li>
-                <li>
-                  <Link to="/crudregulatorios" className="navbar-link">
-                    Documentos Regulatorios
-                  </Link>
+
+                {/* Dropdown "Gestión Empresarial" */}
+                <li className="relative" ref={gestDropdownRef}>
+                  <span
+                    className="navbar-link cursor-pointer"
+                    onMouseEnter={() => setIsGestDropdownOpen(true)}
+                    onMouseLeave={() => {
+                      if (!isGestClicked) setIsGestDropdownOpen(false);
+                    }}
+                    onClick={() =>
+                      setIsGestClicked((prev) => {
+                        const newState = !prev;
+                        setIsGestDropdownOpen(newState);
+                        return newState;
+                      })
+                    }
+                  >
+                    Demandas empresa
+                  </span>
+                  {isGestDropdownOpen && (
+                    <ul
+                      className="navbar-dropdown"
+                      onMouseEnter={() => setIsGestDropdownOpen(true)}
+                      onMouseLeave={() => {
+                        if (!isGestClicked) setIsGestDropdownOpen(false);
+                      }}
+                    >
+                      <li>
+                        <Link
+                          to="/analisisrendimiento"
+                          className="navbar-dropdown-text"
+                        >
+                          Rendimiento
+                        </Link>
+                      </li>
+                      <li>
+                        <Link
+                          to="/datosestadisticos"
+                          className="navbar-dropdown-text"
+                        >
+                          Datos Estadísticos
+                        </Link>
+                      </li>
+                      <li>
+                        <Link
+                          to="/gestionfinanciera"
+                          className="navbar-dropdown-text"
+                        >
+                          Gestión Financiera
+                        </Link>
+                      </li>
+                      <li>
+                        <Link
+                          to="/demandas"
+                          className="navbar-dropdown-text"
+                        >
+                          Demandas
+                        </Link>
+                      </li>
+                    </ul>
+                  )}
                 </li>
+
+                {/* Dropdown "Documentación" */}
+                <li className="relative" ref={docDropdownRef}>
+                  <span
+                    className="navbar-link cursor-pointer"
+                    onMouseEnter={() => setIsDocDropdownOpen(true)}
+                    onMouseLeave={() => {
+                      if (!isDocClicked) setIsDocDropdownOpen(false);
+                    }}
+                    onClick={() =>
+                      setIsDocClicked((prev) => {
+                        const newState = !prev;
+                        setIsDocDropdownOpen(newState);
+                        return newState;
+                      })
+                    }
+                  >
+                    Informacion Empresa
+                  </span>
+                  {isDocDropdownOpen && (
+                    <ul
+                      className="navbar-dropdown"
+                      onMouseEnter={() => setIsDocDropdownOpen(true)}
+                      onMouseLeave={() => {
+                        if (!isDocClicked) setIsDocDropdownOpen(false);
+                      }}
+                    >
+                      <li>
+                        <Link
+                          to="/crudregulatorios"
+                          className="navbar-dropdown-text"
+                        >
+                          Documentos Regulatorios
+                        </Link>
+                      </li>
+                      <li>
+                        <Link
+                          to="/contactos"
+                          className="navbar-dropdown-text"
+                        >
+                          Contactos
+                        </Link>
+                      </li>
+                      <li>
+                        <Link
+                          to="/informacionempresa"
+                          className="navbar-dropdown-text"
+                        >
+                          Información Empresa
+                        </Link>
+                      </li>
+                    </ul>
+                  )}
+                </li>
+
+                {/* Otra ruta fija para administrador */}
                 <li>
                   <Link to="/crudservicios" className="navbar-link">
                     Servicios
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/datosestadisticos" className="navbar-link">
-                    Datos Estadísticos
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/gestionfinanciera" className="navbar-link">
-                    Gestión Financiera
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/crudReparaciones" className="navbar-link">
-                    Crud Reparaciones
                   </Link>
                 </li>
               </>
@@ -243,3 +440,5 @@ const Navbar = () => {
 };
 
 export default Navbar;
+
+

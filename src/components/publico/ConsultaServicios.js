@@ -266,7 +266,7 @@ function ConsultaServicios() {
                 <div className="service-card-content">
                   <h3 className="service-card-title">{service.nombre}</h3>
                   <p className="service-card-text">{service.descripcion}</p>
-                  <Link to={`/verDetalles/${service.id}`}>
+                  <Link to="/verDetalles" state={{ serviceId: service.id }}>
                     <button className="button-yellow mt-4">
                       Ver más detalles
                     </button>
