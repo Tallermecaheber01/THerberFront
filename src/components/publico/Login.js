@@ -6,6 +6,7 @@ import Breadcrumbs from '../Breadcrumbs';
 import { login } from '../../api/public';
 import { AuthContext } from '../AuthContext';
 import ReCAPTCHA from 'react-google-recaptcha';
+import { getRole } from '../../api/public';
 
 const Login = () => {
   const breadcrumbPaths = [
@@ -77,8 +78,14 @@ const Login = () => {
     try {
       const response = await login({ correo: email, contrasena: password, captcha: captchaValue });
 
+
       if (response) {
+        const roleResponse = await getRole(email);
+        console.log(roleResponse)
+        const role = roleResponse.rol;
+        console.log(role)
         toast.success('¡Inicio de sesión exitoso!');
+        console.log()
         updateAuth();
 
         // Extraer el token de las cookies
@@ -88,13 +95,33 @@ const Login = () => {
           ?.split("=")[1];
 
         if (token) {
+
+          //Establecer el tiempo de expiracion basado en el rol
+          const expirationTime = role === 'cliente' ? 60 * 60 * 1000 : 30 * 60 * 1000; // 1 hora para cliente, 30 minutos para personal autorizado
+
+          // Imprimir el tiempo de expiración en consola
+          console.log(`Tiempo de expiración del token para ${role}: ${expirationTime / 1000 / 60} minutos`);
+
+          // Calcular la hora exacta en que expira la cookie
+          const expirationDate = new Date(Date.now() + expirationTime);
+
+          // Formatear la fecha y hora para mostrarla de forma más legible
+          const expirationTimeFormatted = expirationDate.toLocaleString('es-MX', {
+            timeZone: 'America/Mexico_City', // Ajuste a la zona horaria de México
+            hour12: false, // Formato de 24 horas
+          });
+
+          // Imprimir la hora exacta en que expira el token
+          console.log(`Hora de expiración del token para ${role}: ${expirationTimeFormatted}`);
+
+
           setTimeout(() => {
 
-            // Eliminar la cookie después de 1 hora
+            // Eliminar la cookie después del tiempo segun haya sido
             document.cookie = "authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
             toast.info("Tu sesión ha expirado.");
             navigate('/login'); // Redirigir a la página de login
-          }, 60 * 60 * 1000); // 1 hora
+          }, expirationTime); // segun el tipo de usuario
         }
 
         setTimeout(() => navigate('/Bienvenida'), 3000);

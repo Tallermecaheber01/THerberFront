@@ -423,6 +423,12 @@ const Navbar = () => {
                     Servicios
                   </Link>
                 </li>
+                <li>
+                  <Link to="/consultasreparaciones" className="navbar-link">
+                    Reparaciones realizadas
+                  </Link>
+                </li>
+
               </>
             )}
           </ul>

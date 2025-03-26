@@ -2,6 +2,7 @@ import React, { useEffect, useState, useContext } from 'react';
 import { createNewAppointment, getAllUsersClient, getAllEmployees, getAllServices } from '../../api/employ';
 import { AuthContext } from "../AuthContext"; 
 import Breadcrumbs from "../Breadcrumbs";
+import { toast } from 'react-toastify';
 
 function AsignacionCita() {
   const { auth } = useContext(AuthContext);
@@ -276,12 +277,11 @@ function AsignacionCita() {
     try {
       const response = await createNewAppointment(appointmentData);
       if (response) {
-        alert("Cita asignada exitosamente.");
-        console.log('data:', appointmentData);
+        toast.success('Cita asignada correctamente');
         limpiarCampos();
         setShowConfirmAssignModal(false);
       } else {
-        alert("Hubo un error al asignar la cita. Intente nuevamente.");
+        toast.error('Hubo un error al asignar la cita. Intente nuevamente.')
       }
     } catch (error) {
       alert("Hubo un error al asignar la cita. Intente nuevamente.");

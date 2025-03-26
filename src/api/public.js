@@ -60,8 +60,6 @@ export const login = async (loginData) => {
         );
         return response.data
     } catch (error) {
-        // Opcional: Mostrar un mensaje al usuario
-        toast.error('Credenciales incorrectas. Verifica tu usuario y contraseña.');
 
         return null; // Indicar que la autenticación falló
     }
@@ -76,7 +74,7 @@ export const getUserInfo = async (userData) => {
             console.error('Error 400: Solicitud inválida.', error.response.data);
         } else {
             console.error('Error inesperado:', error);
-            alert('Ocurrió un error inesperado.');
+            //alert('Ocurrió un error inesperado.');
         }
         throw error;
     }
