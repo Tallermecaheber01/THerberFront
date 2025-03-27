@@ -87,6 +87,7 @@ const Login = () => {
         toast.success('¡Inicio de sesión exitoso!');
         console.log()
         updateAuth();
+        console.log("Todas las cookies:", document.cookie);
 
         // Extraer el token de las cookies
         const token = document.cookie
