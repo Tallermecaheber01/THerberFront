@@ -83,21 +83,16 @@ const Login = () => {
         console.log(response.token)
         document.cookie = `authToken=${response.token}; SameSite=None; Secure; path=/`;
         const roleResponse = await getRole(email);
-        console.log(roleResponse)
         const role = roleResponse.rol;
-        console.log(role)
         toast.success('¡Inicio de sesión exitoso!');
         console.log()
         updateAuth();
-        console.log("Respuesta de getRole:", JSON.stringify(roleResponse, null, 2));
-
 
         // Extraer el token de las cookies
         const token = document.cookie
           .split("; ")
           .find(row => row.startsWith("authToken="))
           ?.split("=")[1];
-          console.log(document.cookie);
 
         if (token) {
 
@@ -105,7 +100,6 @@ const Login = () => {
           const expirationTime = role === 'cliente' ? 60 * 60 * 1000 : 30 * 60 * 1000; // 1 hora para cliente, 30 minutos para personal autorizado
 
           // Imprimir el tiempo de expiración en consola
-          console.log(`Tiempo de expiración del token para ${role}: ${expirationTime / 1000 / 60} minutos`);
 
           // Calcular la hora exacta en que expira la cookie
           const expirationDate = new Date(Date.now() + expirationTime);

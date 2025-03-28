@@ -56,11 +56,10 @@ export const login = async (loginData) => {
         const response = await api.post(
             '/public/login',
             loginData,
-            { wuthCredentials: true }
+            { withCredentials: true } // Corrección aplicada aquí
         );
-        return response.data
+        return response.data;
     } catch (error) {
-
         return null; // Indicar que la autenticación falló
     }
 }
