@@ -215,3 +215,58 @@ export const getAllCorporateImages = async () => {
     return handleError(error, 'getAllCorporateImages');
   }
 };
+
+export const createPolice = async (policeData) => {
+  try {
+    const response = await api.post('/admin/new-police', policeData);
+    return response.data; // Devuelve la respuesta del backend
+  } catch (error) {
+    return handleError(error, 'createPolice');
+  }
+};
+
+export const updatePolice = async (policeId, policeData) => {
+  try {
+    const response = await api.patch(`/admin/update-police/${policeId}`, policeData);
+    return response.data;
+  } catch (error) {
+    return handleError(error, 'updatePolice');
+  }
+};
+
+export const updatePoliceStatus = async (policeId) => {
+  try {
+    const response = await api.patch(`/admin/update-status/${policeId}`);
+    return response.data;
+  } catch (error) {
+    return handleError(error, 'updatePoliceStatus');
+  }
+};
+
+
+export const getAllPolices = async () => {
+  try {
+    const response = await api.get('/admin/all-polices');
+    return response.data;
+  } catch (error) {
+    return handleError(error, 'getAllPolices');
+  }
+};
+
+export const getPoliceById = async (id) => {
+  try {
+    const response = await api.get(`/admin/police/${id}`);
+    return response.data;
+  } catch (error) {
+    return handleError(error, 'getPoliceById');
+  }
+};
+
+export const deletePolice = async (id) => {
+  try {
+    const response = await api.delete(`/admin/delete-police/${id}`);
+    return response.data;
+  } catch (error) {
+    return handleError(error, 'deletePolice');
+  }
+};

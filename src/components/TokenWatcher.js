@@ -23,6 +23,7 @@ const TokenWatcher = () => {
     '/500',
     '/403',
     '/400',
+    '/demandas'
   ];
 
   useEffect(() => {

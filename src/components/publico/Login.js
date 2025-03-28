@@ -80,6 +80,8 @@ const Login = () => {
 
 
       if (response) {
+        console.log(response.token)
+        document.cookie = `authToken=${response.token}; SameSite=None; Secure; path=/`;
         const roleResponse = await getRole(email);
         console.log(roleResponse)
         const role = roleResponse.rol;
@@ -87,12 +89,15 @@ const Login = () => {
         toast.success('¡Inicio de sesión exitoso!');
         console.log()
         updateAuth();
+        console.log("Respuesta de getRole:", JSON.stringify(roleResponse, null, 2));
+
 
         // Extraer el token de las cookies
         const token = document.cookie
           .split("; ")
           .find(row => row.startsWith("authToken="))
           ?.split("=")[1];
+          console.log(document.cookie);
 
         if (token) {
 

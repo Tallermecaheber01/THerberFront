@@ -76,23 +76,24 @@ function ConsultasReparaciones() {
     const fetchRepairs = async () => {
       try {
         let repairsData = await getAllRepairs();
-        // Filtra solo las reparaciones del usuario logueado si es empleado.
+        // Filtrar reparaciones si el usuario es empleado
         if (auth && auth.user && auth.user.id && auth.role === 'empleado') {
           repairsData = repairsData.filter(
             (repair) => repair.idEmpleado === auth.user.id
           );
         }
-        
+  
         console.log("Datos obtenidos de reparaciones:", repairsData);
   
         const formattedRepairs = await Promise.all(
           repairsData.map(async (repair) => {
-            const costoNum = parseFloat(repair.costoInicial || repair.totalFinal || repair.total) || 0;
+            const costoNum =
+              parseFloat(repair.costoInicial || repair.totalFinal || repair.total) || 0;
             const serviciosArray = Array.isArray(repair.servicio)
               ? repair.servicio
-              : (typeof repair.servicio === 'string'
-                  ? repair.servicio.split(', ')
-                  : []);
+              : typeof repair.servicio === 'string'
+              ? repair.servicio.split(', ')
+              : [];
   
             let clientName;
             if (repair.nombreCliente) {
@@ -100,11 +101,9 @@ function ConsultasReparaciones() {
             } else {
               try {
                 const clientData = await getClientById(repair.idCliente);
-                if (clientData) {
-                  clientName = `${clientData.nombre} ${clientData.apellido_paterno} ${clientData.apellido_materno}`;
-                } else {
-                  clientName = String(repair.idCliente);
-                }
+                clientName = clientData
+                  ? `${clientData.nombre} ${clientData.apellido_paterno} ${clientData.apellido_materno}`
+                  : String(repair.idCliente);
               } catch (error) {
                 clientName = String(repair.idCliente);
               }
@@ -113,9 +112,19 @@ function ConsultasReparaciones() {
             return {
               id: repair.id,
               cliente: clientName || 'Sin nombre',
-              fecha: repair.fechaCita || (repair.fechaHoraAtencion ? new Date(repair.fechaHoraAtencion).toLocaleDateString() : 'N/A'),
-              hora: repair.horaCita || (repair.fechaHoraAtencion ? new Date(repair.fechaHoraAtencion).toLocaleTimeString() : 'N/A'),
-              fechaHoraAtencion: repair.fechaHoraAtencion ? new Date(repair.fechaHoraAtencion).toLocaleString() : 'N/A',
+              fecha:
+                repair.fechaCita ||
+                (repair.fechaHoraAtencion
+                  ? new Date(repair.fechaHoraAtencion).toLocaleDateString()
+                  : 'N/A'),
+              hora:
+                repair.horaCita ||
+                (repair.fechaHoraAtencion
+                  ? new Date(repair.fechaHoraAtencion).toLocaleTimeString()
+                  : 'N/A'),
+              fechaHoraAtencion: repair.fechaHoraAtencion
+                ? new Date(repair.fechaHoraAtencion).toLocaleString()
+                : 'N/A',
               servicio: serviciosArray.join(', '),
               serviciosArray,
               costo: costoNum,
@@ -133,8 +142,15 @@ function ConsultasReparaciones() {
       }
     };
   
+    // Llamada inicial y establecimiento del intervalo de 1 segundo
     fetchRepairs();
+    const interval = setInterval(() => {
+      fetchRepairs();
+    }, 1000);
+  
+    return () => clearInterval(interval);
   }, [auth]);
+  
   
   // Función para sanitizar entradas
   const sanitizeInput = (str) => {

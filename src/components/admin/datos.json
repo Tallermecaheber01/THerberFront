@@ -1,0 +1,1299 @@
+[
+    {
+      "week": "Semana 1",
+      "fechas": {
+        "inicio": "2025-03-03",
+        "fin": "2025-03-07"
+      },
+      "servicios": [
+        {
+          "cliente": "Ana Martínez",
+          "servicio": "Reparación de frenos",
+          "fechaIngreso": "2025-03-03",
+          "fechaSalida": "2025-03-04",
+          "Total": 115
+        },
+        {
+          "cliente": "Carlos López",
+          "servicio": "Reparación de frenos",
+          "fechaIngreso": "2025-03-03",
+          "fechaSalida": "2025-03-05",
+          "Total": 250
+        },
+        {
+          "cliente": "María García",
+          "servicio": "Reparación de frenos",
+          "fechaIngreso": "2025-03-04",
+          "fechaSalida": "2025-03-06",
+          "Total": 500
+        },
+        {
+          "cliente": "Juan Pérez",
+          "servicio": "Reparación de frenos",
+          "fechaIngreso": "2025-03-03",
+          "fechaSalida": "2025-03-07",
+          "Total": 954
+        },
+        {
+          "cliente": "Lucía Rodríguez",
+          "servicio": "Reparación de frenos",
+          "fechaIngreso": "2025-03-05",
+          "fechaSalida": "2025-03-06",
+          "Total": 150
+        },
+        {
+          "cliente": "Miguel Sánchez",
+          "servicio": "Reparación de frenos",
+          "fechaIngreso": "2025-03-04",
+          "fechaSalida": "2025-03-05",
+          "Total": 300
+        },
+        {
+          "cliente": "Sofía Díaz",
+          "servicio": "Reparación de frenos",
+          "fechaIngreso": "2025-03-03",
+          "fechaSalida": "2025-03-04",
+          "Total": 152
+        },
+        {
+          "cliente": "Jorge Hernández",
+          "servicio": "Reparación de frenos",
+          "fechaIngreso": "2025-03-05",
+          "fechaSalida": "2025-03-07",
+          "Total": 560
+        },
+        {
+          "cliente": "Elena Fernández",
+          "servicio": "Reparación de frenos",
+          "fechaIngreso": "2025-03-04",
+          "fechaSalida": "2025-03-06",
+          "Total": 300
+        },
+        {
+          "cliente": "Diego Romero",
+          "servicio": "Reparación de frenos",
+          "fechaIngreso": "2025-03-03",
+          "fechaSalida": "2025-03-05",
+          "Total": 120
+        },
+        {
+          "cliente": "Carmen Torres",
+          "servicio": "Reparación de frenos",
+          "fechaIngreso": "2025-03-04",
+          "fechaSalida": "2025-03-07",
+          "Total": 250
+        },
+        {
+          "cliente": "Luis Mendoza",
+          "servicio": "Reparación de frenos",
+          "fechaIngreso": "2025-03-05",
+          "fechaSalida": "2025-03-07",
+          "Total": 300
+        },
+        {
+          "cliente": "Pedro González",
+          "servicio": "Cambio de aceite",
+          "fechaIngreso": "2025-03-03",
+          "fechaSalida": "2025-03-04",
+          "Total": 270
+        },
+        {
+          "cliente": "Laura Jiménez",
+          "servicio": "Cambio de aceite",
+          "fechaIngreso": "2025-03-04",
+          "fechaSalida": "2025-03-05",
+          "Total": 280
+        },
+        {
+          "cliente": "Sergio Castillo",
+          "servicio": "Cambio de aceite",
+          "fechaIngreso": "2025-03-03",
+          "fechaSalida": "2025-03-06",
+          "Total": 300
+        },
+        {
+          "cliente": "Marta Navarro",
+          "servicio": "Cambio de aceite",
+          "fechaIngreso": "2025-03-05",
+          "fechaSalida": "2025-03-07",
+          "Total": 250
+        },
+        {
+          "cliente": "Andrés Romero",
+          "servicio": "Cambio de aceite",
+          "fechaIngreso": "2025-03-04",
+          "fechaSalida": "2025-03-06",
+          "Total": 230
+        },
+        {
+          "cliente": "Paula Ruiz",
+          "servicio": "Cambio de aceite",
+          "fechaIngreso": "2025-03-03",
+          "fechaSalida": "2025-03-05",
+          "Total": 256
+        },
+        {
+          "cliente": "David Ortiz",
+          "servicio": "Cambio de aceite",
+          "fechaIngreso": "2025-03-04",
+          "fechaSalida": "2025-03-07",
+          "Total": 269
+        },
+        {
+          "cliente": "Raquel Vega",
+          "servicio": "Cambio de aceite",
+          "fechaIngreso": "2025-03-05",
+          "fechaSalida": "2025-03-06",
+          "Total": 365
+        },
+        {
+          "cliente": "Alberto Molina",
+          "servicio": "Cambio de aceite",
+          "fechaIngreso": "2025-03-03",
+          "fechaSalida": "2025-03-04",
+          "Total": 200
+        },
+        {
+          "cliente": "Isabel Serrano",
+          "servicio": "Cambio de aceite",
+          "fechaIngreso": "2025-03-04",
+          "fechaSalida": "2025-03-06",
+          "Total": 250
+        },
+        {
+          "cliente": "Roberto Cruz",
+          "servicio": "Cambio de neumáticos",
+          "fechaIngreso": "2025-03-03",
+          "fechaSalida": "2025-03-04",
+          "Total": 150
+        },
+        {
+          "cliente": "Silvia Ramos",
+          "servicio": "Cambio de neumáticos",
+          "fechaIngreso": "2025-03-04",
+          "fechaSalida": "2025-03-05",
+          "Total": 100
+        },
+        {
+          "cliente": "Fernando Delgado",
+          "servicio": "Cambio de neumáticos",
+          "fechaIngreso": "2025-03-05",
+          "fechaSalida": "2025-03-07",
+          "Total": 150
+        },
+        {
+          "cliente": "Teresa Morales",
+          "servicio": "Cambio de neumáticos",
+          "fechaIngreso": "2025-03-03",
+          "fechaSalida": "2025-03-06",
+          "Total": 110
+        },
+        {
+          "cliente": "Iván Aguirre",
+          "servicio": "Revisión de motor",
+          "fechaIngreso": "2025-03-03",
+          "fechaSalida": "2025-03-05",
+          "Total": 120
+        },
+        {
+          "cliente": "Nuria Flores",
+          "servicio": "Revisión de motor",
+          "fechaIngreso": "2025-03-04",
+          "fechaSalida": "2025-03-06",
+          "Total": 300
+        },
+        {
+          "cliente": "Oscar Moreno",
+          "servicio": "Revisión de motor",
+          "fechaIngreso": "2025-03-03",
+          "fechaSalida": "2025-03-07",
+          "Total": 270
+        },
+        {
+          "cliente": "Beatriz León",
+          "servicio": "Revisión de motor",
+          "fechaIngreso": "2025-03-05",
+          "fechaSalida": "2025-03-07",
+          "Total": 250
+        },
+        {
+          "cliente": "Manuel Castro",
+          "servicio": "Diagnóstico general",
+          "fechaIngreso": "2025-03-03",
+          "fechaSalida": "2025-03-04",
+          "Total": 290
+        },
+        {
+          "cliente": "Adriana Herrera",
+          "servicio": "Diagnóstico general",
+          "fechaIngreso": "2025-03-03",
+          "fechaSalida": "2025-03-05",
+          "Total": 300
+        },
+        {
+          "cliente": "Javier Ortiz",
+          "servicio": "Diagnóstico general",
+          "fechaIngreso": "2025-03-04",
+          "fechaSalida": "2025-03-06",
+          "Total": 400
+        },
+        {
+          "cliente": "Claudia Vega",
+          "servicio": "Diagnóstico general",
+          "fechaIngreso": "2025-03-04",
+          "fechaSalida": "2025-03-07",
+          "Total": 600
+        },
+        {
+          "cliente": "Ricardo Soto",
+          "servicio": "Diagnóstico general",
+          "fechaIngreso": "2025-03-05",
+          "fechaSalida": "2025-03-06",
+          "Total": 500
+        },
+        {
+          "cliente": "Patricia Ramos",
+          "servicio": "Diagnóstico general",
+          "fechaIngreso": "2025-03-03",
+          "fechaSalida": "2025-03-05",
+          "Total": 200
+        },
+        {
+          "cliente": "Andrés Moreno",
+          "servicio": "Diagnóstico general",
+          "fechaIngreso": "2025-03-04",
+          "fechaSalida": "2025-03-06",
+          "Total": 150
+        },
+        {
+          "cliente": "Verónica Gil",
+          "servicio": "Diagnóstico general",
+          "fechaIngreso": "2025-03-05",
+          "fechaSalida": "2025-03-07",
+          "Total": 300
+        },
+        {
+          "cliente": "Francisco Ruiz",
+          "servicio": "Diagnóstico general",
+          "fechaIngreso": "2025-03-03",
+          "fechaSalida": "2025-03-04",
+          "Total": 220
+        },
+        {
+          "cliente": "Mariana Paredes",
+          "servicio": "Diagnóstico general",
+          "fechaIngreso": "2025-03-04",
+          "fechaSalida": "2025-03-06",
+          "Total": 150
+        }
+      ]
+    },
+    {
+      "week": "Semana 2",
+      "fechas": {
+        "inicio": "2025-03-10",
+        "fin": "2025-03-14"
+      },
+      "servicios": [
+        {
+          "cliente": "Sergio Ramírez",
+          "servicio": "Reparación de frenos",
+          "fechaIngreso": "2025-03-10",
+          "fechaSalida": "2025-03-11",
+          "Total": 150
+        },
+        {
+          "cliente": "Lucía Gómez",
+          "servicio": "Reparación de frenos",
+          "fechaIngreso": "2025-03-10",
+          "fechaSalida": "2025-03-12",
+          "Total": 155
+        },
+        {
+          "cliente": "Fernando Díaz",
+          "servicio": "Reparación de frenos",
+          "fechaIngreso": "2025-03-11",
+          "fechaSalida": "2025-03-13",
+          "Total": 150
+        },
+        {
+          "cliente": "Elena Morales",
+          "servicio": "Reparación de frenos",
+          "fechaIngreso": "2025-03-10",
+          "fechaSalida": "2025-03-14",
+          "Total": 160
+        },
+        {
+          "cliente": "Marcos Ruiz",
+          "servicio": "Reparación de frenos",
+          "fechaIngreso": "2025-03-11",
+          "fechaSalida": "2025-03-13",
+          "Total": 170
+        },
+        {
+          "cliente": "Cecilia Rojas",
+          "servicio": "Reparación de frenos",
+          "fechaIngreso": "2025-03-10",
+          "fechaSalida": "2025-03-12",
+          "Total": 170
+        },
+        {
+          "cliente": "Gustavo Ponce",
+          "servicio": "Reparación de frenos",
+          "fechaIngreso": "2025-03-11",
+          "fechaSalida": "2025-03-14",
+          "Total": 160
+        },
+        {
+          "cliente": "Isabel Salinas",
+          "servicio": "Reparación de frenos",
+          "fechaIngreso": "2025-03-12",
+          "fechaSalida": "2025-03-14",
+          "Total": 150
+        },
+        {
+          "cliente": "Raúl Navarro",
+          "servicio": "Reparación de frenos",
+          "fechaIngreso": "2025-03-10",
+          "fechaSalida": "2025-03-12",
+          "Total": 170
+        },
+        {
+          "cliente": "Patricia Molina",
+          "servicio": "Reparación de frenos",
+          "fechaIngreso": "2025-03-11",
+          "fechaSalida": "2025-03-13",
+          "Total": 175
+        },
+        {
+          "cliente": "Diego Castillo",
+          "servicio": "Reparación de frenos",
+          "fechaIngreso": "2025-03-12",
+          "fechaSalida": "2025-03-14",
+          "Total": 160
+        },
+        {
+          "cliente": "Alejandro Torres",
+          "servicio": "Cambio de aceite",
+          "fechaIngreso": "2025-03-10",
+          "fechaSalida": "2025-03-11",
+          "Total": 150
+        },
+        {
+          "cliente": "Carolina Herrera",
+          "servicio": "Cambio de aceite",
+          "fechaIngreso": "2025-03-10",
+          "fechaSalida": "2025-03-12",
+          "Total": 145
+        },
+        {
+          "cliente": "Jorge Castillo",
+          "servicio": "Cambio de aceite",
+          "fechaIngreso": "2025-03-11",
+          "fechaSalida": "2025-03-13",
+          "Total": 189
+        },
+        {
+          "cliente": "Mónica Sánchez",
+          "servicio": "Cambio de aceite",
+          "fechaIngreso": "2025-03-10",
+          "fechaSalida": "2025-03-14",
+          "Total": 199
+        },
+        {
+          "cliente": "Roberto Fuentes",
+          "servicio": "Cambio de aceite",
+          "fechaIngreso": "2025-03-11",
+          "fechaSalida": "2025-03-13",
+          "Total": 125
+        },
+        {
+          "cliente": "Diana Vega",
+          "servicio": "Cambio de aceite",
+          "fechaIngreso": "2025-03-10",
+          "fechaSalida": "2025-03-12",
+          "Total": 150
+        },
+        {
+          "cliente": "Antonio Bravo",
+          "servicio": "Cambio de aceite",
+          "fechaIngreso": "2025-03-11",
+          "fechaSalida": "2025-03-14",
+          "Total": 110
+        },
+        {
+          "cliente": "Gabriela Carrillo",
+          "servicio": "Cambio de aceite",
+          "fechaIngreso": "2025-03-12",
+          "fechaSalida": "2025-03-14",
+          "Total": 100
+        },
+        {
+          "cliente": "Eduardo Ortiz",
+          "servicio": "Cambio de aceite",
+          "fechaIngreso": "2025-03-10",
+          "fechaSalida": "2025-03-11",
+          "Total": 160
+        },
+        {
+          "cliente": "Rosa Delgado",
+          "servicio": "Cambio de aceite",
+          "fechaIngreso": "2025-03-11",
+          "fechaSalida": "2025-03-12",
+          "Total": 170
+        },
+        {
+          "cliente": "Esteban Molina",
+          "servicio": "Cambio de aceite",
+          "fechaIngreso": "2025-03-12",
+          "fechaSalida": "2025-03-13",
+          "Total": 165
+        },
+        {
+          "cliente": "Lorena Quintana",
+          "servicio": "Cambio de aceite",
+          "fechaIngreso": "2025-03-10",
+          "fechaSalida": "2025-03-14",
+          "Total": 140
+        },
+        {
+          "cliente": "Victor Paredes",
+          "servicio": "Cambio de aceite",
+          "fechaIngreso": "2025-03-11",
+          "fechaSalida": "2025-03-13",
+          "Total": 148
+        },
+        {
+          "cliente": "Pablo Reyes",
+          "servicio": "Cambio de neumáticos",
+          "fechaIngreso": "2025-03-10",
+          "fechaSalida": "2025-03-11",
+          "Total": 150
+        },
+        {
+          "cliente": "Claudia Cruz",
+          "servicio": "Cambio de neumáticos",
+          "fechaIngreso": "2025-03-11",
+          "fechaSalida": "2025-03-12",
+          "Total": 120
+        },
+        {
+          "cliente": "Mauricio Luna",
+          "servicio": "Cambio de neumáticos",
+          "fechaIngreso": "2025-03-10",
+          "fechaSalida": "2025-03-13",
+          "Total": 150
+        },
+        {
+          "cliente": "Verónica Solís",
+          "servicio": "Cambio de neumáticos",
+          "fechaIngreso": "2025-03-12",
+          "fechaSalida": "2025-03-14",
+          "Total": 130
+        },
+        {
+          "cliente": "Juanita Campos",
+          "servicio": "Cambio de neumáticos",
+          "fechaIngreso": "2025-03-11",
+          "fechaSalida": "2025-03-13",
+          "Total": 120
+        },
+        {
+          "cliente": "Emilio Rivas",
+          "servicio": "Revisión de motor",
+          "fechaIngreso": "2025-03-10",
+          "fechaSalida": "2025-03-12",
+          "Total": 120
+        },
+        {
+          "cliente": "Gloria Marín",
+          "servicio": "Revisión de motor",
+          "fechaIngreso": "2025-03-11",
+          "fechaSalida": "2025-03-13",
+          "Total": 135
+        },
+        {
+          "cliente": "Ricardo Estévez",
+          "servicio": "Revisión de motor",
+          "fechaIngreso": "2025-03-10",
+          "fechaSalida": "2025-03-14",
+          "Total": 150
+        },
+        {
+          "cliente": "Silvia Peña",
+          "servicio": "Revisión de motor",
+          "fechaIngreso": "2025-03-12",
+          "fechaSalida": "2025-03-14",
+          "Total": 160
+        },
+        {
+          "cliente": "Arturo Domínguez",
+          "servicio": "Revisión de motor",
+          "fechaIngreso": "2025-03-11",
+          "fechaSalida": "2025-03-13",
+          "Total": 150
+        },
+        {
+          "cliente": "Estela Aguirre",
+          "servicio": "Diagnóstico general",
+          "fechaIngreso": "2025-03-10",
+          "fechaSalida": "2025-03-11",
+          "Total": 250
+        },
+        {
+          "cliente": "Marco Silva",
+          "servicio": "Diagnóstico general",
+          "fechaIngreso": "2025-03-10",
+          "fechaSalida": "2025-03-12",
+          "Total": 350
+        },
+        {
+          "cliente": "Rafael Cordero",
+          "servicio": "Diagnóstico general",
+          "fechaIngreso": "2025-03-11",
+          "fechaSalida": "2025-03-13",
+          "Total": 240
+        },
+        {
+          "cliente": "Irene Figueroa",
+          "servicio": "Diagnóstico general",
+          "fechaIngreso": "2025-03-10",
+          "fechaSalida": "2025-03-14",
+          "Total": 260
+        },
+        {
+          "cliente": "Francisco Lozano",
+          "servicio": "Diagnóstico general",
+          "fechaIngreso": "2025-03-11",
+          "fechaSalida": "2025-03-13",
+          "Total": 260
+        },
+        {
+          "cliente": "Claudia Navarro",
+          "servicio": "Diagnóstico general",
+          "fechaIngreso": "2025-03-10",
+          "fechaSalida": "2025-03-12",
+          "Total": 350
+        },
+        {
+          "cliente": "Adrián Vera",
+          "servicio": "Diagnóstico general",
+          "fechaIngreso": "2025-03-11",
+          "fechaSalida": "2025-03-14",
+          "Total": 450
+        },
+        {
+          "cliente": "Beatriz Ponce",
+          "servicio": "Diagnóstico general",
+          "fechaIngreso": "2025-03-12",
+          "fechaSalida": "2025-03-14",
+          "Total": 500
+        },
+        {
+          "cliente": "Héctor Castillo",
+          "servicio": "Diagnóstico general",
+          "fechaIngreso": "2025-03-10",
+          "fechaSalida": "2025-03-12",
+          "Total": 450
+        },
+        {
+          "cliente": "Marina Gil",
+          "servicio": "Diagnóstico general",
+          "fechaIngreso": "2025-03-11",
+          "fechaSalida": "2025-03-13",
+          "Total": 250
+        },
+        {
+          "cliente": "Oscar Valdez",
+          "servicio": "Diagnóstico general",
+          "fechaIngreso": "2025-03-12",
+          "fechaSalida": "2025-03-14",
+          "Total": 300
+        }
+      ]
+    },
+    {
+      "week": "Semana 3",
+      "fechas": {
+        "inicio": "2025-03-17",
+        "fin": "2025-03-21"
+      },
+      "servicios": [
+        {
+          "cliente": "Ana Beltrán",
+          "servicio": "Reparación de frenos",
+          "fechaIngreso": "2025-03-17",
+          "fechaSalida": "2025-03-18",
+          "Total": 120
+        },
+        {
+          "cliente": "Carlos Méndez",
+          "servicio": "Reparación de frenos",
+          "fechaIngreso": "2025-03-17",
+          "fechaSalida": "2025-03-19",
+          "Total": 160
+        },
+        {
+          "cliente": "María Soler",
+          "servicio": "Reparación de frenos",
+          "fechaIngreso": "2025-03-18",
+          "fechaSalida": "2025-03-20",
+          "Total": 165
+        },
+        {
+          "cliente": "Juan Vega",
+          "servicio": "Reparación de frenos",
+          "fechaIngreso": "2025-03-17",
+          "fechaSalida": "2025-03-21",
+          "Total": 230
+        },
+        {
+          "cliente": "Lucía Ortiz",
+          "servicio": "Reparación de frenos",
+          "fechaIngreso": "2025-03-18",
+          "fechaSalida": "2025-03-20",
+          "Total": 125
+        },
+        {
+          "cliente": "Miguel Herrera",
+          "servicio": "Reparación de frenos",
+          "fechaIngreso": "2025-03-17",
+          "fechaSalida": "2025-03-19",
+          "Total": 256
+        },
+        {
+          "cliente": "Sofía Pacheco",
+          "servicio": "Reparación de frenos",
+          "fechaIngreso": "2025-03-17",
+          "fechaSalida": "2025-03-18",
+          "Total": 230
+        },
+        {
+          "cliente": "Jorge Domínguez",
+          "servicio": "Reparación de frenos",
+          "fechaIngreso": "2025-03-19",
+          "fechaSalida": "2025-03-21",
+          "Total": 135
+        },
+        {
+          "cliente": "Elena Castro",
+          "servicio": "Reparación de frenos",
+          "fechaIngreso": "2025-03-18",
+          "fechaSalida": "2025-03-20",
+          "Total": 264
+        },
+        {
+          "cliente": "Diego Aguayo",
+          "servicio": "Reparación de frenos",
+          "fechaIngreso": "2025-03-17",
+          "fechaSalida": "2025-03-19",
+          "Total": 125
+        },
+        {
+          "cliente": "Carmen Serrano",
+          "servicio": "Reparación de frenos",
+          "fechaIngreso": "2025-03-18",
+          "fechaSalida": "2025-03-21",
+          "Total": 170
+        },
+        {
+          "cliente": "Luis Figueroa",
+          "servicio": "Reparación de frenos",
+          "fechaIngreso": "2025-03-19",
+          "fechaSalida": "2025-03-21",
+          "Total": 165
+        },
+        {
+          "cliente": "Claudio Roldán",
+          "servicio": "Reparación de frenos",
+          "fechaIngreso": "2025-03-17",
+          "fechaSalida": "2025-03-20",
+          "Total": 185
+        },
+        {
+          "cliente": "Pedro Ríos",
+          "servicio": "Cambio de aceite",
+          "fechaIngreso": "2025-03-17",
+          "fechaSalida": "2025-03-18",
+          "Total": 168
+        },
+        {
+          "cliente": "Laura Molina",
+          "servicio": "Cambio de aceite",
+          "fechaIngreso": "2025-03-17",
+          "fechaSalida": "2025-03-19",
+          "Total": 152
+        },
+        {
+          "cliente": "Sergio Escobar",
+          "servicio": "Cambio de aceite",
+          "fechaIngreso": "2025-03-18",
+          "fechaSalida": "2025-03-20",
+          "Total": 125
+        },
+        {
+          "cliente": "Marta Parra",
+          "servicio": "Cambio de aceite",
+          "fechaIngreso": "2025-03-17",
+          "fechaSalida": "2025-03-21",
+          "Total": 126
+        },
+        {
+          "cliente": "Andrés Romero",
+          "servicio": "Cambio de aceite",
+          "fechaIngreso": "2025-03-18",
+          "fechaSalida": "2025-03-20",
+          "Total": 185
+        },
+        {
+          "cliente": "Paula Rivera",
+          "servicio": "Cambio de aceite",
+          "fechaIngreso": "2025-03-17",
+          "fechaSalida": "2025-03-19",
+          "Total": 135
+        },
+        {
+          "cliente": "David Lozano",
+          "servicio": "Cambio de aceite",
+          "fechaIngreso": "2025-03-18",
+          "fechaSalida": "2025-03-21",
+          "Total": 140
+        },
+        {
+          "cliente": "Raquel Mena",
+          "servicio": "Cambio de aceite",
+          "fechaIngreso": "2025-03-19",
+          "fechaSalida": "2025-03-21",
+          "Total": 255
+        },
+        {
+          "cliente": "Alberto Soto",
+          "servicio": "Cambio de aceite",
+          "fechaIngreso": "2025-03-17",
+          "fechaSalida": "2025-03-18",
+          "Total": 300
+        },
+        {
+          "cliente": "Isabel Muñoz",
+          "servicio": "Cambio de aceite",
+          "fechaIngreso": "2025-03-18",
+          "fechaSalida": "2025-03-20",
+          "Total": 250
+        },
+        {
+          "cliente": "Rodolfo Carrasco",
+          "servicio": "Cambio de aceite",
+          "fechaIngreso": "2025-03-19",
+          "fechaSalida": "2025-03-21",
+          "Total": 245
+        },
+        {
+          "cliente": "Natalia Peña",
+          "servicio": "Cambio de aceite",
+          "fechaIngreso": "2025-03-17",
+          "fechaSalida": "2025-03-21",
+          "Total": 300
+        },
+        {
+          "cliente": "Roberto Cordero",
+          "servicio": "Cambio de neumáticos",
+          "fechaIngreso": "2025-03-17",
+          "fechaSalida": "2025-03-18",
+          "Total": 120
+        },
+        {
+          "cliente": "Silvia Ibáñez",
+          "servicio": "Cambio de neumáticos",
+          "fechaIngreso": "2025-03-18",
+          "fechaSalida": "2025-03-19",
+          "Total": 150
+        },
+        {
+          "cliente": "Fernando Delgado",
+          "servicio": "Cambio de neumáticos",
+          "fechaIngreso": "2025-03-17",
+          "fechaSalida": "2025-03-20",
+          "Total": 130
+        },
+        {
+          "cliente": "Teresa Orozco",
+          "servicio": "Cambio de neumáticos",
+          "fechaIngreso": "2025-03-19",
+          "fechaSalida": "2025-03-21",
+          "Total": 140
+        },
+        {
+          "cliente": "Mauricio Galindo",
+          "servicio": "Cambio de neumáticos",
+          "fechaIngreso": "2025-03-18",
+          "fechaSalida": "2025-03-20",
+          "Total": 160
+        },
+        {
+          "cliente": "Iván Bravo",
+          "servicio": "Revisión de motor",
+          "fechaIngreso": "2025-03-17",
+          "fechaSalida": "2025-03-19",
+          "Total": 180
+        },
+        {
+          "cliente": "Nuria Castillo",
+          "servicio": "Revisión de motor",
+          "fechaIngreso": "2025-03-18",
+          "fechaSalida": "2025-03-20",
+          "Total": 190
+        },
+        {
+          "cliente": "Oscar Delgado",
+          "servicio": "Revisión de motor",
+          "fechaIngreso": "2025-03-17",
+          "fechaSalida": "2025-03-21",
+          "Total": 190
+        },
+        {
+          "cliente": "Beatriz Santos",
+          "servicio": "Revisión de motor",
+          "fechaIngreso": "2025-03-18",
+          "fechaSalida": "2025-03-21",
+          "Total": 180
+        },
+        {
+          "cliente": "Mariano Guzmán",
+          "servicio": "Revisión de motor",
+          "fechaIngreso": "2025-03-19",
+          "fechaSalida": "2025-03-21",
+          "Total": 240
+        },
+        {
+          "cliente": "Claudia Fuentes",
+          "servicio": "Revisión de motor",
+          "fechaIngreso": "2025-03-17",
+          "fechaSalida": "2025-03-20",
+          "Total": 270
+        },
+        {
+          "cliente": "Manuel Serrano",
+          "servicio": "Diagnóstico general",
+          "fechaIngreso": "2025-03-17",
+          "fechaSalida": "2025-03-18",
+          "Total": 150
+        },
+        {
+          "cliente": "Adriana Jiménez",
+          "servicio": "Diagnóstico general",
+          "fechaIngreso": "2025-03-17",
+          "fechaSalida": "2025-03-19",
+          "Total": 120
+        },
+        {
+          "cliente": "Javier Robles",
+          "servicio": "Diagnóstico general",
+          "fechaIngreso": "2025-03-18",
+          "fechaSalida": "2025-03-20",
+          "Total": 260
+        },
+        {
+          "cliente": "Claudia Vargas",
+          "servicio": "Diagnóstico general",
+          "fechaIngreso": "2025-03-17",
+          "fechaSalida": "2025-03-21",
+          "Total": 225
+        },
+        {
+          "cliente": "Ricardo Domínguez",
+          "servicio": "Diagnóstico general",
+          "fechaIngreso": "2025-03-18",
+          "fechaSalida": "2025-03-20",
+          "Total": 225
+        },
+        {
+          "cliente": "Patricia Quintana",
+          "servicio": "Diagnóstico general",
+          "fechaIngreso": "2025-03-17",
+          "fechaSalida": "2025-03-19",
+          "Total": 300
+        },
+        {
+          "cliente": "Andrés Carmona",
+          "servicio": "Diagnóstico general",
+          "fechaIngreso": "2025-03-18",
+          "fechaSalida": "2025-03-21",
+          "Total": 350
+        },
+        {
+          "cliente": "Verónica Ríos",
+          "servicio": "Diagnóstico general",
+          "fechaIngreso": "2025-03-19",
+          "fechaSalida": "2025-03-21",
+          "Total": 270
+        },
+        {
+          "cliente": "Francisco Ponce",
+          "servicio": "Diagnóstico general",
+          "fechaIngreso": "2025-03-17",
+          "fechaSalida": "2025-03-18",
+          "Total": 230
+        },
+        {
+          "cliente": "Mariana Ortega",
+          "servicio": "Diagnóstico general",
+          "fechaIngreso": "2025-03-18",
+          "fechaSalida": "2025-03-20",
+          "Total": 270
+        },
+        {
+          "cliente": "Esteban Molina",
+          "servicio": "Diagnóstico general",
+          "fechaIngreso": "2025-03-19",
+          "fechaSalida": "2025-03-21",
+          "Total": 280
+        },
+        {
+          "cliente": "Catalina León",
+          "servicio": "Diagnóstico general",
+          "fechaIngreso": "2025-03-17",
+          "fechaSalida": "2025-03-21",
+          "Total": 300
+        }
+      ]
+    },
+    {
+      "week": "Semana 4",
+      "fechas": {
+        "inicio": "2025-03-24",
+        "fin": "2025-03-28"
+      },
+      "servicios": [
+        {
+          "cliente": "Santiago Vargas",
+          "servicio": "Reparación de frenos",
+          "fechaIngreso": "2025-03-24",
+          "fechaSalida": "2025-03-25",
+          "Total": 120
+        },
+        {
+          "cliente": "Valeria Prieto",
+          "servicio": "Reparación de frenos",
+          "fechaIngreso": "2025-03-24",
+          "fechaSalida": "2025-03-26",
+          "Total": 150
+        },
+        {
+          "cliente": "Diego Muñoz",
+          "servicio": "Reparación de frenos",
+          "fechaIngreso": "2025-03-25",
+          "fechaSalida": "2025-03-27",
+          "Total": 135
+        },
+        {
+          "cliente": "Camila Torres",
+          "servicio": "Reparación de frenos",
+          "fechaIngreso": "2025-03-24",
+          "fechaSalida": "2025-03-28",
+          "Total": 120
+        },
+        {
+          "cliente": "Julio Delgado",
+          "servicio": "Reparación de frenos",
+          "fechaIngreso": "2025-03-25",
+          "fechaSalida": "2025-03-27",
+          "Total": 140
+        },
+        {
+          "cliente": "Andrea Cortés",
+          "servicio": "Reparación de frenos",
+          "fechaIngreso": "2025-03-24",
+          "fechaSalida": "2025-03-26",
+          "Total": 135
+        },
+        {
+          "cliente": "Martín Rojas",
+          "servicio": "Reparación de frenos",
+          "fechaIngreso": "2025-03-25",
+          "fechaSalida": "2025-03-28",
+          "Total": 250
+        },
+        {
+          "cliente": "Elisa García",
+          "servicio": "Reparación de frenos",
+          "fechaIngreso": "2025-03-26",
+          "fechaSalida": "2025-03-28",
+          "Total": 250
+        },
+        {
+          "cliente": "Esteban Navarro",
+          "servicio": "Reparación de frenos",
+          "fechaIngreso": "2025-03-24",
+          "fechaSalida": "2025-03-26",
+          "Total": 140
+        },
+        {
+          "cliente": "Clara Fuentes",
+          "servicio": "Reparación de frenos",
+          "fechaIngreso": "2025-03-25",
+          "fechaSalida": "2025-03-27",
+          "Total": 140
+        },
+        {
+          "cliente": "Alejandro Marín",
+          "servicio": "Cambio de aceite",
+          "fechaIngreso": "2025-03-24",
+          "fechaSalida": "2025-03-25",
+          "Total": 250
+        },
+        {
+          "cliente": "Carolina Bravo",
+          "servicio": "Cambio de aceite",
+          "fechaIngreso": "2025-03-24",
+          "fechaSalida": "2025-03-26",
+          "Total": 250
+        },
+        {
+          "cliente": "Jorge Carrasco",
+          "servicio": "Cambio de aceite",
+          "fechaIngreso": "2025-03-25",
+          "fechaSalida": "2025-03-27",
+          "Total": 250
+        },
+        {
+          "cliente": "Mónica Soto",
+          "servicio": "Cambio de aceite",
+          "fechaIngreso": "2025-03-24",
+          "fechaSalida": "2025-03-28",
+          "Total": 230
+        },
+        {
+          "cliente": "Roberto Navarro",
+          "servicio": "Cambio de aceite",
+          "fechaIngreso": "2025-03-25",
+          "fechaSalida": "2025-03-27",
+          "Total": 230
+        },
+        {
+          "cliente": "Diana Molina",
+          "servicio": "Cambio de aceite",
+          "fechaIngreso": "2025-03-24",
+          "fechaSalida": "2025-03-26",
+          "Total": 145
+        },
+        {
+          "cliente": "Antonio Figueroa",
+          "servicio": "Cambio de aceite",
+          "fechaIngreso": "2025-03-25",
+          "fechaSalida": "2025-03-28",
+          "Total": 200
+        },
+        {
+          "cliente": "Gabriela Ruiz",
+          "servicio": "Cambio de aceite",
+          "fechaIngreso": "2025-03-26",
+          "fechaSalida": "2025-03-28",
+          "Total": 280
+        },
+        {
+          "cliente": "Eduardo Pérez",
+          "servicio": "Cambio de aceite",
+          "fechaIngreso": "2025-03-24",
+          "fechaSalida": "2025-03-25",
+          "Total": 170
+        },
+        {
+          "cliente": "Rosa Aguirre",
+          "servicio": "Cambio de aceite",
+          "fechaIngreso": "2025-03-25",
+          "fechaSalida": "2025-03-26",
+          "Total": 180
+        },
+        {
+          "cliente": "Esteban Quintana",
+          "servicio": "Cambio de aceite",
+          "fechaIngreso": "2025-03-26",
+          "fechaSalida": "2025-03-27",
+          "Total": 250
+        },
+        {
+          "cliente": "Lorena Vargas",
+          "servicio": "Cambio de aceite",
+          "fechaIngreso": "2025-03-24",
+          "fechaSalida": "2025-03-28",
+          "Total": 150
+        },
+        {
+          "cliente": "Pablo Romero",
+          "servicio": "Cambio de neumáticos",
+          "fechaIngreso": "2025-03-24",
+          "fechaSalida": "2025-03-25",
+          "Total": 100
+        },
+        {
+          "cliente": "Claudia Herrera",
+          "servicio": "Cambio de neumáticos",
+          "fechaIngreso": "2025-03-25",
+          "fechaSalida": "2025-03-26",
+          "Total": 120
+        },
+        {
+          "cliente": "Mauricio Soto",
+          "servicio": "Cambio de neumáticos",
+          "fechaIngreso": "2025-03-24",
+          "fechaSalida": "2025-03-27",
+          "Total": 150
+        },
+        {
+          "cliente": "Verónica Gómez",
+          "servicio": "Cambio de neumáticos",
+          "fechaIngreso": "2025-03-26",
+          "fechaSalida": "2025-03-28",
+          "Total": 160
+        },
+        {
+          "cliente": "Juan Delgado",
+          "servicio": "Cambio de neumáticos",
+          "fechaIngreso": "2025-03-25",
+          "fechaSalida": "2025-03-27",
+          "Total": 148
+        },
+        {
+          "cliente": "Cecilia López",
+          "servicio": "Cambio de neumáticos",
+          "fechaIngreso": "2025-03-24",
+          "fechaSalida": "2025-03-26",
+          "Total": 120
+        },
+        {
+          "cliente": "Emilio Castro",
+          "servicio": "Revisión de motor",
+          "fechaIngreso": "2025-03-24",
+          "fechaSalida": "2025-03-26",
+          "Total": 250
+        },
+        {
+          "cliente": "Gloria Ramírez",
+          "servicio": "Revisión de motor",
+          "fechaIngreso": "2025-03-25",
+          "fechaSalida": "2025-03-27",
+          "Total": 300
+        },
+        {
+          "cliente": "Ricardo Méndez",
+          "servicio": "Revisión de motor",
+          "fechaIngreso": "2025-03-24",
+          "fechaSalida": "2025-03-28",
+          "Total": 250
+        },
+        {
+          "cliente": "Silvia Rojas",
+          "servicio": "Revisión de motor",
+          "fechaIngreso": "2025-03-26",
+          "fechaSalida": "2025-03-28",
+          "Total": 280
+        },
+        {
+          "cliente": "Arturo Díaz",
+          "servicio": "Revisión de motor",
+          "fechaIngreso": "2025-03-25",
+          "fechaSalida": "2025-03-27",
+          "Total": 248
+        },
+        {
+          "cliente": "Mariana Vargas",
+          "servicio": "Revisión de motor",
+          "fechaIngreso": "2025-03-24",
+          "fechaSalida": "2025-03-27",
+          "Total": 250
+        },
+        {
+          "cliente": "Estela Domínguez",
+          "servicio": "Diagnóstico general",
+          "fechaIngreso": "2025-03-24",
+          "fechaSalida": "2025-03-25",
+          "Total": 300
+        },
+        {
+          "cliente": "Marco Silva",
+          "servicio": "Diagnóstico general",
+          "fechaIngreso": "2025-03-24",
+          "fechaSalida": "2025-03-26",
+          "Total": 325
+        },
+        {
+          "cliente": "Rafael Sánchez",
+          "servicio": "Diagnóstico general",
+          "fechaIngreso": "2025-03-25",
+          "fechaSalida": "2025-03-27",
+          "Total": 350
+        },
+        {
+          "cliente": "Irene Morales",
+          "servicio": "Diagnóstico general",
+          "fechaIngreso": "2025-03-24",
+          "fechaSalida": "2025-03-28",
+          "Total": 285
+        },
+        {
+          "cliente": "Francisco Herrera",
+          "servicio": "Diagnóstico general",
+          "fechaIngreso": "2025-03-25",
+          "fechaSalida": "2025-03-27",
+          "Total": 170
+        },
+        {
+          "cliente": "Claudia Ortega",
+          "servicio": "Diagnóstico general",
+          "fechaIngreso": "2025-03-24",
+          "fechaSalida": "2025-03-26",
+          "Total": 170
+        },
+        {
+          "cliente": "Adrián Pérez",
+          "servicio": "Diagnóstico general",
+          "fechaIngreso": "2025-03-25",
+          "fechaSalida": "2025-03-28",
+          "Total": 250
+        },
+        {
+          "cliente": "Beatriz Gómez",
+          "servicio": "Diagnóstico general",
+          "fechaIngreso": "2025-03-26",
+          "fechaSalida": "2025-03-28",
+          "Total": 245
+        },
+        {
+          "cliente": "Héctor Vargas",
+          "servicio": "Diagnóstico general",
+          "fechaIngreso": "2025-03-24",
+          "fechaSalida": "2025-03-25",
+          "Total": 325
+        },
+        {
+          "cliente": "Marina López",
+          "servicio": "Diagnóstico general",
+          "fechaIngreso": "2025-03-25",
+          "fechaSalida": "2025-03-27",
+          "Total": 199
+        },
+        {
+          "cliente": "Oscar Jiménez",
+          "servicio": "Diagnóstico general",
+          "fechaIngreso": "2025-03-26",
+          "fechaSalida": "2025-03-28",
+          "Total": 200
+        },
+        {
+          "cliente": "Daniela Rincón",
+          "servicio": "Diagnóstico general",
+          "fechaIngreso": "2025-03-24",
+          "fechaSalida": "2025-03-28",
+          "Total": 180
+        },
+        {
+          "cliente": "Natalia Ponce",
+          "servicio": "Diagnóstico general",
+          "fechaIngreso": "2025-03-25",
+          "fechaSalida": "2025-03-27",
+          "Total": 199
+        }
+      ]
+    }
+  ]
+  

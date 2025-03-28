@@ -413,6 +413,14 @@ const Navbar = () => {
                           Información Empresa
                         </Link>
                       </li>
+                      <li>
+                        <Link
+                          to="/politicas"
+                          className="navbar-dropdown-text"
+                        >
+                          Politicas
+                        </Link>
+                      </li>
                     </ul>
                   )}
                 </li>
@@ -423,6 +431,7 @@ const Navbar = () => {
                     Servicios
                   </Link>
                 </li>
+
                 <li>
                   <Link to="/consultasreparaciones" className="navbar-link">
                     Reparaciones realizadas

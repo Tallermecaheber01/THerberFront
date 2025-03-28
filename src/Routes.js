@@ -51,6 +51,7 @@ import CrudReparaciones from './components/admin/CrudReparaciones';
 import Demandas from './components/admin/Demandas';
 import InformacionEmpresa from './components/admin/InformacionEmpresa';
 import Contactos from './components/admin/CrudContactos';
+import CrudPoliticas from './components/admin/crudPoliticas';
 
 const AppRoutes = () => {
   return (
@@ -242,7 +243,7 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute allowedRoles={['administrador']}>
              <Demandas />
-          </ProtectedRoute>
+             </ProtectedRoute>
         } />
 
         <Route 
@@ -259,9 +260,19 @@ const AppRoutes = () => {
             element={
               <ProtectedRoute allowedRoles={['administrador']}>
                 <Contactos/>
-                  </ProtectedRoute>
-                } 
-            />
+             </ProtectedRoute>
+            } 
+          />
+
+        <Route 
+          path="politicas" 
+            element={
+              <ProtectedRoute allowedRoles={['administrador']}>
+                <CrudPoliticas/>
+              </ProtectedRoute>
+            } 
+          /> 
+
 
         {/* Ruta para páginas no encontradas */}
         <Route path="*" element={<Navigate to="/NotFound" replace />} />

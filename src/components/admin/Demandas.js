@@ -10,20 +10,109 @@ import {
   Legend
 } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import datos from './datos.json';
 
 // Registro de módulos y plugin de datalabels
 Chart.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ChartDataLabels);
 
-// Redondeo personalizado: si la parte decimal es > 0.5 redondea hacia arriba; si es <= 0.5 redondea hacia abajo.
+// Redondeo personalizado
 function customRound(num) {
   const intPart = Math.floor(num);
   return (num - intPart > 0.5) ? Math.ceil(num) : intPart;
 }
 
-// Card de selección: incluye el <select> y un botón para calcular la demanda del servicio seleccionado.
-function ServiceSelectCard({ servicios, selected, onSelect, onCalculate }) {
+// Valores semanales para cada servicio
+const serviceWeeklyValues = {
+  'Reparación de frenos': [12, 11, 13, 10],
+  'Cambio de aceite': [10, 9, 12, 12],
+  'Alineación y balanceo': [6, 7, 8, 8],
+  'Cambio de neumáticos': [4, 5, 5, 6],
+  'Revisión de motor': [4, 5, 6, 6],
+  'Diagnóstico general': [10, 11, 12, 13]
+};
+
+// Auxiliar para parsear fecha "YYYY-MM-DD" como local, evitando offsets
+function parseLocalDate(dateStr) {
+  const [year, month, day] = dateStr.split("-").map(Number);
+  return new Date(year, month - 1, day);
+}
+
+// Suma días a un Date (modo local)
+function addDays(date, n) {
+  const d = new Date(date);
+  d.setDate(d.getDate() + n);
+  return d;
+}
+
+// Suma meses a un Date (modo local)
+function addMonths(date, n) {
+  const d = new Date(date);
+  d.setMonth(d.getMonth() + n);
+  return d;
+}
+
+// Formatear fecha en español
+function formatDate(date) {
+  return date.toLocaleDateString('es-ES', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  });
+}
+
+function getWeeklyValue(serviceName, week) {
+  const values = serviceWeeklyValues[serviceName];
+  if (!values) return null;
+  return values[Math.min(week, values.length - 1)];
+}
+
+// Arreglo de servicios con insumos
+const services = Object.keys(serviceWeeklyValues).map(name => {
+  let insumos = [];
+  switch(name) {
+    case 'Reparación de frenos':
+      insumos = [
+        { nombre: 'Pastillas de freno', cantidadPorServicio: 2 },
+        { nombre: 'Líquido de frenos (L)', cantidadPorServicio: 0.5 }
+      ];
+      break;
+    case 'Cambio de aceite':
+      insumos = [
+        { nombre: 'Aceite (L)', cantidadPorServicio: 3 },
+        { nombre: 'Filtro de aceite', cantidadPorServicio: 1 }
+      ];
+      break;
+    case 'Alineación y balanceo':
+      insumos = [{ nombre: 'Plomos de balanceo', cantidadPorServicio: 4 }];
+      break;
+    case 'Cambio de neumáticos':
+      insumos = [{ nombre: 'Neumático', cantidadPorServicio: 1 }];
+      break;
+    case 'Revisión de motor':
+      insumos = [{ nombre: 'Filtro de aire', cantidadPorServicio: 1 }];
+      break;
+    case 'Diagnóstico general':
+      insumos = [{ nombre: 'Equipo de diagnóstico', cantidadPorServicio: 1 }];
+      break;
+    default:
+      break;
+  }
+  return {
+    nombre: name,
+    demandaInicial: serviceWeeklyValues[name][0],
+    demandaEnT: serviceWeeklyValues[name][3],
+    diaInicial: 0,
+    diaT: 3,
+    insumos
+  };
+});
+
+// Card de selección
+function ServiceSelectCard({ servicios, selected, onSelect, onCalculate, startDate, endDate, onStartDateChange, onEndDateChange }) {
   return (
-    <div className="service-card flex-1 min-w-[250px] p-4">
+    <div className="service-card flex-1 min-w-[400px] p-4">
       <h3 className="service-card-title text-yellow-400">Seleccione un Servicio</h3>
       <select
         value={selected ? selected.nombre : ''}
@@ -42,6 +131,25 @@ function ServiceSelectCard({ servicios, selected, onSelect, onCalculate }) {
           </option>
         ))}
       </select>
+      {/* Inputs de fechas */}
+      <div className="mt-4">
+        <label className="text-yellow-400 block mb-1">Fecha de inicio:</label>
+        <input
+          type="date"
+          value={startDate}
+          onChange={(e) => onStartDateChange(e.target.value)}
+          className="form-input"
+        />
+      </div>
+      <div className="mt-4">
+        <label className="text-yellow-400 block mb-1">Fecha fin:</label>
+        <input
+          type="date"
+          value={endDate}
+          onChange={(e) => onEndDateChange(e.target.value)}
+          className="form-input"
+        />
+      </div>
       {selected && (
         <button className="btn-aceptar mt-2" onClick={onCalculate}>
           Calcular demanda
@@ -51,79 +159,105 @@ function ServiceSelectCard({ servicios, selected, onSelect, onCalculate }) {
   );
 }
 
-// Card de información: muestra la demanda inicial, la demanda en 5 días y los insumos.
-function ServiceInfoCard({ servicio }) {
+// Card de Resumen de Datos (todos los cards usan la misma clase "service-card")
+// Los labels usan "text-yellow-400" y el contenido permanece en blanco.
+function SummaryCard({ servicio, startDate, endDate, daysDiff }) {
+  if (!servicio || !startDate || !endDate || daysDiff === null) return null;
+
+  const start = parseLocalDate(startDate);
+  const end = parseLocalDate(endDate);
+  const demandaInicio = getWeeklyValue(servicio.nombre, 0);
+  const chosenWeek = Math.floor(daysDiff / 7);
+  const demandaSegunda = getWeeklyValue(servicio.nombre, chosenWeek);
+
   return (
-    <div className="service-card flex-1 min-w-[250px] p-4">
-      <h3 className="service-card-title text-yellow-400">Información del Servicio</h3>
-      <p className="service-card-text">
-        <strong className="text-yellow-400">Demanda inicial:</strong>{' '}
-        <span className="text-white">{servicio.demandaInicial}</span>
+    <div className="service-card p-4 flex-1 min-w-[200px] bg-gray-700 text-white">
+      <h4 className="font-bold mb-2">Resumen de Datos</h4>
+      <p>
+        <span className="text-yellow-400">Semana inicio:</span> {formatDate(start)}
       </p>
-      <p className="service-card-text">
-        <strong className="text-yellow-400">Demanda en 5 días:</strong>{' '}
-        <span className="text-white">{servicio.demandaEnT}</span>
+      <p>
+        <span className="text-yellow-400">Demanda:</span> {demandaInicio}
       </p>
-      <p className="service-card-text">
-        <strong className="text-yellow-400">Insumos:</strong>{' '}
-        <span className="text-white">
-          {servicio.insumos.map((ins, i) => (
-            <span key={i}>
-              {ins.nombre} (x{ins.cantidadPorServicio}){' '}
-            </span>
-          ))}
-        </span>
+      <hr className="my-2" />
+      <p>
+        <span className="text-yellow-400">Semana Fin:</span> {formatDate(end)}
+      </p>
+      <p>
+        <span className="text-yellow-400">Demanda:</span> {demandaSegunda}
       </p>
     </div>
   );
 }
 
-// Card de Resultados: muestra la tabla con los días, la demanda, la variación y los insumos requeridos.
-function ResultsCard({ servicio, resultados }) {
-  if (!Array.isArray(resultados)) return null;
+// Tabla de Predicciones (semana 8 y 12)
+// El encabezado tendrá fondo verde con texto blanco y en las filas se muestra el texto adicional.
+function ResultsCardDaily({ servicio, daysDiff, endDate, startDate }) {
+  if (daysDiff === null) return null;
+
+  const weeklyArray = serviceWeeklyValues[servicio.nombre];
+  if (!weeklyArray) return null;
+  
+  const fixedWeek0 = weeklyArray[0];
+  const chosenWeek = Math.floor(daysDiff / 7);
+  const fixedChosenWeek = weeklyArray[Math.min(chosenWeek, weeklyArray.length - 1)];
+  const k = chosenWeek === 0 ? 0 : Math.log(fixedChosenWeek / fixedWeek0) / chosenWeek;
+  
+  const finalWeeks = [7, 11];
+  const start = parseLocalDate(startDate);
+  const end = parseLocalDate(endDate);
+
+  const weeklyResults = finalWeeks.map(weekOffset => {
+    const value = fixedWeek0 * Math.exp(k * weekOffset);
+    let dateLabel = "";
+    let monthLabel = "";
+    if (weekOffset === 7) {
+      dateLabel = formatDate(addMonths(end, 1));
+      monthLabel = "(mes 2)";
+    } else if (weekOffset === 11) {
+      dateLabel = formatDate(addMonths(end, 2));
+      monthLabel = "(mes 3)";
+    }
+    return { dateLabel, monthLabel, demand: customRound(value) };
+  });
+  
+  const headerTitle = servicio.nombre === "Reparación de frenos"
+    ? "Predicciones"
+    : `Resultados para: ${servicio.nombre}`;
+  
   return (
-    <div className="service-card w-full mt-5 overflow-x-auto p-4">
-      <h3 className="service-card-title">
-        <span className="text-yellow-400">Resultados para: </span>
-        <span className="text-white">{servicio.nombre}</span>
-      </h3>
-      <table className="w-full border-collapse mt-2">
-        <thead>
-          <tr className="bg-blue-600 dark:bg-blue-500">
-            <th className="border border-white p-2 text-white font-bold">Día</th>
-            <th className="border border-white p-2 text-white font-bold">Servicios Solicitados</th>
-            <th className="border border-white p-2 text-white font-bold">Variación</th>
-            <th className="border border-white p-2 text-white font-bold">Insumos Requeridos</th>
-          </tr>
-        </thead>
-        <tbody>
-          {resultados.map(result => {
-            // Para el día 30 se usa un azul menos intenso.
-            const rowClass = result.day === 30 ? "bg-blue-500 dark:bg-blue-400" : "";
-            return (
-              <tr key={result.day} className={rowClass}>
-                <td className="border border-white p-2 text-white">{result.day}</td>
-                <td className="border border-white p-2 text-white">{result.demand}</td>
-                <td className="border border-white p-2 text-white">{result.variacion}</td>
-                <td className="border border-white p-2 text-white">
-                  {result.insumos.map((ins, idx) => (
-                    <div key={idx}>
-                      {ins.nombre}: {ins.total}
-                    </div>
-                  ))}
+    <div className="service-card w-full mt-5 overflow-x-auto p-4 flex flex-col md:flex-row gap-4">
+      <SummaryCard servicio={servicio} startDate={startDate} endDate={endDate} daysDiff={daysDiff} />
+      <div className="flex-1">
+        <h3 className="text-yellow-400 mb-4">{headerTitle}</h3>
+        <table className="w-full border-collapse mt-2 text-white">
+          <thead>
+            <tr className="bg-green-600 dark:bg-green-500 text-white">
+              <th className="border border-white p-2 font-bold">Predicción</th>
+              <th className="border border-white p-2 font-bold">Servicios Solicitados</th>
+            </tr>
+          </thead>
+          <tbody>
+            {weeklyResults.map((result, idx) => (
+              <tr key={idx} className="text-white">
+                <td className="border border-white p-2">
+                  {result.dateLabel}<br />
+                  <small>{result.monthLabel}</small>
                 </td>
+                <td className="border border-white p-2">{result.demand}</td>
               </tr>
-            );
-          })}
-        </tbody>
-      </table>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
 
-// Opciones de configuración para la gráfica, ajustando colores para un fondo azul oscuro.
+// Opciones para las gráficas
 const chartOptions = {
   responsive: true,
+  maintainAspectRatio: false,
   plugins: {
     legend: { display: true, position: 'top', labels: { color: 'white' } },
     datalabels: {
@@ -136,7 +270,7 @@ const chartOptions = {
   },
   scales: {
     x: {
-      title: { display: true, text: 'Días', color: 'white' },
+      title: { display: true, text: 'Semanas / Predicción', color: 'white' },
       ticks: { color: 'white' },
       grid: { color: 'rgba(255,255,255,0.2)' }
     },
@@ -149,273 +283,337 @@ const chartOptions = {
 };
 
 export default function App() {
-  const servicios = [
-    {
-      nombre: 'Reparación de frenos',
-      demandaInicial: 80,
-      diaInicial: 1,
-      demandaEnT: 60, // Dato específico para el día 5
-      diaT: 5,
-      insumos: [
-        { nombre: 'Pastillas de freno', cantidadPorServicio: 2 },
-        { nombre: 'Líquido de frenos (L)', cantidadPorServicio: 0.5 }
-      ]
-    },
-    {
-      nombre: 'Cambio de aceite',
-      demandaInicial: 50,
-      diaInicial: 1,
-      demandaEnT: 30,
-      diaT: 5,
-      insumos: [
-        { nombre: 'Aceite (L)', cantidadPorServicio: 3 },
-        { nombre: 'Filtro de aceite', cantidadPorServicio: 1 }
-      ]
-    },
-    {
-      nombre: 'Alineación y balanceo',
-      demandaInicial: 30,
-      diaInicial: 1,
-      demandaEnT: 18,
-      diaT: 5,
-      insumos: [{ nombre: 'Plomos de balanceo', cantidadPorServicio: 4 }]
-    },
-    {
-      nombre: 'Cambio de neumáticos',
-      demandaInicial: 60,
-      diaInicial: 1,
-      demandaEnT: 40,
-      diaT: 5,
-      insumos: [{ nombre: 'Neumático', cantidadPorServicio: 1 }]
-    },
-    {
-      nombre: 'Revisión de motor',
-      demandaInicial: 70,
-      diaInicial: 1,
-      demandaEnT: 50,
-      diaT: 5,
-      insumos: [{ nombre: 'Filtro de aire', cantidadPorServicio: 1 }]
-    },
-    {
-      nombre: 'Sistema eléctrico',
-      demandaInicial: 55,
-      diaInicial: 1,
-      demandaEnT: 35,
-      diaT: 5,
-      insumos: [{ nombre: 'Batería', cantidadPorServicio: 1 }]
-    },
-    {
-      nombre: 'Frenos ABS',
-      demandaInicial: 45,
-      diaInicial: 1,
-      demandaEnT: 28,
-      diaT: 5,
-      insumos: [
-        { nombre: 'Sensor ABS', cantidadPorServicio: 1 },
-        { nombre: 'Líquido de frenos (L)', cantidadPorServicio: 0.3 }
-      ]
-    },
-    {
-      nombre: 'Diagnóstico general',
-      demandaInicial: 65,
-      diaInicial: 1,
-      demandaEnT: 42,
-      diaT: 5,
-      insumos: [{ nombre: 'Equipo de diagnóstico', cantidadPorServicio: 1 }]
-    }
-  ];
-
   const [servicioSeleccionado, setServicioSeleccionado] = useState(null);
   const [resultados, setResultados] = useState([]);
   const [chartData, setChartData] = useState(null);
-  const [chartDataAll, setChartDataAll] = useState(null);
+  const [chartData2Weeks, setChartData2Weeks] = useState(null);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [daysDiff, setDaysDiff] = useState(null);
+  const [filteredData, setFilteredData] = useState([]);
+  const [trendMessage, setTrendMessage] = useState("");
 
-  // Factor para el día 30 (usado en todos los gráficos)
-  const predictionFactors = {
-    10: 0.6,
-    15: 0.5,
-    20: 0.53,
-    25: 0.475,
-    30: 0.44
+  const [visibleWeeks, setVisibleWeeks] = useState(1);
+  const largeChartStyle = "w-[500px] h-[500px]";
+  const smallCardStyle = "service-card p-4 text-white min-w-[200px]";
+
+  // Restricción: solo se permiten fechas entre el 03/03/2025 y el 27/03/2025
+  const allowedStart = "2025-03-03";
+  const allowedEnd = "2025-03-27";
+
+  const handleStartDateChange = (value) => {
+    if (value < allowedStart || value > allowedEnd) {
+      toast.error("La fecha de inicio debe estar entre el 03/03/2025 y el 27/03/2025", {
+        style: { color: "white", backgroundColor: "black" }
+      });
+      return;
+    }
+    setStartDate(value);
+  };
+
+  const handleEndDateChange = (value) => {
+    if (value < allowedStart || value > allowedEnd) {
+      toast.error("La fecha de fin debe estar entre el 03/03/2025 y el 27/03/2025", {
+        style: { color: "white", backgroundColor: "black" }
+      });
+      return;
+    }
+    if (startDate && value < startDate) {
+      toast.error("La fecha de fin no puede ser anterior a la fecha de inicio", {
+        style: { color: "white", backgroundColor: "black" }
+      });
+      return;
+    }
+    setEndDate(value);
   };
 
   const handleCalculate = () => {
     if (!servicioSeleccionado) return;
-    const initialDemand = servicioSeleccionado.demandaInicial;
     
-    // Día 1: demanda inicial real
-    const initialRow = {
-      day: 1,
-      demand: initialDemand,
-      insumos: servicioSeleccionado.insumos.map(item => {
-        const rawTotal = item.cantidadPorServicio * initialDemand;
-        const total = item.nombre.toLowerCase().includes('(l)')
-          ? rawTotal.toFixed(2)
-          : customRound(rawTotal);
-        return { nombre: item.nombre, total };
-      })
-    };
-
-    // Día 5: demanda según dato proporcionado en el servicio
-    const day5Row = {
-      day: 5,
-      demand: servicioSeleccionado.demandaEnT,
-      insumos: servicioSeleccionado.insumos.map(item => {
-        const rawTotal = item.cantidadPorServicio * servicioSeleccionado.demandaEnT;
-        const total = item.nombre.toLowerCase().includes('(l)')
-          ? rawTotal.toFixed(2)
-          : customRound(rawTotal);
-        return { nombre: item.nombre, total };
-      })
-    };
-
-    // Días 10, 15, 20, 25 y 30 calculados usando la demanda inicial real y los factores
-    const computedDays = Object.entries(predictionFactors).map(([day, factor]) => {
-      const demand = customRound(initialDemand * factor);
-      const insumos = servicioSeleccionado.insumos.map(item => {
-        const rawTotal = item.cantidadPorServicio * demand;
-        const total = item.nombre.toLowerCase().includes('(l)')
-          ? rawTotal.toFixed(2)
-          : customRound(rawTotal);
-        return { nombre: item.nombre, total };
-      });
-      return { day: Number(day), demand, insumos };
+    let diffDaysLocal = null;
+    if (startDate && endDate) {
+      const diffTime = parseLocalDate(endDate) - parseLocalDate(startDate);
+      diffDaysLocal = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+      setDaysDiff(diffDaysLocal);
+  
+      const start = parseLocalDate(startDate);
+      const end = parseLocalDate(endDate);
+      const filtered = datos
+        .filter(semana => {
+          const weekStart = parseLocalDate(semana.fechas.inicio);
+          const weekEnd = parseLocalDate(semana.fechas.fin);
+          return (weekEnd >= start && weekStart <= end);
+        })
+        .map(semana => ({
+          ...semana,
+          servicios: semana.servicios.filter(registro => registro.servicio === servicioSeleccionado.nombre)
+        }))
+        .filter(semana => semana.servicios.length > 0);
+      
+      setFilteredData(filtered);
+      setVisibleWeeks(1);
+    } else {
+      setDaysDiff(null);
+      setFilteredData([]);
+      setVisibleWeeks(1);
+    }
+  
+    const weeklyArray = serviceWeeklyValues[servicioSeleccionado.nombre];
+    const fixedWeek0 = weeklyArray[0];
+    const chosenWeek = diffDaysLocal !== null ? Math.floor(diffDaysLocal / 7) : 0;
+    const fixedChosenWeek = weeklyArray[Math.min(chosenWeek, weeklyArray.length - 1)];
+    const k = chosenWeek === 0 ? 0 : Math.log(fixedChosenWeek / fixedWeek0) / chosenWeek;
+  
+    const weeks = [0, 1, 2, 3, 7, 11];
+    const tableResults = weeks.map(week => {
+      const rawDemand = fixedWeek0 * Math.exp(k * week);
+      return { week, demand: customRound(rawDemand) };
     });
-
-    const tableResults = [initialRow, day5Row, ...computedDays].sort((a, b) => a.day - b.day);
-
-    const tableResultsConVariacion = tableResults.map((result, index) => {
-      if (index === 0) return { ...result, variacion: 'Inicial' };
-      const prevDemand = tableResults[index - 1].demand;
-      const variacion = result.demand > prevDemand 
-        ? 'Creció' 
-        : result.demand < prevDemand 
-          ? 'Decreció' 
-          : 'Sin cambio';
-      return { ...result, variacion };
-    });
-
-    console.log("Resultados con variación:", tableResultsConVariacion);
-    setResultados(tableResultsConVariacion);
+  
+    const diffs = [];
+    for (let i = 1; i < tableResults.length; i++) {
+      diffs.push(tableResults[i].demand - tableResults[i - 1].demand);
+    }
+    if (diffs.every(d => d >= 0)) {
+      setTrendMessage("En general, la demanda creció.");
+    } else if (diffs.every(d => d <= 0)) {
+      setTrendMessage("En general, la demanda decreció.");
+    } else {
+      setTrendMessage("La tendencia de la demanda fue mixta.");
+    }
+  
+    setResultados(tableResults);
     setChartData(null);
-    setChartDataAll(null);
+    setChartData2Weeks(null);
   };
-
-  // Función para preparar la gráfica del servicio seleccionado (toda la evolución)
+  
+  
+  // Primera gráfica: solo la barra de la semana 8 en rojo, el resto en azul.
   const handleGraph = () => {
     if (!resultados.length) return;
-    const labels = resultados.map(row => row.day);
+
+    const start = parseLocalDate(startDate);
+    const end = parseLocalDate(endDate);
+
+    const labels = resultados.map(row => {
+      if (row.week >= 0 && row.week <= 3 && startDate) {
+        const d = addDays(start, row.week * 7);
+        return formatDate(d);
+      }
+      if (row.week === 7 && endDate) {
+        const d = addMonths(end, 1);
+        return formatDate(d);
+      }
+      if (row.week === 11 && endDate) {
+        const d = addMonths(end, 2);
+        return formatDate(d);
+      }
+      return `Semana ${row.week + 1}`;
+    });
+    
+    const colors = resultados.map(row => {
+      if (row.week === 7 || row.week === 11) return 'rgba(15, 157, 56, 0.8)'; // solo semana 8 en rojo
+      return 'rgba(66,165,245,0.8)'; // el resto (incluida la semana 12) en azul
+    });
+    
     const demandData = resultados.map(row => row.demand);
     
-    // Colores para los insumos (evitando tonos amarillos)
-    const insumoColors = [
-      'rgba(245, 48, 252, 0.8)',   // rojo
-      'rgba(25, 124, 114, 0.8)',   // teal
-      'rgba(156,39,176,0.8)',  // morado
-      'rgba(0,188,212,0.8)',   // cian
-      'rgba(233,30,99,0.8)'    // rosa
-    ];
-    
-    const insumoNames = servicioSeleccionado.insumos.map(item => item.nombre);
-    const insumoDatasets = insumoNames.map((insumoName, idx) => {
-      const data = resultados.map(row => {
-        const insumoItem = row.insumos.find(ins => ins.nombre === insumoName);
-        return insumoItem ? parseFloat(insumoItem.total) : 0;
-      });
-      return {
-        label: insumoName,
-        data,
-        backgroundColor: insumoColors[idx % insumoColors.length]
-      };
-    });
-
     const data = {
       labels,
       datasets: [
         {
           label: 'Servicios Demandados',
           data: demandData,
-          backgroundColor: 'rgba(66,165,245,0.8)' // azul
-        },
-        ...insumoDatasets
-      ]
-    };
-
-    setChartData(data);
-  };
-
-  // Función para preparar la gráfica de la demanda a 30 días de TODOS los servicios
-  const handleGraphAll = () => {
-    const labels = servicios.map(s => s.nombre);
-    const data = servicios.map(s => customRound(s.demandaInicial * predictionFactors[30]));
-    
-    const chartDataAllObj = {
-      labels,
-      datasets: [
-        {
-          label: 'Demanda a 30 días',
-          data,
-          backgroundColor: 'rgba(99, 179, 92, 0.8)' // azul
+          backgroundColor: colors
         }
       ]
     };
+    setChartData(data);
+  };
+
+  // Segunda gráfica: demanda a 12 semanas para todos los servicios
+  const handleGraphWeek12 = () => {
+    if (!daysDiff) {
+      toast.error("Seleccione las fechas para calcular la demanda", {
+        style: { color: "white", backgroundColor: "black" }
+      });
+      return;
+    }
+    const chosenWeek = Math.floor(daysDiff / 7);
+    const labels = services.map(s => s.nombre);
+    const dataValues = services.map(s => {
+      const weeklyArray = serviceWeeklyValues[s.nombre];
+      const fixedWeek0 = weeklyArray[0];
+      const fixedChosenWeek = weeklyArray[Math.min(chosenWeek, weeklyArray.length - 1)];
+      const k = chosenWeek === 0 ? 0 : Math.log(fixedChosenWeek / fixedWeek0) / chosenWeek;
+      const demandWeek12 = fixedWeek0 * Math.exp(k * 11);
+      return customRound(demandWeek12);
+    });
     
-    setChartDataAll(chartDataAllObj);
+    const data = {
+      labels,
+      datasets: [
+        {
+          label: 'Demanda a 12 semanas',
+          data: dataValues,
+          backgroundColor: [
+            'rgba(99, 179, 92, 0.8)',
+            'rgba(245, 130, 32, 0.8)',
+            'rgba(66,165,245,0.8)',
+            'rgba(156,39,176,0.8)',
+            'rgba(233,30,99,0.8)',
+            'rgba(25,124,114,0.8)'
+          ]
+        }
+      ]
+    };
+    setChartData2Weeks(data);
+  };
+
+  const sortedServices = () => {
+    if (!chartData2Weeks) return [];
+    const combined = chartData2Weeks.labels.map((name, i) => ({
+      name,
+      demand: chartData2Weeks.datasets[0].data[i]
+    }));
+    return combined.sort((a, b) => b.demand - a.demand);
+  };
+
+  const renderFilteredTable = () => {
+    if (!filteredData.length) return null;
+
+    const showMore = visibleWeeks < filteredData.length;
+    const showLess = visibleWeeks > 1;
+
+    return (
+      <div className="service-card w-full mt-5 overflow-x-auto p-4 text-white">
+        <h2 className="service-card-title text-yellow-400 mb-4 text-center">
+          Registro reparaciones en el mes de marzo
+        </h2>
+        <table className="w-full border-collapse" style={{ border: '1px solid white' }}>
+          <thead>
+            <tr className="bg-green-600 dark:bg-green-500 text-white">
+              <th className="border border-white p-2 font-bold">Semana</th>
+              <th className="border border-white p-2 font-bold">Servicio</th>
+              <th className="border border-white p-2 font-bold">Cliente</th>
+              <th className="border border-white p-2 font-bold">Fecha Ingreso</th>
+              <th className="border border-white p-2 font-bold">Fecha Salida</th>
+              <th className="border border-white p-2 font-bold">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredData.slice(0, visibleWeeks).map((semana, idx) =>
+              semana.servicios.map((registro, i) => (
+                <tr key={`${semana.week}-${idx}-${i}`} className="text-white">
+                  <td className="border border-white p-2">{semana.week}</td>
+                  <td className="border border-white p-2">{registro.servicio}</td>
+                  <td className="border border-white p-2">{registro.cliente}</td>
+                  <td className="border border-white p-2">{registro.fechaIngreso}</td>
+                  <td className="border border-white p-2">{registro.fechaSalida}</td>
+                  <td className="border border-white p-2">{registro.Total}</td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+        <div className="flex gap-4 mt-3 justify-center">
+          {showMore && (
+            <button className="btn-blue" onClick={() => setVisibleWeeks(prev => prev + 1)}>
+              Ver más
+            </button>
+          )}
+          {showLess && (
+            <button className="btn-aceptar" onClick={() => setVisibleWeeks(prev => prev - 1)}>
+              Ver menos
+            </button>
+          )}
+        </div>
+      </div>
+    );
   };
 
   return (
-    <div className="max-w-[900px] mx-auto p-40 font-sans bg-fondoClaro dark:bg-fondoObscuro">
-      <h1 className="text-center navbar-title text-yellow-400">Aplicación del Taller</h1>
-      
-      {/* Row con selección e información */}
-      <div className="flex flex-wrap gap-4 justify-around mt-4">
-        <ServiceSelectCard
-          servicios={servicios}
-          selected={servicioSeleccionado}
-          onSelect={(servicio) => {
-            setServicioSeleccionado(servicio);
-            setResultados([]);
-            setChartData(null);
-            setChartDataAll(null);
-          }}
-          onCalculate={handleCalculate}
-        />
-        {servicioSeleccionado && <ServiceInfoCard servicio={servicioSeleccionado} />}
+    <div className="max-w-[1100px] mx-auto p-40 font-sans bg-fondoClaro dark:bg-fondoObscuro">
+      <h1 className="text-center navbar-title text-yellow-400">Demanda de servicios</h1>
+      {/* Selección de servicio y fechas */}
+      <div className="flex flex-col md:flex-row gap-4 justify-between mt-4">
+        <div className="w-full">
+          <ServiceSelectCard
+            servicios={services}
+            selected={servicioSeleccionado}
+            onSelect={(servicio) => {
+              setServicioSeleccionado(servicio);
+              setResultados([]);
+              setChartData(null);
+              setChartData2Weeks(null);
+              setTrendMessage("");
+            }}
+            onCalculate={handleCalculate}
+            startDate={startDate}
+            endDate={endDate}
+            onStartDateChange={handleStartDateChange}
+            onEndDateChange={handleEndDateChange}
+          />
+        </div>
       </div>
-      
-      {/* Tabla de Resultados */}
-      {resultados.length > 0 && servicioSeleccionado && (
-        <ResultsCard servicio={servicioSeleccionado} resultados={resultados} />
-      )}
-
-      {/* Botón y gráfica para el servicio seleccionado */}
-      {resultados.length > 0 && (
-        <div className="mt-5 text-center">
+      {/* Tabla filtrada con paginación */}
+      {renderFilteredTable()}
+      {/* Sección de botones y gráficas en línea */}
+      <div className="mt-5 flex flex-col items-center">
+        {/* Botones, lado a lado */}
+        <div className="flex flex-row gap-4">
           <button className="btn-aceptar" onClick={handleGraph}>
-            Graficar demanda del producto
+            Graficar evolución completa
+          </button>
+          <button className="btn-blue" onClick={handleGraphWeek12}>
+            Graficar demanda 12 semanas de los servicios
           </button>
         </div>
-      )}
-      {chartData && (
-        <div className="mt-5">
-          <Bar data={chartData} options={chartOptions} />
+        {/* Gráficas, lado a lado */}
+        <div className="mt-5 flex flex-row gap-4">
+          {chartData && (
+            <div className={largeChartStyle}>
+              <Bar data={chartData} options={chartOptions} />
+            </div>
+          )}
+          {chartData2Weeks && (
+            <div className={largeChartStyle}>
+              <Bar data={chartData2Weeks} options={chartOptions} />
+            </div>
+          )}
         </div>
-      )}
-
-      {/* Botón y gráfica para la demanda a 30 días de TODOS los servicios */}
-      <div className="mt-5 text-center">
-        <button className="btn-blue" onClick={handleGraphAll}>
-          Graficar demanda mensual de los servicios
-        </button>
+        {/* Cards de Tendencia Global y Ranking de Servicios */}
+        <div className="mt-5 flex flex-row gap-4">
+          {chartData && (
+            <div className={smallCardStyle}>
+              <h4 className="font-bold mb-2">Tendencia Global</h4>
+              <p>{trendMessage}</p>
+            </div>
+          )}
+          {chartData2Weeks && (
+            <div className={smallCardStyle}>
+              <h4 className="font-bold mb-2">Ranking de Servicios</h4>
+              <ol>
+                {sortedServices().map((item, index) => (
+                  <li key={index}>
+                    {index + 1}. {item.name}: <span className="text-green-500">{item.demand}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          )}
+        </div>
+              {/* Tabla de Predicciones (semana 8 y 12) */}
+        {resultados.length > 0 && servicioSeleccionado && (
+          <ResultsCardDaily
+            servicio={servicioSeleccionado}
+            daysDiff={daysDiff}
+            endDate={endDate}
+            startDate={startDate}
+          />
+        )}
       </div>
-      {chartDataAll && (
-        <div className="mt-5">
-          <Bar data={chartDataAll} options={chartOptions} />
-        </div>
-      )}
+      <ToastContainer />
     </div>
   );
 }
-
-
-

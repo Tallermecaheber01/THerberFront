@@ -82,14 +82,17 @@ export const getUserInfo = async (userData) => {
 
 export const getRole = async (userData) => {
     try {
-        const response = await api.get(`/public/${userData}/role`);
-        console.log('rol:', response.data)
+        const response = await api.get(`/public/${userData}/role`, {
+            withCredentials: true, // 🔥 Asegurar que se envíen las cookies
+        });
+        console.log('Rol recibido:', response.data);
         return response.data;
     } catch (error) {
-        console.error('Error inesperado:', error);
+        console.error('Error al obtener el rol:', error);
         alert('Ocurrió un error inesperado.');
     }
-}
+};
+
 
 export const findUser = async (correo) => {
     try {
