@@ -80,6 +80,7 @@ const Login = () => {
 
 
       if (response) {
+        console.log(response.token)
         const roleResponse = await getRole(email);
         console.log(roleResponse)
         const role = roleResponse.rol;
