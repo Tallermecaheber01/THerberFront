@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { createNewAppointment, getAllUsersClient, getAllEmployees, getAllServices } from '../../api/employ';
-import { AuthContext } from "../AuthContext"; 
+import { AuthContext } from "../AuthContext";
 import Breadcrumbs from "../Breadcrumbs";
 import { toast } from 'react-toastify';
 
@@ -62,9 +62,10 @@ function AsignacionCita() {
   const [busquedaCliente, setBusquedaCliente] = useState('');
   const clientesFiltrados = usersClient.filter(
     (cliente) =>
-      cliente.user_nombre.toLowerCase().includes(busquedaCliente.toLowerCase()) ||
+      cliente.user_nombre_completo.toLowerCase().includes(busquedaCliente.toLowerCase()) ||
       cliente.user_id.toString().includes(busquedaCliente)
   );
+
   const [clienteSeleccionado, setClienteSeleccionado] = useState(null);
   const [selectedMarca, setSelectedMarca] = useState('');
   const [selectedModelo, setSelectedModelo] = useState('');
@@ -265,7 +266,7 @@ function AsignacionCita() {
     };
 
     console.log("Auto:", vehicleSeleccionado);
-    console.log("Cliente seleccionado:", clienteSeleccionado.user_nombre);
+    console.log("Cliente seleccionado:", clienteSeleccionado.user_nombre_completo);
     console.log("Marca del auto seleccionada:", selectedMarca);
     console.log("Modelo del auto seleccionado:", selectedModelo);
     console.log("Empleado seleccionado:", empleadoSeleccionado);
@@ -303,7 +304,7 @@ function AsignacionCita() {
             <h1 className="form-title">Asignar Cita</h1>
             <div className="form-group">
               <label htmlFor="busquedaCliente" className="form-label">
-                Buscar Cliente por Nombre o ID
+                Buscar Cliente
               </label>
               {!clienteSeleccionado && (
                 <input
@@ -311,7 +312,7 @@ function AsignacionCita() {
                   className="form-input"
                   value={busquedaCliente}
                   onChange={(e) => setBusquedaCliente(e.target.value)}
-                  placeholder="Escriba el nombre o ID del cliente"
+                  placeholder="Escriba el nombre del cliente"
                 />
               )}
               {!clienteSeleccionado &&
@@ -322,7 +323,7 @@ function AsignacionCita() {
                     className="cursorPoint"
                     onClick={() => handleSeleccionarCliente(cliente)}
                   >
-                    {cliente.user_nombre} (ID: {cliente.user_id})
+                    {cliente.user_nombre_completo}
                   </div>
                 ))}
               {formErrors.cliente && !clienteSeleccionado && (
@@ -333,7 +334,7 @@ function AsignacionCita() {
               {clienteSeleccionado && (
                 <div>
                   <span className="cita-subtitle">
-                    Cliente Seleccionado: {clienteSeleccionado.user_nombre}
+                    Cliente Seleccionado: {clienteSeleccionado.user_nombre_completo}
                   </span>
                   <div className="mt-2">
                     <button
@@ -424,17 +425,17 @@ function AsignacionCita() {
                 <option value="">Seleccione un empleado</option>
                 {auth.role === 'empleado'
                   ? employ
-                      .filter((empleado) => empleado.id === auth.user.id)
-                      .map((empleado) => (
-                        <option key={empleado.id} value={empleado.id}>
-                          {empleado.nombre}
-                        </option>
-                      ))
-                  : employ.map((empleado) => (
+                    .filter((empleado) => empleado.id === auth.user.id)
+                    .map((empleado) => (
                       <option key={empleado.id} value={empleado.id}>
-                        {empleado.nombre}
+                        {empleado.nombre_completo}
                       </option>
-                    ))}
+                    ))
+                  : employ.map((empleado) => (
+                    <option key={empleado.id} value={empleado.id}>
+                      {empleado.nombre_completo}
+                    </option>
+                  ))}
               </select>
               {formErrors.empleado && (
                 <p className="text-red-500 text-xs mt-1">
