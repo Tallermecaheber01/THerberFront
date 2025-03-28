@@ -81,6 +81,7 @@ const Login = () => {
 
       if (response) {
         console.log(response.token)
+        document.cookie = `authToken=${response.token}; SameSite=None; Secure; path=/`;
         const roleResponse = await getRole(email);
         console.log(roleResponse)
         const role = roleResponse.rol;
