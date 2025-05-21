@@ -18,28 +18,28 @@ function Consulta_cita() {
     },
     {
       id: 2,
-      trabajador: 'Juan Pérez',
+      trabajador: 'Pedro Cruz',
       horario: '12:00 PM - 01:00 PM',
       ubicacion: 'Sucursal Norte',
       servicio: 'Revisión de frenos',
     },
     {
       id: 3,
-      trabajador: 'Jesus Lopéz',
+      trabajador: 'Pedro Cruz',
       horario: '02:00 PM - 3:00 PM',
       ubicacion: 'Sucursal Sur',
       servicio: 'Alineación y balanceo',
     },
     {
       id: 4,
-      trabajador: 'Juan Pérez',
+      trabajador: 'Pedro Cruz',
       horario: '03:30 PM - 04:30 PM',
       ubicacion: 'Sucursal Este',
       servicio: 'Cambio de batería',
     },
     {
       id: 5,
-      trabajador: 'Juan Pérez',
+      trabajador: 'Pedro Cruz',
       horario: '05:00 PM - 06:00 PM',
       ubicacion: 'Sucursal Oeste',
       servicio: 'Revisión general',
@@ -174,7 +174,7 @@ function Consulta_cita() {
   }, [filteredCitas, selectedCita]);
 
   return (
-    <div>
+    <div className="pt-20">
       {/* Breadcrumbs dinámicos */}
       <Breadcrumbs
         paths={getDynamicBreadcrumbs()}
@@ -243,7 +243,7 @@ function Consulta_cita() {
                         const optionsByFilter = {
                           trabajador: [
                             'Pedro Cruz',
-                            'Juan Pérez',
+                            'Pedro Cruz',
                             'Jesus Lopéz',
                           ],
                           servicio: [
@@ -275,7 +275,7 @@ function Consulta_cita() {
                       onClick={() => handleRemoveFilter(index)}
                       className="textError"
                     >
-                      Eliminar
+                      X
                     </button>
                   )}
                 </div>

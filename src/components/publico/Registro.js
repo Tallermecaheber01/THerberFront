@@ -36,24 +36,8 @@ function Registro() {
   const confirmacionContrasenaReg = useRef(null);
   const securityQuestionReg = useRef(null);
 
-  // para la se seguridad
+
   const securityAnswerReg = useRef(null);
-
-  //las preguntas de seguridad
-  /*const securityQuestions = [
-    { id: 1, pregunta: "¿Qué color tenía tu primer automóvil?" },
-    { id: 2, pregunta: "¿Cuál es la marca y modelo de tu primer automóvil?" },
-    { id: 3, pregunta: "¿Cuál es la marca del automóvil que has llevado más veces a un taller?" },
-    { id: 4, pregunta: "¿Cuál es el nombre de tu primera mascota?" },
-    { id: 5, pregunta: "¿En qué ciudad naciste?" },
-    { id: 6, pregunta: "¿Cuál era tu plato favorito cuando eras niño/a?" },
-    { id: 7, pregunta: "¿Qué apodo te pusieron en tu infancia?" },
-    { id: 8, pregunta: "¿Cuál fue el nombre de tu mejor amigo/a de la infancia?" },
-    { id: 9, pregunta: "¿Cuál fue el nombre de tu escuela primaria?" },
-    { id: 10, pregunta: "¿Cuál es el nombre de la calle donde creciste?" }
-  ];*/
-
-
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -111,7 +95,7 @@ function Registro() {
     return '';
   };
 
-  // Función para verificar los requisitos de la contraseña
+ 
   const getPasswordChecks = (password) => {
     return {
       minLength: password.length >= 8 && password.length <= 20,
@@ -123,14 +107,13 @@ function Registro() {
     };
   };
 
-  // Manejar el evento onBlur para validar los campos
+
   const handleBlur = (e) => {
     const { name, value } = e.target;
     const error = validateInput(name, value.trim());
     setErrors((prev) => ({ ...prev, [name]: error }));
   };
 
-  // Manejar el evento onChange para actualizar los estados
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -148,7 +131,6 @@ function Registro() {
     }
   };
 
-  // Manejar el botón de cancelar
   const handleCancelar = () => {
     nombreReg.current.value = '';
     apellidoPaternoReg.current.value = '';
@@ -157,7 +139,6 @@ function Registro() {
     telefonoReg.current.value = '';
     contrasenaReg.current.value = '';
     confirmacionContrasenaReg.current.value = '';
-    // se limpian los nuevos campos 
     if (securityAnswerReg.current) securityAnswerReg.current.value = '';
     setErrors({});
     setShowRequirements(false);
@@ -171,7 +152,7 @@ function Registro() {
     });
   };
 
-  // Mostrar/ocultar contraseña
+
   const togglePasswordVisibility = (type) => {
     if (type === 'password') {
       setShowPassword(!showPassword);
@@ -180,7 +161,7 @@ function Registro() {
     }
   };
 
-  // Manejar el envío del formulario
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -192,9 +173,9 @@ function Registro() {
       'telefono',
       'contrasena',
       'confirmacionContrasena',
-      'securityQuestion', // Validación de pregunta
-      'securityAnswer', // Validación de respuesta
-      // poner lo securityAnswer y securityQuestion
+      'securityQuestion', 
+      'securityAnswer', 
+      
     ];
 
     const newErrors = {};
@@ -216,8 +197,8 @@ function Registro() {
       correo: correoReg.current.value,
       telefono: telefonoReg.current.value,
       contrasena: contrasenaReg.current.value,
-      preguntaSecreta: securityQuestionReg.current.value,  // Agregar ID de la pregunta seleccionada
-      respuestaSecreta: securityAnswerReg.current.value,        // Agregar respuesta de seguridad
+      preguntaSecreta: securityQuestionReg.current.value,  
+      respuestaSecreta: securityAnswerReg.current.value,        
     };
 
     try {
@@ -241,8 +222,15 @@ function Registro() {
   return (
     <div className="pt-20">
       <Breadcrumbs paths={breadcrumbPaths} />
-      <div className="form-container">
-        <div className="form-card w-full max-w-4xl">
+      <div className="form-container flex flex-col md:flex-row items-start justify-center gap-8">
+      <div className="image-container self-center ">
+        <img
+          src="imagenpresentacion.jpg"
+          alt="Descripción de la imagen"
+          className="w-full max-w-sm h-auto object-cover rounded-lg shadow-lg opacity-90"
+        />
+      </div>
+        <div className="form-card w-full max-w-4xl md:w-1/2">
           <h1 className="form-title">Registro</h1>
           <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-3 gap-4">
@@ -317,7 +305,6 @@ function Registro() {
               </div>
             </div>
 
-            {/*  Pregunta y Respuesta de Seguridad */}
             <div className="grid grid-cols-2 gap-4 mt-4">
               <div className="form-group flex flex-col">
                 <label htmlFor="securityQuestion" className="form-label">
@@ -328,7 +315,7 @@ function Registro() {
                   name="securityQuestion"
                   className="form-input w-full"
                   defaultValue=""
-                  ref={securityQuestionReg} // Asegúrate de agregar un ref para poder acceder al valor
+                  ref={securityQuestionReg} 
                   onBlur={handleBlur}
                 >
                   <option value="" disabled>
@@ -363,7 +350,6 @@ function Registro() {
               </div>
             </div>
 
-            {/* aqui termina */}
             <div className="grid grid-cols-2 gap-4 mt-4">
               <div className="form-group relative flex flex-col">
                 <label htmlFor="contrasena" className="form-label">

@@ -1,208 +1,139 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Breadcrumbs from '../Breadcrumbs';
 
-function NuevoVehiculo() {
+function RegistrarVehiculo() {
   const [formData, setFormData] = useState({
     marca: '',
     modelo: '',
     anio: '',
     placa: '',
-    vin: '',
+    vin: ''
   });
+  const [modelosSugeridos, setModelosSugeridos] = useState([]);
+  const [mostrarSugerencias, setMostrarSugerencias] = useState(false);
+  const timerRef = useRef(null);
 
-  const marcasYModelos = {
-    Toyota: ['Corolla', 'Camry', 'RAV4'],
-    Ford: ['F-150', 'Escape', 'Mustang'],
-    Honda: ['Civic', 'Accord', 'CR-V'],
-    Chevrolet: ['Silverado', 'Equinox', 'Malibu'],
-    Nissan: ['Altima', 'Sentra', 'Rogue'],
-  };
+  // Obtener marcas ejemplo
+  const marcasDisponibles = ['Honda', 'Chevrolet', 'Nissan', 'Ford', 'BMW'];
 
-  const anios = Array.from(
-    { length: new Date().getFullYear() - 1999 },
-    (_, i) => 2000 + i
-  );
-
-  const handleChange = (e) => {
+  // Maneja cambio de inputs
+  const handleChange = e => {
     const { name, value } = e.target;
-
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-      modelo: name === 'marca' ? '' : prev.modelo, // Solo reinicia modelo si cambia la marca
-    }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    if (formData.placa.trim() === '' || formData.vin.trim() === '') {
-      alert('Los campos Número de Placa y VIN deben ser únicos.');
-      return;
+    setFormData(prev => ({ ...prev, [name]: value, ...(name === 'marca' ? { modelo: '' } : {}) }));
+    if (name === 'marca') {
+      setModelosSugeridos([]);
+      setMostrarSugerencias(false);
     }
+    if (name === 'modelo') {
+      // Debounce para peticiones
+      clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => fetchModelos(formData.marca, value), 300);
+    }
+  };
 
+  // Fetch modelos desde API
+  const fetchModelos = async (marca, query) => {
+    if (!marca) return;
+    try {
+      const res = await fetch(`https://vpic.nhtsa.dot.gov/api/vehicles/getmodelsformake/${marca}?format=json`);
+      const data = await res.json();
+      const modelos = data.Results.map(r => r.Model_Name).filter(name =>
+        name.toLowerCase().includes(query.toLowerCase())
+      );
+      setModelosSugeridos(modelos);
+      setMostrarSugerencias(true);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // Seleccionar sugerencia
+  const handleSelectModelo = modelo => {
+    setFormData(prev => ({ ...prev, modelo }));
+    setMostrarSugerencias(false);
+  };
+
+  const handleSubmit = e => {
+    e.preventDefault();
     console.log('Vehículo registrado:', formData);
-
-    setFormData({
-      marca: '',
-      modelo: '',
-      anio: '',
-      placa: '',
-      vin: '',
-    });
-
-    alert('Vehículo registrado exitosamente.');
+    // reset
+    setFormData({ marca: '', modelo: '', anio: '', placa: '', vin: '' });
   };
-
-  const handleCancel = () => {
-    setFormData({
-      marca: '',
-      modelo: '',
-      anio: '',
-      placa: '',
-      vin: '',
-    });
-    alert('Registro cancelado.');
-  };
-
-  const breadcrumbPaths = [
-    { name: 'Inicio', link: '/' }, // Ruta al inicio
-    { name: 'Registrar vehiculo', link: '/nuevovehiculo' }, // Ruta al login
-  ];
 
   return (
-    <div>
-      <Breadcrumbs paths={breadcrumbPaths} />
-      <div className="form-container">
-        <div className="form-card">
-          <h1 className="form-title">Registrar Vehículo</h1>
-          <form onSubmit={handleSubmit}>
-            {/* Marca */}
-            <div className="form-group">
-              <label htmlFor="marca" className="form-label">
-                Marca
-              </label>
-              <select
-                id="marca"
-                name="marca"
-                className="form-input"
-                value={formData.marca}
-                onChange={handleChange}
-                required
-              >
-                <option value="" disabled>
-                  Selecciona una marca
-                </option>
-                {Object.keys(marcasYModelos).map((marca) => (
-                  <option key={marca} value={marca}>
-                    {marca}
-                  </option>
+    <div className="container mx-auto p-8">
+      <Breadcrumbs paths={[{ name: 'Inicio', link: '/' }, { name: 'Registrar Vehículo', link: '/nuevovehiculo' }]} />
+      <div className="form-card max-w-3xl mx-auto p-8">
+        <h1 className="form-title mb-6 text-2xl">Registrar Vehículo</h1>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Marca */}
+          <div className="form-group">
+            <label className="form-label">Marca</label>
+            <select name="marca" value={formData.marca} onChange={handleChange} className="form-input">
+              <option value="" disabled>Selecciona una marca</option>
+              {marcasDisponibles.map(m => <option key={m} value={m}>{m}</option>)}
+            </select>
+          </div>
+
+          {/* Modelo autocomplete */}
+          <div className="form-group relative">
+            <label className="form-label">Modelo</label>
+            <input
+              type="text"
+              name="modelo"
+              value={formData.modelo}
+              onChange={handleChange}
+              className="form-input"
+              disabled={!formData.marca}
+              placeholder={formData.marca ? 'Escribe para buscar modelo' : 'Selecciona marca primero'}
+            />
+            {mostrarSugerencias && modelosSugeridos.length > 0 && (
+              <ul className="absolute z-50 bg-white border w-full max-h-48 overflow-auto mt-1">
+                {modelosSugeridos.map((m, i) => (
+                  <li
+                    key={i}
+                    className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
+                    onClick={() => handleSelectModelo(m)}
+                  >{m}</li>
                 ))}
-              </select>
-            </div>
+              </ul>
+            )}
+            {formData.modelo && (
+              <button type="button" onClick={() => setFormData(prev => ({ ...prev, modelo: '' }))} className="absolute top-8 right-4 text-red-500">X</button>
+            )}
+          </div>
 
-            {/* Modelo */}
+          {/* Año */}
+          <div className="form-group">
+            <label className="form-label">Año</label>
+            <select name="anio" value={formData.anio} onChange={handleChange} className="form-input">
+              <option value="" disabled>Selecciona un año</option>
+              {Array.from({ length: new Date().getFullYear() - 1999 }, (_, i) => 2000 + i).map(anio => (
+                <option key={anio} value={anio}>{anio}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Placa & VIN */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="form-group">
-              <label htmlFor="modelo" className="form-label">
-                Modelo
-              </label>
-              <select
-                id="modelo"
-                name="modelo"
-                className="form-input"
-                value={formData.modelo}
-                onChange={handleChange}
-                required
-                disabled={!formData.marca}
-              >
-                <option value="" disabled>
-                  Selecciona un modelo
-                </option>
-                {formData.marca &&
-                  marcasYModelos[formData.marca].map((modelo) => (
-                    <option key={modelo} value={modelo}>
-                      {modelo}
-                    </option>
-                  ))}
-              </select>
+              <label className="form-label">Número de Placa</label>
+              <input name="placa" value={formData.placa} onChange={handleChange} className="form-input" required />
             </div>
-
-            {/* Año de fabricación */}
             <div className="form-group">
-              <label htmlFor="anio" className="form-label">
-                Año de Fabricación
-              </label>
-              <select
-                id="anio"
-                name="anio"
-                className="form-input"
-                value={formData.anio}
-                onChange={handleChange}
-                required
-              >
-                <option value="" disabled>
-                  Selecciona un año
-                </option>
-                {anios.map((anio) => (
-                  <option key={anio} value={anio}>
-                    {anio}
-                  </option>
-                ))}
-              </select>
+              <label className="form-label">VIN</label>
+              <input name="vin" value={formData.vin} onChange={handleChange} className="form-input" required />
             </div>
+          </div>
 
-            {/* Número de placa */}
-            <div className="form-group">
-              <label htmlFor="placa" className="form-label">
-                Número de Placa
-              </label>
-              <input
-                type="text"
-                id="placa"
-                name="placa"
-                className="form-input"
-                value={formData.placa}
-                onChange={handleChange}
-                placeholder="Ingresa el número de placa"
-                required
-              />
-            </div>
-
-            {/* Número de serie (VIN) */}
-            <div className="form-group">
-              <label htmlFor="vin" className="form-label">
-                Número de Serie (VIN)
-              </label>
-              <input
-                type="text"
-                id="vin"
-                name="vin"
-                className="form-input"
-                value={formData.vin}
-                onChange={handleChange}
-                placeholder="Ingresa el VIN"
-                required
-              />
-            </div>
-
-            {/* Botones */}
-            <div className="form-group flex gap-4">
-              <button type="submit" className="btn-aceptar">
-                Registrar Vehículo
-              </button>
-              <button
-                type="button"
-                className="btn-cancelar"
-                onClick={handleCancel}
-              >
-                Cancelar
-              </button>
-            </div>
-          </form>
-        </div>
+          <div className="flex gap-4 justify-end">
+            <button type="button" onClick={() => setFormData({ marca: '', modelo: '', anio: '', placa: '', vin: '' })} className="btn-cancelar">Cancelar</button>
+            <button type="submit" className="btn-aceptar">Registrar</button>
+          </div>
+        </form>
       </div>
     </div>
   );
 }
 
-export default NuevoVehiculo;
+export default RegistrarVehiculo;

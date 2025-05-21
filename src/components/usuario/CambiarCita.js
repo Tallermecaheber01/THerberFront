@@ -1,16 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Breadcrumbs from '../Breadcrumbs';
 
 function CambiarCita() {
-  const [fecha, setFecha] = useState('2024-12-22T14:30');
-  const [total, setTotal] = useState(240);
+  const [fechaActual] = useState('2024-12-22T14:30');
+  const [nuevaFecha, setNuevaFecha] = useState('2024-12-22T14:30');
+  const [motivo, setMotivo] = useState('');
   const [serviciosSeleccionados, setServiciosSeleccionados] = useState({
     cambioAceite: true,
     revisionGeneral: true,
     reparacionFrenos: true,
   });
+
   const [mostrarServicios, setMostrarServicios] = useState(false);
-  const [motivo, setMotivo] = useState('');
+  const [busquedaServicio, setBusquedaServicio] = useState('');
 
   const breadcrumbPaths = [
     { name: 'Inicio', link: '/' },
@@ -19,226 +21,194 @@ function CambiarCita() {
   ];
 
   const servicios = [
-    { nombre: 'Cambio de Aceite', precio: 50, clave: 'cambioAceite' },
-    { nombre: 'Revisión General', precio: 70, clave: 'revisionGeneral' },
-    { nombre: 'Reparación de Frenos', precio: 90, clave: 'reparacionFrenos' },
-    { nombre: 'Alineación de Ruedas', precio: 80, clave: 'alineacionRuedas' },
-    {
-      nombre: 'Cambio de Filtro de Aire',
-      precio: 40,
-      clave: 'cambioFiltroAire',
-    },
-    {
-      nombre: 'Reparación de Suspensión',
-      precio: 100,
-      clave: 'reparacionSuspension',
-    },
-    { nombre: 'Reemplazo de Batería', precio: 120, clave: 'reemplazoBateria' },
-    {
-      nombre: 'Reparación de Radiador',
-      precio: 150,
-      clave: 'reparacionRadiador',
-    },
-    { nombre: 'Cambio de Neumáticos', precio: 200, clave: 'cambioNeumaticos' },
-    { nombre: 'Cambio de Frenos', precio: 110, clave: 'cambioFrenos' },
+    { nombre: 'Cambio de Aceite', clave: 'cambioAceite' },
+    { nombre: 'Revisión General', clave: 'revisionGeneral' },
+    { nombre: 'Reparación de Frenos', clave: 'reparacionFrenos' },
+    { nombre: 'Alineación de Ruedas', clave: 'alineacionRuedas' },
+    { nombre: 'Cambio de Filtro de Aire', clave: 'cambioFiltroAire' },
+    { nombre: 'Reparación de Suspensión', clave: 'reparacionSuspension' },
+    { nombre: 'Reemplazo de Batería', clave: 'reemplazoBateria' },
+    { nombre: 'Reparación de Radiador', clave: 'reparacionRadiador' },
+    { nombre: 'Cambio de Neumáticos', clave: 'cambioNeumaticos' },
+    { nombre: 'Cambio de Frenos', clave: 'cambioFrenos' },
   ];
 
-  const manejarCambio = (e) => {
-    const { name, checked } = e.target;
-
-    setServiciosSeleccionados((prev) => {
-      const nuevosServicios = { ...prev };
-      if (checked) {
-        nuevosServicios[name] = checked;
-      } else {
-        delete nuevosServicios[name];
-      }
-      calcularTotal(nuevosServicios);
-      return nuevosServicios;
-    });
+  // Toggle servicio
+  const manejarServicioToggle = clave => {
+    setServiciosSeleccionados(prev => ({
+      ...prev,
+      [clave]: !prev[clave] // Invertir valor boolean
+    }));
   };
 
-  const calcularTotal = (nuevosServicios) => {
-    let nuevoTotal = 0;
-    for (const servicio in nuevosServicios) {
-      if (nuevosServicios[servicio]) {
-        const servicioSeleccionado = servicios.find(
-          (s) => s.clave === servicio
-        );
-        nuevoTotal += servicioSeleccionado ? servicioSeleccionado.precio : 0;
-      }
-    }
-    setTotal(nuevoTotal);
-  };
+  const manejarNuevaFechaChange = e => setNuevaFecha(e.target.value);
+  const manejarMotivoChange    = e => setMotivo(e.target.value);
 
-  const manejarFechaCambio = (e) => {
-    setFecha(e.target.value);
-  };
-
-  const manejarMotivoCambio = (e) => {
-    setMotivo(e.target.value);
-  };
-
-  const manejarEnviar = (e) => {
+  const manejarEnviar = e => {
     e.preventDefault();
-    console.log('Cita cambiada', {
-      fecha,
-      serviciosSeleccionados,
-      total,
+    console.log({
+      fechaActual,
+      nuevaFecha,
       motivo,
+      servicios: Object.keys(serviciosSeleccionados)
     });
+    // pal back
+  };
+
+  const serviciosFiltrados = servicios.filter(s =>
+    s.nombre.toLowerCase().includes(busquedaServicio.toLowerCase())
+  );
+
+  // Array estable de seleccionados
+  const seleccionados = servicios.filter(s => serviciosSeleccionados[s.clave]);
+
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return isNaN(date.getTime()) 
+      ? 'Fecha inválida' 
+      : date.toLocaleString('es-ES');
   };
 
   return (
-    <div>
-      {/* Breadcrumbs fuera del formulario */}
+    <div className="container mx-auto p-4">
       <Breadcrumbs paths={breadcrumbPaths} />
-      <div className="form-container">
-        <div className="form-card">
-          <h2 className="form-title">Cambiar Cita en el Taller Mecánico</h2>
-          <form onSubmit={manejarEnviar}>
+
+      <form onSubmit={manejarEnviar} className="form-card p-6 max-w-6xl mx-auto">
+        <h2 className="form-title mb-6">Solicitar Cambio de Cita</h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="space-y-4">
+            {/* Fecha actual */}
             <div className="form-group">
-              <label htmlFor="fecha" className="form-label">
-                Fecha y Hora de la Cita Actual
+              <label className="form-label">Fecha y Hora Actual</label>
+              <p className="cita-subtitle">
+                {new Date(fechaActual).toLocaleString()}
+              </p>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Trabajador Asignado</label>
+              <p className="cita-subtitle">Juan Pérez</p>
+            </div>
+            <div className="form-group">
+              <label htmlFor="nueva-fecha" className="form-label">
+                Nueva Fecha y Hora
               </label>
               <input
+                id="nueva-fecha"
                 type="datetime-local"
-                id="fecha"
-                name="fecha"
-                value={fecha}
-                onChange={manejarFechaCambio}
+                value={nuevaFecha}
+                onChange={manejarNuevaFechaChange}
                 className="form-input"
                 required
               />
             </div>
-
-            <div className="form-group">
-              <label className="form-label">Servicios Seleccionados</label>
-              <div className="space-y-4">
-                {Object.keys(serviciosSeleccionados).length > 0 ? (
-                  Object.keys(serviciosSeleccionados).map((servicioClave) => {
-                    const servicio = servicios.find(
-                      (s) => s.clave === servicioClave
-                    );
-                    return (
-                      <div
-                        key={servicio.clave}
-                        className="flex items-center space-x-4"
-                      >
-                        <input
-                          type="checkbox"
-                          name={servicio.clave}
-                          checked={serviciosSeleccionados[servicio.clave]}
-                          onChange={manejarCambio}
-                          className="form-checkbox"
-                        />
-                        <div>
-                          <h3 className="cita-title">{servicio.nombre}</h3>
-                          <p className="cita-subtitle">
-                            Precio: ${servicio.precio}
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })
-                ) : (
-                  <p>No hay servicios seleccionados.</p>
-                )}
-              </div>
-              <button
-                type="button"
-                onClick={() => setMostrarServicios(!mostrarServicios)}
-                className="button-yellow"
-              >
-                {mostrarServicios
-                  ? 'Ocultar Servicios'
-                  : 'Agregar Más Servicios'}
-              </button>
-            </div>
-
-            {mostrarServicios && (
-              <div className="form-group">
-                <label className="form-label">
-                  Seleccione los Servicios Requeridos
-                </label>
-                <div className="space-y-4">
-                  {servicios.map((servicio) => {
-                    const isSelected =
-                      serviciosSeleccionados[servicio.clave] || false;
-                    return (
-                      <label
-                        key={servicio.clave}
-                        className="flex items-center space-x-4"
-                      >
-                        <input
-                          type="checkbox"
-                          name={servicio.clave}
-                          checked={isSelected}
-                          onChange={manejarCambio}
-                          className="form-checkbox"
-                        />
-                        <div>
-                          <h3 className="cita-title">{servicio.nombre}</h3>
-                          <p className="cita-subtitle">
-                            Precio: ${servicio.precio}
-                          </p>
-                        </div>
-                      </label>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
             <div className="form-group">
               <label htmlFor="motivo" className="form-label">
-                Motivo del Cambio (Opcional)
+                Motivo (Opcional)
               </label>
               <textarea
                 id="motivo"
-                name="motivo"
                 value={motivo}
-                onChange={manejarMotivoCambio}
+                onChange={manejarMotivoChange}
                 className="form-input"
-                placeholder="Escribe el motivo del cambio"
+                placeholder="Describe el motivo del cambio"
               />
             </div>
-
-            <div className="form-group">
-              <label htmlFor="total" className="form-label">
-                Total
-              </label>
-              <input
-                type="text"
-                id="total"
-                name="total"
-                value={`$${total}`}
-                className="form-input"
-                disabled
-              />
+            <button
+              type="button"
+              onClick={() => setMostrarServicios(!mostrarServicios)}
+              className="button-yellow mt-2"
+            >
+              {mostrarServicios ? 'Ocultar Servicios' : 'Agregar Servicios'}
+            </button>
+            {mostrarServicios && (
+              <div className="space-y-3 mt-4">
+                <input
+                  type="text"
+                  placeholder="Buscar servicio..."
+                  value={busquedaServicio}
+                  onChange={e => setBusquedaServicio(e.target.value)}
+                  className="form-input"
+                />
+                {serviciosFiltrados.map(srv => {
+                  const checked = !!serviciosSeleccionados[srv.clave];
+                  return (
+                    <label key={srv.clave} className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() => manejarServicioToggle(srv.clave)}
+                        className="form-checkbox"
+                      />
+                      <span>{srv.nombre}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+          <div className="space-y-6">
+          <div key={`fecha-${nuevaFecha}`} className="p-4 bg-gray-50 rounded space-y-2">
+              <h3 className="font-semibold">Resumen de Cambio</h3>
+              <p>
+                <strong>Fecha Actual:</strong>{' '}
+                {new Date(fechaActual).toLocaleString()}
+              </p>
+              <div className="debug-border">
+    
+              <p><strong>Nueva Fecha:</strong> {formatDate(nuevaFecha)}</p>
+            </div>
+            <p key={motivo}><strong>Motivo:</strong> {motivo || '—'}</p>
+              <div>
+                <strong>Servicios:</strong>
+                {seleccionados.length > 0 ? (
+                  <ul className="list-disc pl-5">
+                    {seleccionados.map(srv => (
+                      <li key={srv.clave} className="flex justify-between">
+                        {srv.nombre}
+                        <button
+                          type="button"
+                          onClick={() => manejarServicioToggle(srv.clave)}
+                          className="text-red-500 font-bold"
+                        >
+                          ×
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <span> Ninguno</span>
+                )}
+              </div>
             </div>
 
-            <div className="mt-4">
-              <div className="form-footer">
-                <button type="submit" className="btn-aceptar">
-                  Cambiar Cita
-                </button>
-              </div>
-              <div className="form-footer mt-1">
-                <button
-                  type="button"
-                  className="btn-cancelar"
-                  onClick={() => window.location.reload()}
-                >
-                  Cancelar
-                </button>
-              </div>
+            <div className="flex gap-4">
+              <button type="submit" className="btn-aceptar py-1 flex-1">
+                Confirmar Cambio
+              </button>
+              <button
+                type="button"
+                className="btn-cancelar py-1 flex-1"
+                onClick={() => window.location.reload()}
+              >
+                Cancelar
+              </button>
             </div>
-          </form>
+          </div>
         </div>
-      </div>
+      </form>
     </div>
   );
 }
 
 export default CambiarCita;
+
+
+
+
+
+
+
+
+

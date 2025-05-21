@@ -1,64 +1,103 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { jwtDecode } from 'jwt-decode';
+import { getUserInfo } from '../../api/public';
+import { getAllServices } from '../../api/admin';
 import { sendFeedback } from '../../api/users';
 import { toast, ToastContainer } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import Breadcrumbs from '../Breadcrumbs';
 
 function Feedback() {
   const breadcrumbPaths = [
-    { name: 'Inicio', link: '/' }, // Ruta al inicio
-    { name: 'Comentarios', link: '/feedback' }, // Ruta al login
+    { name: 'Inicio', link: '/' },
+    { name: 'Comentarios', link: '/feedback' },
   ];
 
-  const [nombre, setNombre] = useState('');
+  const [usuario, setUsuario] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [servicesList, setServicesList] = useState([]);
   const [servicio, setServicio] = useState('');
   const [comentario, setComentario] = useState('');
-
   const navigate = useNavigate();
+
+  // Extrae el JWT desde la cookie
+  const getTokenFromCookies = () => {
+    const cookie = document.cookie
+      .split('; ')
+      .find(row => row.startsWith('authToken='));
+    if (!cookie) return null;
+    return decodeURIComponent(cookie.split('=')[1]);
+  };
+
+  // Al montar, verifica sesión y obtiene datos de usuario
+  useEffect(() => {
+    const token = getTokenFromCookies();
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+    try {
+      const { email } = jwtDecode(token);
+      getUserInfo(email, navigate).then(data => {
+        setUsuario(data || null);
+        setLoading(false);
+      });
+    } catch {
+      setLoading(false);
+    }
+  }, [navigate]);
+
+  // Al montar, obtiene la lista de servicios para el select
+  useEffect(() => {
+    getAllServices()
+      .then(data => setServicesList(data))
+      .catch(err => console.error('Error fetching services:', err));
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!usuario) return; // seguridad extra
 
-    // Asegúrate de que todos los campos estén completos
-    if (!nombre || !servicio || !comentario) {
+    if (!servicio || !comentario) {
       toast.error('Por favor, completa todos los campos.');
       return;
     }
 
-    // Verificar si 'nombre' es un número o texto
-    const processedNombre = isNaN(nombre) ? nombre : Number(nombre); // Si es un número, lo convertimos
-
     const feedbackData = {
-      nombre: processedNombre, // Aquí ya será un número o un texto, según corresponda
-      servicio, // Coincide con la columna 'servicio'
-      comentario, // Coincide con la columna 'comentario'
+      nombre: usuario.nombre,
+      servicio,
+      comentario,
     };
 
-    console.log('Datos enviados:', feedbackData); // Verifica que los datos sean correctos
-
     try {
-      const response = await sendFeedback(feedbackData); // Envías los datos a la API
-      console.log('Respuesta del servidor:', response); // Imprime la respuesta completa para ver su estructura
+      await sendFeedback(feedbackData);
       toast.success('¡Gracias por tu Comentario!');
-      setNombre(''); // Limpiar el campo de nombre
-      setServicio(''); // Limpiar el campo de servicio
-      setComentario(''); // Limpiar el campo de comentario
-    } catch (error) {
-      if (error.response.data.statusCode === 400) {
-        toast.error('Hubo un error al procesar los datos.');
-        toast.error(
-          'Ocurrió un error al enviar tu feedback. Inténtalo nuevamente.'
-        );
-        toast.error('Datos no validos');
-        setTimeout(() => {
-          navigate('/400');
-        }, 3000); // 3000 ms = 3 segundos
-      }
+      setServicio('');
+      setComentario('');
+    } catch {
+      toast.error('Ocurrió un error al enviar tu comentario.');
     }
   };
 
+  if (loading) {
+    return <div>Cargando...</div>;
+  }
+
+  if (!usuario) {
+    return (
+      <div className="flex flex-col items-center pt-20">
+        <Breadcrumbs paths={breadcrumbPaths} />
+        <div className="form-card text-center">
+          <p className="bienvenida-descripcion">
+            Debes <Link to="/login" className="text-blue-600 underline">iniciar sesión</Link> para dejar un comentario.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div>
+    <div className="pt-20">
       <Breadcrumbs paths={breadcrumbPaths} />
       <div className="form-container">
         <div className="form-card">
@@ -66,19 +105,10 @@ function Feedback() {
           <form onSubmit={handleSubmit}>
             {/* Nombre del cliente */}
             <div className="form-group">
-              <label htmlFor="client-name" className="form-label">
-                Nombre del Cliente
-              </label>
-              <input
-                type="text"
-                id="client-name"
-                name="client-name"
-                className="form-input"
-                value={nombre}
-                onChange={(e) => setNombre(e.target.value)} // Se mantiene el valor como texto
-                placeholder="Ingresa tu nombre"
-                required
-              />
+              <label className="form-label">Usuario:</label>
+              <p className="form-input bg-gray-100 cursor-default">
+                {`${usuario.nombre} ${usuario.apellido_paterno} ${usuario.apellido_materno}`}
+              </p>
             </div>
 
             {/* Selección del servicio */}
@@ -88,18 +118,17 @@ function Feedback() {
               </label>
               <select
                 id="service-selection"
-                name="service-selection"
                 className="form-input"
                 value={servicio}
-                onChange={(e) => setServicio(e.target.value)} // Asegúrate de que se guarde el servicio
+                onChange={e => setServicio(e.target.value)}
                 required
               >
-                <option value="" disabled>
-                  Selecciona un servicio
-                </option>
-                <option value="mantenimiento">Mantenimiento</option>
-                <option value="reparacion">Reparación</option>
-                <option value="diagnostico">Diagnóstico</option>
+                <option value="" disabled>Selecciona un servicio</option>
+                {servicesList.map(s => (
+                  <option key={s.id} value={s.nombre}>
+                    {s.nombre}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -110,25 +139,24 @@ function Feedback() {
               </label>
               <textarea
                 id="service-comment"
-                name="service-comment"
                 className="form-input"
                 rows="4"
                 value={comentario}
-                onChange={(e) => setComentario(e.target.value)} // Asegúrate de que se guarde el comentario
+                onChange={e => setComentario(e.target.value)}
                 placeholder="Escribe tus comentarios aquí"
                 required
-              ></textarea>
+              />
             </div>
 
-            {/* Botones */}
+            {/* Botón enviar */}
             <div className="form-group">
               <button type="submit" className="btn-aceptar">
                 Enviar
               </button>
             </div>
           </form>
+          <ToastContainer />
         </div>
-        <ToastContainer />
       </div>
     </div>
   );

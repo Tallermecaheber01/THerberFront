@@ -30,7 +30,7 @@
   }
 
   .navbar-title {
-    @apply text-3xl font-bold;
+    @apply text-3xl font-bold text-[#F1AC36];
   }
 
   .navbar-subtitle {
@@ -46,13 +46,13 @@
   }
 
   .navbar-link {
-    @apply text-lg text-yellow-400 dark:text-gray-300  
-        hover:text-yellow-400 dark:hover:text-yellow-300  
+    @apply text-lg text-[#F0AD38] dark:text-[#F0AD38] 
+        hover:text-yellow-300 dark:hover:text-yellow-300  
         font-medium transition-colors duration-200;
   }
 
   .theme-toggle-btn {
-    @apply bg-amarillobtn dark:bg-amarillobtn text-white dark:text-white px-3 py-1.5
+    @apply bg-black dark:bg-[#BCD7EE] text-white dark:text-black px-3 py-1.5
     rounded transition duration-300 ml-auto;
   }
 
@@ -67,12 +67,12 @@
   }
 
   .form-card {
-    @apply bg-transparent border-2 border-white dark:border-gray-400 
+    @apply bg-transparent border-2  dark:border-gray-400 
         rounded-lg shadow-lg p-10 w-full max-w-md mt-10 lg:mt-20 mb-16;
   }
 
   .form-title {
-    @apply text-2xl font-bold text-yellow-400 dark:text-yellow-300 text-center mb-4;
+    @apply text-2xl font-bold text-[#EDAD2C] dark:text-yellow-300 text-center mb-4;
   }
 
   .form-group {
@@ -80,22 +80,23 @@
   }
 
   .form-label {
-    @apply block text-yellow-400 dark:text-yellow-300 text-sm font-medium mb-1;
+    @apply block text-black dark:text-yellow-300 text-sm font-medium mb-1;
   }
 
   .form-input {
-    @apply w-full bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-300 
-        rounded-lg px-3 py-2 focus:outline-none focus:ring-2 
-        focus:ring-yellow-400 dark:focus:ring-yellow-500;
+    @apply w-full dark:bg-gray-800 border border-gray-400 dark:border-black dark:text-gray-300
+           rounded-lg px-3 py-2 focus:outline-none
+           focus:ring-2 focus:ring-[#2C75B2] dark:focus:ring-yellow-500;
   }
+  
 
   .form-footer {
     @apply mt-4 text-center;
   }
 
   .form-link {
-    @apply text-yellow-400 dark:text-yellow-300 
-        hover:text-red-400 dark:hover:text-red-400 
+    @apply text-[#418FD0] dark:text-[#418FD0]
+        hover:text-[#225A89] dark:hover:text-red-400 
         text-sm;
   }
 
@@ -112,12 +113,12 @@
             font-bold py-2 px-4 rounded-lg transition duration-300;
   }
   .button-yellow {
-    @apply w-full bg-yellow-600 dark:bg-yellow-500 hover:bg-yellow-700 
-        dark:hover:bg-yellow-600 text-white dark:text-gray-900 font-bold py-2 px-4 
+    @apply w-full bg-[#E3AA45] dark:bg-yellow-500 hover:bg-yellow-600 
+        dark:hover:bg-yellow-600 text-black dark:text-gray-900 font-bold py-2 px-4 
         rounded-lg transition duration-300;
   }
   .btn-blue {
-    @apply w-full bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 
+    @apply w-full bg-[#225A89] dark:bg-blue-500 hover:bg-blue-700 
             dark:hover:bg-blue-600 text-white dark:text-gray-900 
             font-bold py-2 px-4 rounded-lg transition duration-300;
   }
@@ -156,7 +157,7 @@
   }
 
   .services-title {
-    @apply text-3xl text-white dark:text-gray-200 font-bold mb-8;
+    @apply text-3xl text-black dark:text-gray-200 font-bold mb-8;
   }
 
   .services-grid {
@@ -164,7 +165,11 @@
   }
 
   .service-card {
-    @apply bg-cardClaro dark:bg-cardObscuro rounded-lg overflow-hidden shadow-lg transition-colors duration-300;
+    @apply bg-cardClaro dark:bg-cardObscuro border border-black rounded-lg overflow-hidden shadow-lg transition-colors duration-300;
+  }
+
+  .catalogo-card {
+    @apply bg-[#756256] dark:bg-cardObscuro rounded-lg overflow-hidden shadow-lg transition-colors duration-300;
   }
 
   .service-card-img {
@@ -176,17 +181,25 @@
   }
 
   .service-card-title {
+    @apply text-black dark:text-white text-xl font-bold mb-2;
+  }
+
+  .catalogo-card-title {
     @apply text-white dark:text-white text-xl font-bold mb-2;
   }
 
   .service-card-text {
+    @apply text-black dark:text-gray-300 text-sm;
+  }
+
+  .catalogo-card-text {
     @apply text-white dark:text-gray-300 text-sm;
   }
 
   /*Detalles*/
 
   .detalle-container {
-    @apply container max-w-4xl mx-auto px-6 flex flex-col md:flex-row gap-8 items-center bg-cardClaro dark:bg-cardObscuro rounded-lg shadow-lg p-8;
+    @apply container max-w-4xl mx-auto px-6 flex flex-col md:flex-row gap-8 items-center bg-[#756256] dark:bg-cardObscuro rounded-lg shadow-lg p-8;
   }
   
   .detalle-img {
@@ -201,11 +214,15 @@
   }
 
   .detalle-title {
-    @apply text-3xl font-bold text-yellow-400 dark:text-yellow-300 mb-4;
+    @apply text-3xl font-bold text-black dark:text-yellow-300 mb-4;
   }
 
   .detalle-descripcion {
     @apply text-white dark:text-gray-300 text-lg mb-4;
+  }
+
+  .bienvenida-descripcion{
+    @apply text-black dark:text-gray-300 text-lg mb-4;
   }
 
   .white-text {
@@ -217,15 +234,29 @@
     @apply text-white dark:text-gray-300 text-lg mb-2;
   }
 
-  .detalle-label {
-    @apply font-bold text-yellow-400 dark:text-yellow-300;
+  .detalle-cafe {
+    @apply text-[#2F1D02] dark:text-gray-300 text-lg mb-2;
   }
+
+  .detalle-informacion {
+    @apply text-white dark:text-gray-300 text-lg mb-2;
+  }
+
+  .detalle-label {
+    @apply font-bold text-black dark:text-[#418FD0];
+  }
+
+  .detalle-info {
+    @apply font-bold text-[#183F60] dark:text-[#418FD0];
+  }
+
+
   .cita-title {
-    @apply text-xl text-gray-100 dark:text-gray-100 font-bold;
+    @apply text-xl text-black dark:text-gray-100 font-bold;
   }
 
   .cita-subtitle {
-    @apply text-gray-300 dark:text-gray-300;
+    @apply text-black dark:text-gray-300;
   }
 
   /*historial*/
@@ -266,7 +297,7 @@
   }
 
   .reparacion-card {
-    @apply border border-gray-400 p-5 rounded-lg shadow-sm bg-cardClaro dark:bg-cardObscuro;
+    @apply border border-gray-400 p-5 rounded-lg border border-black shadow-sm bg-cardClaro dark:bg-cardObscuro;
   }
 
   /*Citas empleados*/
@@ -275,19 +306,19 @@
   }
 
   .citasForm {
-    @apply form-card max-w-screen-lg p-8 flex flex-col md:flex-row gap-12;
+    @apply form-card w-full max-w-screen-xl p-8 flex flex-col md:flex-row gap-12;
   }
 
   .cursorPoint {
-    @apply cursor-pointer text-yellow-400 dark:text-yellow-300 p-2;
+    @apply cursor-pointer text-green-700 dark:text-yellow-300 p-2;
   }
 
   .resumCita {
-    @apply text-white dark:text-gray-300 flex justify-between items-center;
+    @apply text-black mb-6 dark:text-gray-300 flex justify-between items-center;
   }
 
   .serviciosSelecc {
-    @apply ml-2 flex items-center justify-center w-6 h-6;
+    @apply ml-2 flex items-center justify-center w-6 h-6 ;
   }
 
   .cardCitas {

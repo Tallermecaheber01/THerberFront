@@ -32,6 +32,7 @@ import NuevoVehiculo from './components/usuario/NuevoVehiculo';
 import AgregarCita from './components/usuario/AgregarCita';
 import CambiarCita from './components/usuario/CambiarCita';
 import Bienvenida from './components/usuario/Bienvenida';
+import Consultavehiculos from './components/usuario/Consultavehiculos';
 
 // Componentes para Empleados
 import AprobacionCitas from './components/autorizado/AprobacionCitas';
@@ -134,6 +135,16 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
+
+      <Route
+          path="consultaVehiculos"
+          element={
+            <ProtectedRoute allowedRoles={['cliente']}>
+              <Consultavehiculos />
+            </ProtectedRoute>
+          }
+        />
+
         <Route path="Bienvenida" element={<Bienvenida />} />
 
         {/* Rutas protegidas para Empleados */}

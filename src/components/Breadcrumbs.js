@@ -7,7 +7,7 @@ const Breadcrumbs = ({ paths, onCrumbClick }) => {
       <ul className="flex items-center space-x-2 text-2xl">
         {paths.map((path, index) => {
           const handleClick = (e) => {
-            // Evita la navegación por defecto si se provee el callback
+            
             if (onCrumbClick) {
               e.preventDefault();
               onCrumbClick(index);
@@ -17,25 +17,25 @@ const Breadcrumbs = ({ paths, onCrumbClick }) => {
           return (
             <li key={index} className="flex items-center">
               {index < paths.length - 1 ? (
-                // Si es un breadcrumb que tiene link, usamos Link y le agregamos onClick
+                
                 <Link
                   to={path.link}
                   onClick={handleClick}
-                  className="text-white hover:underline dark:text-blue-400"
+                  className="text-[#2C75B2] hover:underline dark:text-blue-300"
                 >
                   {path.name}
                 </Link>
               ) : (
-                // Último breadcrumb, normalmente no es clickable
+                
                 <span
                   onClick={handleClick}
-                  className="text-gray-500 dark:text-gray-500"
+                  className="text-black dark:text-white"
                 >
                   {path.name}
                 </span>
               )}
               {index < paths.length - 1 && (
-                <span className="mx-1 text-gray-500 dark:text-gray-400">
+                <span className="mx-1 text-black dark:text-white">
                   &gt;
                 </span>
               )}

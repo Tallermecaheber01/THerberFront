@@ -299,7 +299,7 @@ function AsignacionCita() {
     <div className='p-20'>
       <Breadcrumbs paths={breadcrumbPaths} />
       <div className="citasContainer">
-        <form className="citasForm">
+        <div className="citasForm">
           <div className="flex-1">
             <h1 className="form-title">Asignar Cita</h1>
             <div className="form-group">
@@ -338,6 +338,7 @@ function AsignacionCita() {
                   </span>
                   <div className="mt-2">
                     <button
+                      type="button"
                       className="btn-cancelar"
                       onClick={(e) => {
                         e.preventDefault();
@@ -562,6 +563,7 @@ function AsignacionCita() {
                     </span>
                     <div className="serviciosSelecc">
                       <button
+                        type="button"
                         className="btn-cancelar flex justify-center"
                         onClick={() => handleQuitarServicio(servicio)}
                       >
@@ -589,6 +591,7 @@ function AsignacionCita() {
                 </div>
                 <div className="form-group mt-2 flex gap-2">
                   <button
+                  type="button"
                     className="btn-aceptar"
                     onClick={handleSumarExtra}
                     disabled={!clienteSeleccionado}
@@ -596,6 +599,7 @@ function AsignacionCita() {
                     Sumar Extra
                   </button>
                   <button
+                    type="button"
                     className="btn-cancelar"
                     onClick={handleRestarExtra}
                     disabled={!clienteSeleccionado}
@@ -608,18 +612,19 @@ function AsignacionCita() {
             </div>
             <div className="mt-6 flex gap-4">
               <button
+                type="button"
                 className="btn-aceptar"
                 onClick={handleAsignarCita}
                 disabled={!clienteSeleccionado}
               >
                 Asignar Cita
               </button>
-              <button className="btn-cancelar" onClick={handleCancelar}>
+              <button type="button" className="btn-cancelar" onClick={handleCancelar}>
                 Cancelar
               </button>
             </div>
           </div>
-        </form>
+        </div>
       </div>
       {showConfirmAssignModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">

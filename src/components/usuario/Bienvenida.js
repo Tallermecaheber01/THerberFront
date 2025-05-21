@@ -61,26 +61,26 @@ function Bienvenida() {
         {usuario ? (
           <>
             <h1 className="detalle-title">¡Bienvenido, {usuario.nombre}!</h1>
-            <p className="detalle-descripcion">
+            <p className="bienvenida-descripcion">
               Nos alegra verte de nuevo, {usuario.nombre}. ¿Qué deseas hacer
               hoy?
             </p>
 
             <div className="">
-              <h2 className="detalle-descripcion">Información de Usuario</h2>
-              <p className="detalle-descripcion">
+              <h2 className="bienvenida-descripcion">Información de Usuario</h2>
+              <p className="bienvenida-descripcion">
                 <strong>Nombre:</strong> {usuario.nombre}
               </p>
-              <p className="detalle-descripcion">
+              <p className="bienvenida-descripcion">
                 <strong>Apellido Paterno:</strong> {usuario.apellido_paterno}
               </p>
-              <p className="detalle-descripcion">
+              <p className="bienvenida-descripcion">
                 <strong>Apellido Materno:</strong> {usuario.apellido_materno}
               </p>
-              <p className="detalle-descripcion">
+              <p className="bienvenida-descripcion">
                 <strong>Email:</strong> {usuario.correo}
               </p>
-              <p className="detalle-descripcion">
+              <p className="bienvenida-descripcion">
                 <strong>Teléfono:</strong> {usuario.telefono}
               </p>
             </div>

@@ -22,7 +22,6 @@ function Home() {
     fetchServices();
   }, []);
 
-  // Función para avanzar al siguiente grupo de 3 tarjetas
   const nextSlide = () => {
     setCurrentIndex((prevIndex) => {
       if (services.length <= 3) return 0;
@@ -33,7 +32,6 @@ function Home() {
     });
   };
 
-  // Función para retroceder al grupo anterior de 3 tarjetas
   const prevSlide = () => {
     setCurrentIndex((prevIndex) => {
       if (services.length <= 3) return 0;
@@ -44,7 +42,6 @@ function Home() {
     });
   };
 
-  // Auto slide cada 10 segundos
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIndex((prevIndex) => {
@@ -82,10 +79,10 @@ function Home() {
           <h2 className="services-title">Nuestros Servicios</h2>
           {services.length > 0 ? (
             <div className="carousel" style={{ position: 'relative' }}>
-              {/* Botón Anterior */}
+   
               <button
                 onClick={prevSlide}
-                className="absolute top-1/2 -translate-y-1/2 text-yellow-600 text-4xl hover:scale-125 transition-transform duration-300"
+                className="absolute top-1/2 -translate-y-1/2 text-black dark:text-yellow-400 text-4xl hover:scale-125 transition-transform duration-300"
                 style={{
                   left: '-1rem',
                 }}
@@ -93,7 +90,6 @@ function Home() {
                 &#8249;
               </button>
 
-              {/* Contenedor de tarjetas */}
               <div
                 className="carousel-container"
                 style={{
@@ -107,7 +103,7 @@ function Home() {
                   .map((service) => (
                     <div
                       key={service.id}
-                      className="service-card"
+                      className="catalogo-card"
                       style={{
                         flex: '0 0 calc(33.33% - 1rem)',
                       }}
@@ -118,8 +114,8 @@ function Home() {
                         className="service-card-img"
                       />
                       <div className="service-card-content">
-                        <h3 className="service-card-title">{service.nombre}</h3>
-                        <p className="service-card-text">
+                        <h3 className="catalogo-card-title">{service.nombre}</h3>
+                        <p className="catalogo-card-text">
                           {service.descripcion}
                         </p>
                       </div>
@@ -127,10 +123,9 @@ function Home() {
                   ))}
               </div>
 
-              {/* Botón Siguiente */}
               <button
                 onClick={nextSlide}
-                className="absolute right-0 top-1/2 -translate-y-1/2 text-yellow-600 text-4xl hover:scale-125 transition-transform duration-300"
+                className="absolute right-0 top-1/2 -translate-y-1/2 text-black dark:text-yellow-400 text-4xl hover:scale-125 transition-transform duration-300"
               >
                 &#8250;
               </button>

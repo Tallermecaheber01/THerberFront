@@ -155,7 +155,7 @@ const PoliciesManager = () => {
       </div>
 
       {/* Listado de Políticas */}
-      <h2 className="text-3xl font-bold text-yellow-400 mb-6 text-center">
+      <h2 className="text-3xl font-bold form-title mb-6 text-center">
         Listado de Políticas
       </h2>
       <div className="grid grid-cols-1 gap-6 justify-center">
@@ -183,7 +183,7 @@ const PoliciesManager = () => {
             ) : (
               <div className="flex flex-col gap-3 h-full justify-between">
                 <span
-                  className={`break-words ${policy.estado === "Activo" ? "text-xl font-bold text-green-600" : "text-base"} text-white dark:text-gray-300`}
+                  className={`break-words ${policy.estado === "Activo" ? "text-xl font-bold text-black" : "text-base"} text-black dark:text-gray-300`}
                 >
                   {policy.descripcion}
                 </span>
@@ -195,7 +195,7 @@ const PoliciesManager = () => {
                   ) : (
                     <button
                       onClick={() => handleActivate(policy)}
-                      className="btn-blue"  // Botón de color azul
+                      className="px-4 py-1 bg-[#225A89] text-white rounded"  // Botón de color azul
                     >
                       Activar
                     </button>

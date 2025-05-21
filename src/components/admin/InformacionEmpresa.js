@@ -137,7 +137,7 @@ function InformacionEmpresa() {
 
   return (
     <div className="p-40">
-      <h2 className="form-title text-center mb-4">Informacin empresa</h2>
+      <h2 className="form-title text-center mb-4">Informacion empresa</h2>
       
       <div className="mb-4 max-w-2xl mx-auto">
         <select 
@@ -146,7 +146,7 @@ function InformacionEmpresa() {
             setActiveEditor(null); 
             setSelectedSection(e.target.value);
           }}
-          className="w-full p-2 border border-gray-400 rounded-lg"
+          className="w-full p-2 border border-gray-400 rounded-lg focus:ring-2 focus:ring-[#2C75B2] dark:focus:ring-yellow-500;"
         >
           <option value="mission">Misión</option>
           <option value="vision">Visión</option>
@@ -157,8 +157,12 @@ function InformacionEmpresa() {
       </div>
       
       <div className="mb-4 p-4 border border-gray-400 rounded-lg shadow-lg max-w-2xl mx-auto">
-        <h3 className="text-xl font-bold text-yellow-400 mb-2">{currentSection.label}</h3>
-        {renderEditor(currentSection.field, currentSection.label, currentSection.content)}
+          <h3 className="form-title text-[#1f618d]">
+        {currentSection.label}
+      </h3> 
+      <div className="!text-black [&_*]:text-black">
+    {renderEditor(currentSection.field, currentSection.label, currentSection.content)}
+  </div>
       </div>
       
       <ToastContainer />

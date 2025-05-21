@@ -23,16 +23,15 @@ function PoliticaDePrivacidad() {
   }, []);
 
   return (
-    <div>
+    <div className="pt-20">
       <Breadcrumbs paths={breadcrumbPaths} />
       <div className="container mx-auto px-4 py-12">
         {activePolicy ? (
           <div>
-            {/* Si la política activa tiene título, se puede mostrar, de lo contrario se muestra "Política de Privacidad" */}
             <h1 className="detalle-title text-center text-4xl font-extrabold mb-8">
               {activePolicy.titulo || "Política de Privacidad"}
             </h1>
-            <p className="text-white dark:text-gray-300 text-lg">
+            <p className="text-black dark:text-gray-300 text-lg">
               {activePolicy.descripcion}
             </p>
           </div>

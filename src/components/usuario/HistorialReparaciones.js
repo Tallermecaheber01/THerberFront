@@ -2,136 +2,166 @@ import React, { useState } from 'react';
 import Breadcrumbs from '../Breadcrumbs';
 
 function HistorialReparaciones() {
-  const [filtroVehiculoID, setFiltroVehiculoID] = useState('');
-  const [filtroFecha, setFiltroFecha] = useState('');
-  const [filtroTipoReparacion, setFiltroTipoReparacion] = useState('');
+  // estado de búsqueda simple y filtros avanzados
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filters, setFilters] = useState([{ type: '', value: '' }]);
+
+  // datos de ejemplo
   const [reparaciones] = useState([
-    {
-      id: 'V123',
-      tipo: 'Cambio de Aceite',
-      fecha: '2024-12-01',
-      costo: 50,
-      cliente: 'Juan Pérez',
-    },
-    {
-      id: 'V456',
-      tipo: 'Revisión General',
-      fecha: '2024-11-15',
-      costo: 70,
-      cliente: 'María García',
-    },
-    {
-      id: 'V789',
-      tipo: 'Cambio de Neumáticos',
-      fecha: '2024-10-20',
-      costo: 200,
-      cliente: 'Carlos López',
-    },
+    { id: 'V123', marca: 'BMW', modelo: 'X3', servicio: 'Cambio de Aceite', fechaHora: '2024-12-01T10:30', trabajador: 'Luis Gómez', comentario: 'Filtro reemplazado correctamente', costo: 120 },
+    { id: 'V456', marca: 'Ford', modelo: 'Focus', servicio: 'Revisión General', fechaHora: '2024-11-15T08:00', trabajador: 'María Pérez', comentario: 'Ajuste de frenos y aceite', costo: 200 },
+    { id: 'V789', marca: 'BMW', modelo: 'M3', servicio: 'Alineación de Ruedas', fechaHora: '2024-10-20T14:45', trabajador: 'Carlos Ruiz', comentario: 'Balanceo final ok, Balanceo final ok Balanceo final ok. Balanceo final ok', costo: 150 },
   ]);
 
-  const handleBuscarReparaciones = () => {
-    return reparaciones.filter(
-      (reparacion) =>
-        (!filtroVehiculoID ||
-          reparacion.id
-            .toLowerCase()
-            .includes(filtroVehiculoID.toLowerCase())) &&
-        (!filtroFecha || reparacion.fecha.includes(filtroFecha)) &&
-        (!filtroTipoReparacion ||
-          reparacion.tipo
-            .toLowerCase()
-            .includes(filtroTipoReparacion.toLowerCase()))
-    );
+  const availableFilterTypes = ['marca', 'modelo', 'servicio', 'trabajador'];
+
+  // handlers
+  const handleFilterChange = (i, field, val) => {
+    const newF = [...filters];
+    newF[i] = { ...newF[i], [field]: val };
+    if (field === 'type') newF[i].value = '';
+    setFilters(newF);
+  };
+  const handleAddFilter = () => {
+    if (filters.length < 3 && filters[filters.length - 1].type && filters[filters.length - 1].value) {
+      setFilters([...filters, { type: '', value: '' }]);
+    }
+  };
+  const handleRemoveFilter = (idx) => {
+    const newF = filters.filter((_, i) => i !== idx);
+    setFilters(newF.length ? newF : [{ type: '', value: '' }]);
   };
 
-  const reparacionesFiltradas = handleBuscarReparaciones();
+  // determinar si hay filtro activo con valor
+  const advancedActive = filters.some((f) => f.type && f.value);
+
+  // filtrado combinado
+  const filtradas = reparaciones.filter((r) => {
+    if (!advancedActive && searchQuery) {
+      // búsqueda simple
+      const hay = Object.values(r).some(
+        (v) => typeof v === 'string' && v.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      if (!hay) return false;
+    }
+    // aplicar filtros avanzados
+    return filters.every((f) => {
+      if (!f.type || !f.value) return true;
+      return r[f.type]?.toLowerCase().includes(f.value.toLowerCase());
+    });
+  });
 
   const breadcrumbPaths = [
-    { name: 'Inicio', link: '/' }, // Ruta al inicio
-    { name: 'Historial Reparaciones', link: '/historialreperaciones' }, // Ruta al login
+    { name: 'Inicio', link: '/' },
+    { name: 'Historial Reparaciones', link: '/historialreparaciones' },
   ];
 
   return (
-    <div>
+    <div className="pt-20">
       <Breadcrumbs paths={breadcrumbPaths} />
-      <div className="citasContainer">
-        <form className="citasForm flex flex-col">
-          <h1 className="form-title text-center">
-            Consultar Historial de Reparaciones
-          </h1>
+      <div className="citasContainer mt-6">
+        <form className="flex flex-col">
+          <h1 className="services-title text-center">Historial de Reparaciones</h1>
 
+          {/* búsqueda y filtros */}
           <div className="divFiltros">
-            <div className="form-group">
-              <label htmlFor="filtroVehiculoID" className="form-label">
-                Filtrar por ID del Vehículo
-              </label>
+            {!advancedActive && (
               <input
-                id="filtroVehiculoID"
                 type="text"
-                className="form-input"
-                value={filtroVehiculoID}
-                onChange={(e) => setFiltroVehiculoID(e.target.value)}
-                placeholder="ID del vehículo"
+                placeholder="Buscar..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="form-input w-64"
               />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="filtroFecha" className="form-label">
-                Filtrar por Fecha
-              </label>
-              <input
-                id="filtroFecha"
-                type="date"
-                className="form-input"
-                value={filtroFecha}
-                onChange={(e) => setFiltroFecha(e.target.value)}
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="filtroTipoReparacion" className="form-label">
-                Filtrar por Tipo de Reparación
-              </label>
-              <input
-                id="filtroTipoReparacion"
-                type="text"
-                className="form-input"
-                value={filtroTipoReparacion}
-                onChange={(e) => setFiltroTipoReparacion(e.target.value)}
-                placeholder="Tipo de reparación"
-              />
+            )}
+            <div className="flex flex-col space-y-3">
+              {filters.map((f, idx) => (
+                <div key={idx} className="flex items-center gap-3">
+                  <select
+                    value={f.type}
+                    onChange={(e) => handleFilterChange(idx, 'type', e.target.value)}
+                    className="form-input w-48"
+                  >
+                    <option value="">Filtro</option>
+                    {availableFilterTypes.map((opt) => (
+                      <option key={opt} value={opt}>
+                        {opt.charAt(0).toUpperCase() + opt.slice(1)}
+                      </option>
+                    ))}
+                  </select>
+                  {f.type && (
+                    <select
+                      value={f.value}
+                      onChange={(e) => handleFilterChange(idx, 'value', e.target.value)}
+                      className="form-input w-48"
+                    >
+                      <option value="">Seleccione {f.type}</option>
+                      {[...new Set(reparaciones.map((r) => r[f.type]))].map((val) => (
+                        <option key={val} value={val}>
+                          {val}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                  {f.value && (
+                    <button type="button" onClick={() => handleRemoveFilter(idx)} className="textError">
+                      X
+                    </button>
+                  )}
+                </div>
+              ))}
+              {!filters.some((f) => !f.type || !f.value) && filters.length < 3 && (
+                <button type="button" onClick={handleAddFilter} className="button-yellow w-40">
+                  Agregar Filtro
+                </button>
+              )}
             </div>
           </div>
 
-          <div className="mt-8">
-            <h2 className="cita-title text-center">Reparaciones Realizadas</h2>
-            {reparacionesFiltradas.length > 0 ? (
-              <div className="cardCitas ">
-                {reparacionesFiltradas.map((reparacion, index) => (
-                  <div key={index} className="reparacion-card card-transition">
+          {/* cards */}
+          <div className="mt-6">
+            {filtradas.length > 0 ? (
+              <div className="cardCitas grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filtradas.map((r, idx) => (
+                  <div
+                    key={idx}
+                    className="reparacion-card card-transition p-10 rounded-xl shadow-2xl w-full max-w-sm"
+                  >
                     <div className="mb-4">
-                      <span className="detalle-label">ID Vehículo: </span>
-                      <span className="detalle-costo">{reparacion.id}</span>
-                    </div>
-                    <div className="mb-4">
-                      <span className="detalle-label">
-                        Tipo de Reparación:{' '}
+                      <span className="detalle-label">Marca/Modelo:</span>{' '}
+                      <span className="detalle-costo block whitespace-normal break-words">
+                        {r.marca} {r.modelo}
                       </span>
-                      <span className="detalle-costo">{reparacion.tipo}</span>
                     </div>
                     <div className="mb-4">
-                      <span className="detalle-label">Fecha: </span>
-                      <span className="detalle-costo">{reparacion.fecha}</span>
+                      <span className="detalle-label">Servicio:</span>{' '}
+                      <span className="detalle-costo block whitespace-normal break-words">
+                        {r.servicio}
+                      </span>
                     </div>
                     <div className="mb-4">
-                      <span className="detalle-label">Costo: </span>
-                      <span className="detalle-costo">${reparacion.costo}</span>
+                      <span className="detalle-label">Fecha y Hora:</span>{' '}
+                      <span className="detalle-costo">{new Date(r.fechaHora).toLocaleString()}</span>
+                    </div>
+                    <div className="mb-4">
+                      <span className="detalle-label">Trabajador:</span>{' '}
+                      <span className="detalle-costo">{r.trabajador}</span>
+                    </div>
+                    <div className="mb-4">
+                      <span className="detalle-label">Comentario:</span>{' '}
+                      <span className="detalle-costo block whitespace-normal break-words">
+                        {r.comentario}
+                      </span>
+                    </div>
+                    <div className="mb-4">
+                      <span className="detalle-label">Total:</span>{' '}
+                      <span className="detalle-costo">${r.costo}</span>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="advertencia">
+              <p className="advertencia text-center">
                 No se encontraron reparaciones con los filtros aplicados.
               </p>
             )}

@@ -5,11 +5,11 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        customBlue: "#293d57", // Define tu color personalizado
+        customBlue: "#153854", // Define tu color personalizado
         amarillobtn: "#c78f28",
-        fondoClaro: "#071426",
+        fondoClaro: "#FFFFFF",
         fondoObscuro: "#000e21",
-        cardClaro: "#393e4d",
+        cardClaro: "#93BFE4",
         cardObscuro: "#22252e",
       },
     },

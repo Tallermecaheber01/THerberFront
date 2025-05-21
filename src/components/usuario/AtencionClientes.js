@@ -33,7 +33,7 @@ function AtencionCliente() {
   };
 
   return (
-    <div>
+    <div className="pt-20">
       <Breadcrumbs paths={breadcrumbPaths} />
       <div className="form-container">
         <div className="form-card">

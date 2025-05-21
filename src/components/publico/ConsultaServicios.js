@@ -11,23 +11,19 @@ function ConsultaServicios() {
   const navigate = useNavigate();
   const inputRef = useRef(null);
 
-  // Breadcrumbs estáticos (fijos)
   const staticBreadcrumbs = [
     { name: 'Inicio', link: '/' },
     { name: 'Servicios', link: '/consultaservicios' },
   ];
 
-  // Estados para los datos
   const [services, setServices] = useState([]);
   const [vehicleTypes, setVehicleTypes] = useState([]);
   const [brands, setBrands] = useState([]);
 
-  // Estados para búsqueda y filtros avanzados
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState([{ type: '', value: '' }]);
   const advancedActive = filters.some((f) => f.type && f.value.trim() !== '');
 
-  // Obtener los servicios de la base de datos
   useEffect(() => {
     const fetchServices = async () => {
       try {
@@ -40,7 +36,6 @@ function ConsultaServicios() {
     fetchServices();
   }, []);
 
-  // Obtener los tipos de vehículo de la base de datos
   useEffect(() => {
     const fetchVehicleTypes = async () => {
       try {
@@ -53,7 +48,6 @@ function ConsultaServicios() {
     fetchVehicleTypes();
   }, []);
 
-  // Obtener las marcas de la base de datos
   useEffect(() => {
     const fetchBrands = async () => {
       try {
@@ -66,7 +60,6 @@ function ConsultaServicios() {
     fetchBrands();
   }, []);
 
-  // Definir las opciones de filtros usando los datos traídos de la BD
   const filtrosDisponibles = {
     tipoVehiculo: {
       label: 'Tipo de Vehículo',
@@ -78,14 +71,13 @@ function ConsultaServicios() {
     },
   };
 
-  // Función que genera los breadcrumbs dinámicos combinando los estáticos con los filtros activos
   const getDynamicBreadcrumbs = () => {
     const activeFilters = filters.filter(
       (filter) => filter.type && filter.value.trim() !== ''
     );
     const filterBreadcrumbs = activeFilters.map((filter) => ({
       name: `${filtrosDisponibles[filter.type].label}: ${filter.value}`,
-      link: '#', // Link ficticio; se manejará en el callback onCrumbClick
+      link: '#', 
     }));
     return [...staticBreadcrumbs, ...filterBreadcrumbs];
   };
@@ -102,15 +94,13 @@ function ConsultaServicios() {
     }
   };
 
-  // Actualiza un filtro (tipo o valor)
   const handleFilterChange = (index, field, value) => {
     const newFilters = [...filters];
     newFilters[index][field] = value;
-    if (field === 'type') newFilters[index].value = ''; // Reinicia el valor si se cambia el tipo
+    if (field === 'type') newFilters[index].value = ''; 
     setFilters(newFilters);
   };
 
-  // Agrega un nuevo filtro (máximo 3)
   const handleAddFilter = () => {
     if (
       filters.length < 3 &&
@@ -121,7 +111,6 @@ function ConsultaServicios() {
     }
   };
 
-  // Elimina un filtro específico
   const handleRemoveFilter = (index) => {
     const newFilters = filters.filter((_, i) => i !== index);
     if (newFilters.length === 0) newFilters.push({ type: '', value: '' });
@@ -130,13 +119,11 @@ function ConsultaServicios() {
 
   const appliedFilterTypes = filters.map((filter) => filter.type);
 
-  // Filtrado de servicios según la búsqueda simple o filtros avanzados
   const filteredServices = advancedActive
     ? services.filter((service) =>
         filters.every((filter) => {
           if (!filter.type || !filter.value.trim()) return true;
           const serviceValue = service[filter.type];
-          // Si el valor en el servicio es un arreglo, se busca si alguno de sus elementos lo contiene
           if (Array.isArray(serviceValue)) {
             return serviceValue.some((item) =>
               item.toLowerCase().includes(filter.value.toLowerCase())
@@ -169,7 +156,6 @@ function ConsultaServicios() {
           <h2 className="services-title">Catálogo de Servicios</h2>
 
           <div className="max-w-screen-lg mx-auto flex flex-wrap items-center justify-end gap-4 mb-8">
-            {/* Mostrar búsqueda simple si no hay filtros avanzados */}
             {filters.length === 1 && filters[0].value.trim() === '' && (
               <input
                 type="text"
@@ -180,8 +166,6 @@ function ConsultaServicios() {
                 className="form-input w-72"
               />
             )}
-
-            {/* Área de filtros avanzados */}
             <div className="flex flex-col items-end space-y-6">
               {filters.map((filter, index) => (
                 <div
@@ -233,7 +217,7 @@ function ConsultaServicios() {
                       onClick={() => handleRemoveFilter(index)}
                       className="textError"
                     >
-                      Eliminar
+                      X
                     </button>
                   )}
                 </div>
@@ -253,19 +237,17 @@ function ConsultaServicios() {
                 )}
             </div>
           </div>
-
-          {/* Listado de servicios filtrados */}
           <div className="services-grid">
             {filteredServices.map((service) => (
-              <div key={service.id} className="service-card card-transition">
+              <div key={service.id} className="catalogo-card card-transition">
                 <img
                   src={service.imagen}
                   alt={service.nombre}
                   className="service-card-img"
                 />
                 <div className="service-card-content">
-                  <h3 className="service-card-title">{service.nombre}</h3>
-                  <p className="service-card-text">{service.descripcion}</p>
+                  <h3 className="catalogo-card-title">{service.nombre}</h3>
+                  <p className="catalogo-card-text">{service.descripcion}</p>
                   <Link to="/verDetalles" state={{ serviceId: service.id }}>
                     <button className="button-yellow mt-4">
                       Ver más detalles

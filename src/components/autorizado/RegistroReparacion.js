@@ -276,52 +276,52 @@ function RegistroReparacion() {
       <div className="form-container w-[680px] mx-auto">
         <form className="citasForm flex flex-col">
           <h1 className="form-title text-center">Registro de Reparación</h1>
-          <div className="reparacion-card mb-4">
+          <div className=" mb-4">
             <div className="mb-2">
-              <span className="detalle-label">Empleado: </span>
-              <span className="detalle-costo">{cita.nombreEmpleado || empleado}</span>
+              <span className="detalle-info">Empleado: </span>
+              <span className="detalle-cafe">{cita.nombreEmpleado || empleado}</span>
             </div>
             <div className="mb-4">
-              <span className="detalle-label">Fecha y Hora de Atención: </span>
-              <span className="detalle-costo">{formatDateTime(atencionDateTime)}</span>
+              <span className="detalle-info">Fecha y Hora de Atención: </span>
+              <span className="detalle-cafe">{formatDateTime(atencionDateTime)}</span>
               {errors.atencionDateTime && (
                 <div className="text-red-500 text-xs">{errors.atencionDateTime}</div>
               )}
             </div>
             <div className="mb-2">
-              <span className="detalle-label">Cliente: </span>
-              <span className="detalle-costo">{cita.nombreCliente}</span>
+              <span className="detalle-info">Cliente: </span>
+              <span className="detalle-cafe">{cita.nombreCliente}</span>
             </div>
             <div className="mb-2">
-              <span className="detalle-label">Servicio: </span>
-              <span className="detalle-costo">
+              <span className="detalle-info">Servicio: </span>
+              <span className="detalle-cafe">
                 {Array.isArray(cita.services)
                   ? cita.services.map((item) => item.servicio).join(', ')
                   : cita.servicio}
               </span>
             </div>
             <div className="mb-2">
-              <span className="detalle-label">Fecha cita: </span>
-              <span className="detalle-costo">{formatDate(cita.fecha)}</span>
+              <span className="detalle-info">Fecha cita: </span>
+              <span className="detalle-cafe">{formatDate(cita.fecha)}</span>
             </div>
             <div className="mb-2">
-              <span className="detalle-label">Hora cita: </span>
-              <span className="detalle-costo">{cita.hora}</span>
+              <span className="detalle-info">Hora cita: </span>
+              <span className="detalle-cafe">{cita.hora}</span>
             </div>
             <div className="mb-2">
-              <span className="detalle-label">Marca: </span>
-              <span className="detalle-costo">{cita.marca}</span>
+              <span className="detalle-info">Marca: </span>
+              <span className="detalle-cafe">{cita.marca}</span>
             </div>
             <div className="mb-2">
-              <span className="detalle-label">Modelo: </span>
-              <span className="detalle-costo">{cita.modelo}</span>
+              <span className="detalle-info">Modelo: </span>
+              <span className="detalle-cafe">{cita.modelo}</span>
             </div>
             <div className="mb-2">
-              <span className="detalle-label">Costo Actual: </span>
-              <span className="detalle-costo">{`$${cita.total}`}</span>
+              <span className="detalle-info">Costo Actual: </span>
+              <span className="detalle-cafe">{`$${cita.total}`}</span>
             </div>
             <div className="mb-2">
-              <span className="detalle-label">Comentario: </span>
+              <span className="detalle-info">Comentario: </span>
               <textarea
                 className="form-input w-full"
                 value={comentario}
@@ -334,7 +334,7 @@ function RegistroReparacion() {
             </div>
             <div className="mb-2 flex flex-col sm:flex-row gap-2 items-center">
               <div>
-                <span className="detalle-label">Extra: </span>
+                <span className="detalle-info">Extra: </span>
                 <input
                   type="number"
                   min="0"
@@ -356,7 +356,7 @@ function RegistroReparacion() {
             </div>
             <div className="mb-2 flex flex-col sm:flex-row gap-2 items-center">
               <div className="relative">
-                <span className="detalle-label">Servicio Extra: </span>
+                <span className="detalle-info">Servicio Extra: </span>
                 <input
                   type="text"
                   className="form-input w-48 text-right"
@@ -387,8 +387,8 @@ function RegistroReparacion() {
             </div>
             {tempServices.length > 0 && (
               <div className="mb-2">
-                <span className="detalle-label">Servicios: </span>
-                <ul className="detalle-costo text-sm">
+                <span className="detalle-info">Servicios: </span>
+                <ul className="detalle-cafe text-sm">
                   {tempServices.map((serv, idx) => (
                     <li key={idx} className="grid grid-cols-[1fr_20px] items-center gap-1 px-2 rounded">
                       <span>{serv}</span>
@@ -408,8 +408,8 @@ function RegistroReparacion() {
               </div>
             )}
             <div className="mb-2">
-              <span className="detalle-label">Total Final: </span>
-              <span className="detalle-costo">{`$${tempCost}`}</span>
+              <span className="detalle-info">Total Final: </span>
+              <span className="detalle-cafe">{`$${tempCost}`}</span>
             </div>
           </div>
           <div className="flex gap-4 justify-center">

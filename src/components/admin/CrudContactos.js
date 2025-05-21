@@ -148,7 +148,7 @@ const Contactos = () => {
     <div className="p-4 max-w-4xl mx-auto pt-40">
       <h2 className="form-title text-center mb-4">Gestión de Contactos</h2>
       <form onSubmit={handleAddContact} className="mb-6 p-4 border border-gray-400 rounded-lg shadow-lg">
-        <h3 className="text-xl font-bold text-yellow-400 mb-2">Agregar Nuevo Contacto</h3>
+        <h3 className="text-xl font-bold text-[#1c2833] dark:text-white mb-2">Agregar Nuevo Contacto</h3>
         <div className="mb-4">
           <label className="form-label">Nombre del contacto</label>
           <input
@@ -191,7 +191,7 @@ const Contactos = () => {
                     placeholder="Nombre"
                   />
                 ) : (
-                  <span className="text-yellow-400 text-base font-bold">{contact.nombre}</span>
+                  <span className="text-[#1c2833] dark:text-yellow-400 text-base font-bold">{contact.nombre}</span>
                 )}
               </div>
               <div className="mb-2">
@@ -203,7 +203,7 @@ const Contactos = () => {
                     placeholder="Información"
                   />
                 ) : (
-                  <div className="text-white text-base max-h-20 overflow-y-auto scrollbar-hide break-all">
+                  <div className="text-[#2C75B2] font-bold text-base max-h-20 overflow-y-auto scrollbar-hide break-all">
                     {contact.informacion}
                   </div>
                 )}

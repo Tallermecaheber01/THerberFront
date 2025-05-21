@@ -486,9 +486,9 @@ function CrudServicios() {
   return (
     <div className="container mx-auto p-4 relative">
       <h1 className="form-title mb-4">Administrar Servicios</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <form onSubmit={handleSubmit} className="form-card">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-40">
+        <div className="md:ml-auto md:max-w-[600px]">
+          <form onSubmit={handleSubmit} className="form-card max-w-lg">
             <h2 className="form-title mb-4">
               {modoEdicion ? 'Editar Servicio' : 'Agregar Servicio'}
             </h2>
@@ -993,8 +993,8 @@ function CrudServicios() {
             </div>
           )}
         </div>
-        <div>
-          <h2 className="services-title mb-4">Servicios</h2>
+        <div className="md:pl-3 -translate-x-2">
+        <h2 className="services-title mb-4 ml-2 md:ml-0">Servicios</h2>
           {services.length === 0 ? (
             <p className="no-resultados">No hay servicios disponibles.</p>
           ) : (
@@ -1002,9 +1002,9 @@ function CrudServicios() {
               {services.map((servicio) => (
                 <div
                   key={servicio.id}
-                  className="service-card p-4 card-transition"
+                  className="service-card p-4 card-transition ml-20 md:ml-0"
                 >
-                  <div className="flex items-center">
+                  <div className="flex items-center ">
                     {servicio.imagen && (
                       <img
                         src={servicio.imagen}

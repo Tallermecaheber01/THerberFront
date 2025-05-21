@@ -52,7 +52,7 @@ function VerDetalles() {
         <div className="detalle-container">
           <img src={servicio.imagen} alt={servicio.nombre} className="detalle-img" />
           <div className="detalle-content">
-            <h2 className="detalle-title">{servicio.nombre}</h2>
+            <h2 className="navbar-title">{servicio.nombre}</h2>
             <p className="detalle-descripcion">{servicio.descripcion}</p>
 
             {servicio.costo && (
@@ -61,27 +61,27 @@ function VerDetalles() {
               </p>
             )}
             {servicio.categoria && (
-              <p className="detalle-duracion">
+              <p className="detalle-informacion">
                 <span className="detalle-label">Categoría:</span> {servicio.categoria}
               </p>
             )}
             {servicio.duracion && (
-              <p className="detalle-duracion">
+              <p className="detalle-informacion">
                 <span className="detalle-label">Duración aproximada:</span> {servicio.duracion}
               </p>
             )}
             {servicio.tipoVehiculo && (
-              <p className="detalle-duracion">
+              <p className="detalle-informacion">
                 <span className="detalle-label">Tipo de Vehículo:</span> {servicio.tipoVehiculo.join(', ')}
               </p>
             )}
             {servicio.marcas && (
-              <p className="detalle-duracion">
+              <p className="detalle-informacion">
                 <span className="detalle-label">Marcas:</span> {servicio.marcas.join(', ')}
               </p>
             )}
             {servicio.modelos && (
-              <p className="detalle-duracion">
+              <p className="detalle-informacion">
                 <span className="detalle-label">Modelos:</span> {servicio.modelos.join(', ')}
               </p>
             )}
