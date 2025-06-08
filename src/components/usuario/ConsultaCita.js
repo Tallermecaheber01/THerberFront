@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Breadcrumbs from '../Breadcrumbs';
+import { getAppointments } from '../../api/client';
 
 function Consulta_cita() {
   const staticBreadcrumbs = [
@@ -8,7 +9,7 @@ function Consulta_cita() {
     { name: 'Consulta cita', link: '/consultacita' },
   ];
 
-  const [citas, setCitas] = useState([
+  /*const [citas, setCitas] = useState([
     {
       id: 1,
       trabajador: 'Pedro Cruz',
@@ -44,7 +45,37 @@ function Consulta_cita() {
       ubicacion: 'Sucursal Oeste',
       servicio: 'Revisión general',
     },
-  ]);
+  ]);*/
+
+  const [appointments, setAppointments] = useState([]);
+  const optionsByFilter = React.useMemo(() => {
+    const trabajadores = [...new Set(appointments.map(a => a.nombreCompletoPersonal))];
+    const servicios = [...new Set(appointments.flatMap(a => a.servicios.map(s => s.nombreServicio)))];
+    
+
+    return {
+      trabajador: trabajadores,
+      servicio: servicios,
+    
+    };
+  }, [appointments]);
+
+
+
+  const fetchData = async () => {
+    try {
+      const appointmentsResponse = await getAppointments();
+      console.log('Citas obtenidas:', appointmentsResponse);
+      setAppointments(appointmentsResponse);
+    } catch (error) {
+      console.error('Error al obtener las citas:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
 
   const [selectedCita, setSelectedCita] = useState(null);
   // Estado de filtros avanzados: se inicia con un objeto vacío para mostrar la UI de filtros
@@ -91,19 +122,19 @@ function Consulta_cita() {
     navigate('/cambiarCita');
   };
 
-  const handleCancelarCita = (id) => {
+  const handleCancelarCita = (idCita) => {
     const confirmar = window.confirm(
       '¿Estás seguro de que deseas cancelar esta cita?'
     );
     if (confirmar) {
-      setCitas(citas.filter((cita) => cita.id !== id));
+      setAppointments(appointments.filter((cita) => cita.idCita !== idCita));
       alert('Cita cancelada con éxito.');
       setSelectedCita(null);
     }
   };
 
-  const handleVerDetalles = (id) => {
-    setSelectedCita(citas.find((cita) => cita.id === id));
+  const handleVerDetalles = (idCita) => {
+    setSelectedCita(appointments.find((cita) => cita.idCita === idCita));
   };
 
   const handleCerrarDetalles = () => {
@@ -140,13 +171,13 @@ function Consulta_cita() {
     setFilters(newFilters);
   };
 
-  const availableFilterTypes = ['trabajador', 'servicio', 'ubicacion'];
+  const availableFilterTypes = ['trabajador', 'servicio'];
   const appliedFilterTypes = filters.map((filter) => filter.type);
 
   // Filtra las citas según la búsqueda simple y los filtros avanzados activos
-  const filteredCitas = citas.filter((cita) => {
+  const filteredCitas = appointments.filter((cita) => {
     return (
-      // Búsqueda simple: se revisa cada valor de la cita
+      // Búsqueda simple
       (searchQuery === '' ||
         Object.values(cita).some((value) => {
           return (
@@ -154,14 +185,18 @@ function Consulta_cita() {
             value.toLowerCase().includes(searchQuery.toLowerCase())
           );
         })) &&
-      // Filtros avanzados: se evalúa cada filtro activo
+      // Filtros avanzados
       filters.every((filter) => {
         if (!filter.type || !filter.value) return true;
         const field = filter.type.toLowerCase();
-        return cita[field]?.toLowerCase().includes(filter.value.toLowerCase());
+        return cita[field]
+          ?.toString()
+          .toLowerCase()
+          .includes(filter.value.toLowerCase());
       })
     );
   });
+
 
   // Si la cita seleccionada ya no se encuentra entre las citas filtradas, se cierra la vista de detalles.
   useEffect(() => {
@@ -235,40 +270,16 @@ function Consulta_cita() {
                       className="form-input w-64"
                     >
                       <option value="">
-                        Selecciona{' '}
-                        {filter.type.charAt(0).toUpperCase() +
-                          filter.type.slice(1)}
+                        Selecciona {filter.type.charAt(0).toUpperCase() + filter.type.slice(1)}
                       </option>
-                      {(() => {
-                        const optionsByFilter = {
-                          trabajador: [
-                            'Pedro Cruz',
-                            'Pedro Cruz',
-                            'Jesus Lopéz',
-                          ],
-                          servicio: [
-                            'Cambio de aceite',
-                            'Revisión de frenos',
-                            'Alineación y balanceo',
-                            'Cambio de batería',
-                            'Revisión general',
-                          ],
-                          ubicacion: [
-                            'Sucursal Centro',
-                            'Sucursal Norte',
-                            'Sucursal Sur',
-                            'Sucursal Este',
-                            'Sucursal Oeste',
-                          ],
-                        };
-                        return optionsByFilter[filter.type].map((opcion) => (
-                          <option key={opcion} value={opcion}>
-                            {opcion}
-                          </option>
-                        ));
-                      })()}
+                      {optionsByFilter[filter.type]?.map((opcion) => (
+                        <option key={opcion} value={opcion}>
+                          {opcion}
+                        </option>
+                      ))}
                     </select>
                   )}
+
 
                   {filters.length > 1 && (
                     <button
@@ -301,14 +312,13 @@ function Consulta_cita() {
             {filteredCitas.map((cita) => (
               <div key={cita.id} className="service-card card-transition">
                 <div className="service-card-content">
-                  <h3 className="service-card-title">{cita.trabajador}</h3>
-                  <p className="service-card-text">Horario: {cita.horario}</p>
+                  <h3 className="service-card-title">{cita.nombreCompletoPersonal}</h3>
                   <p className="service-card-text">
-                    Ubicación: {cita.ubicacion}
+                    Fecha: {new Date(cita.fecha).toLocaleDateString('es-ES')} - Hora: {cita.hora.slice(0, 5)}
                   </p>
                   <button
                     className="btn-blue"
-                    onClick={() => handleVerDetalles(cita.id)}
+                    onClick={() => handleVerDetalles(cita.idCita)}
                   >
                     Ver Detalles
                   </button>
@@ -324,17 +334,18 @@ function Consulta_cita() {
                 <h3 className="detalle-title">Detalles de la Cita</h3>
                 <p className="detalle-descripcion">
                   <strong>Atención por el empleado:</strong>{' '}
-                  {selectedCita.trabajador}
+                  {selectedCita.nombreCompletoPersonal}
                 </p>
                 <p className="detalle-descripcion">
-                  <strong>Horario:</strong> {selectedCita.horario}
+                  <strong>Horario:</strong> {new Date(selectedCita.fecha).toLocaleDateString('es-ES')} - {selectedCita.hora.slice(0, 5)}
                 </p>
+
+
                 <p className="detalle-descripcion">
-                  <strong>Ubicación:</strong> {selectedCita.ubicacion}
+                  <strong>Servicios:</strong>{' '}
+                  {selectedCita.servicios.map((servicio) => servicio.nombreServicio).join(', ')}
                 </p>
-                <p className="detalle-descripcion">
-                  <strong>Servicio:</strong> {selectedCita.servicio}
-                </p>
+
                 <div className="flex gap-4 mt-4">
                   <button
                     className="btn-blue"
