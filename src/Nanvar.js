@@ -147,6 +147,11 @@ const Navbar = () => {
                     Historial de Reparaciones
                   </Link>
                 </li>
+                 <li>
+                  <Link to="/pagarreparacion" className="navbar-link">
+                    Pago de Reparacion
+                  </Link>
+                </li>
                 <li>
                   <Link to="/nuevovehiculo" className="navbar-link">
                     Agregar Vehículo
@@ -276,6 +281,14 @@ const Navbar = () => {
                           className="navbar-dropdown-text"
                         >
                           Aprobación Citas
+                        </Link>
+                      </li>
+                      <li>
+                        <Link
+                          to="/aprobacioncambiocita"
+                          className="navbar-dropdown-text"
+                        >
+                          Aprobacion cambio de cita
                         </Link>
                       </li>
                       <li>
@@ -440,6 +453,11 @@ const Navbar = () => {
                 <li>
                   <Link to="/consultasreparaciones" className="navbar-link">
                     Reparaciones realizadas
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/aceptarpagoefectivo" className="navbar-link">
+                    Aceptar Efectivo
                   </Link>
                 </li>
 

@@ -84,3 +84,92 @@ export const getAppointments = async () => {
     alert('Ocurrió un error inesperado.');
   }
 }
+
+export const getRepairPay = async () => {
+  try {
+    const response = await api.get('/client/payment');
+    return response.data;
+  } catch (error) {
+    console.error('Error inesperado:', error);
+    alert('Ocurrió un error inesperado.');
+  }
+}
+
+export const createPaymentOrder = async (orden) => {
+  try {
+    const response = await api.post('/mercado-pago/create-order', orden); // sin body
+    return response.data; // { id, init_point }
+  } catch (error) {
+    console.error('Error creando la orden de pago:', error);
+    alert('No se pudo iniciar el pago, intenta de nuevo.');
+    throw error;
+  }
+};
+
+export const setRepairInProcess = async (repairId) => {
+  try {
+    const response = await api.put(`/client/repair/${repairId}/set-in-process`);
+    return response.data;
+  } catch (error) {
+    console.error('Error al marcar reparación como en proceso:', error);
+    alert('No se pudo actualizar el estado de la reparación.');
+    throw error;
+  }
+};
+
+export const getRepairHistory = async () => {
+  try {
+    const response = await api.get('/client/repair-history');
+    return response.data;
+  } catch (error) {
+    console.error('Error al obtener el historial de reparaciones:', error);
+    alert('No se pudo obtener el historial de reparaciones.');
+    throw error;
+  }
+};
+
+export const createAppointment = async (appointmentData) => {
+  try {
+    const response = await api.post('/client/appointments', appointmentData);
+    return response.data; // Aquí podrías recibir el idCita o el objeto completo
+  } catch (error) {
+    console.error('Error al crear la cita:', error);
+    alert('No se pudo crear la cita, intenta nuevamente.');
+    throw error;
+  }
+};
+
+export const getAppointmentById = async (idCita) => {
+  try {
+    const response = await api.get(`/client/appointments/${idCita}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error al obtener la cita:', error);
+    alert('No se pudo obtener la cita.');
+    throw error;
+  }
+};
+
+export const updateAppointmentDate = async (idCita, datos) => {
+  try {
+    const response = await api.patch(`/client/appointments/${idCita}/fecha`, datos);
+    return response.data;
+  } catch (error) {
+    console.error('Error al actualizar fecha/hora de la cita:', error);
+    alert('No se pudo actualizar la fecha de la cita.');
+    throw error;
+  }
+};
+
+export const cancelAppointment = async (idCita, cancelData) => {
+  try {
+    const response = await api.post(`/client/appointments/${idCita}/cancel`, cancelData);
+    return response.data;
+  } catch (error) {
+    console.error('Error al cancelar la cita:', error);
+    alert('No se pudo cancelar la cita. Intenta nuevamente.');
+    throw error;
+  }
+};
+
+

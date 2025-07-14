@@ -33,9 +33,11 @@ import AgregarCita from './components/usuario/AgregarCita';
 import CambiarCita from './components/usuario/CambiarCita';
 import Bienvenida from './components/usuario/Bienvenida';
 import Consultavehiculos from './components/usuario/Consultavehiculos';
+import PagarReparacion from './payments/PagarReparacion';
 
 // Componentes para Empleados
 import AprobacionCitas from './components/autorizado/AprobacionCitas';
+import AprobacionCambioCita from './components/autorizado/AprobacionCambioCita';
 import AsignacionCita from './components/autorizado/AsignacionCitas';
 import ConsultaCitas from './components/autorizado/ConsultaCitas';
 import RegistroReparaciones from './components/autorizado/RegistroReparacion';
@@ -53,6 +55,7 @@ import Demandas from './components/admin/Demandas';
 import InformacionEmpresa from './components/admin/InformacionEmpresa';
 import Contactos from './components/admin/CrudContactos';
 import CrudPoliticas from './components/admin/crudPoliticas';
+import AceptarPagoEfectivo from './payments/AceptarPagoEfectivo';
 
 const AppRoutes = () => {
   return (
@@ -128,7 +131,7 @@ const AppRoutes = () => {
           }
         />
         <Route
-          path="cambiarcita"
+          path="cambiarcita/:id"
           element={
             <ProtectedRoute allowedRoles={['cliente']}>
               <CambiarCita />
@@ -136,11 +139,21 @@ const AppRoutes = () => {
           }
         />
 
-      <Route
+
+        <Route
           path="consultaVehiculos"
           element={
             <ProtectedRoute allowedRoles={['cliente']}>
               <Consultavehiculos />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="pagarreparacion"
+          element={
+            <ProtectedRoute allowedRoles={['cliente']}>
+              <PagarReparacion />
             </ProtectedRoute>
           }
         />
@@ -153,6 +166,14 @@ const AppRoutes = () => {
           element={
             <ProtectedRoute allowedRoles={['empleado', 'administrador']}>
               <AprobacionCitas />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="aprobacioncambiocita"
+          element={
+            <ProtectedRoute allowedRoles={['empleado', 'administrador']}>
+              <AprobacionCambioCita />
             </ProtectedRoute>
           }
         />
@@ -173,14 +194,14 @@ const AppRoutes = () => {
           }
         />
 
-        <Route 
-        path="registroreparaciones" 
-        element={
-          <ProtectedRoute allowedRoles={['empleado', 'administrador']}>
-            <RegistroReparaciones />
-          </ProtectedRoute>
-         }
-         />
+        <Route
+          path="registroreparaciones"
+          element={
+            <ProtectedRoute allowedRoles={['empleado', 'administrador']}>
+              <RegistroReparaciones />
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           path="citasCanceladas"
@@ -249,40 +270,49 @@ const AppRoutes = () => {
           }
         />
 
-        <Route 
-        path="demandas" 
-        element={
-          <ProtectedRoute allowedRoles={['administrador']}>
-             <Demandas />
-             </ProtectedRoute>
-        } />
+        <Route
+          path="aceptarpagoefectivo"
+          element={
+            <ProtectedRoute allowedRoles={['administrador']}>
+              <AceptarPagoEfectivo />
+            </ProtectedRoute>
+          }
+        />
 
-        <Route 
-          path="informacionempresa" 
-            element={
-              <ProtectedRoute allowedRoles={['administrador']}>
-                <InformacionEmpresa/>
-                </ProtectedRoute>
-               }
-            />
+        <Route
+          path="demandas"
+          element={
+            <ProtectedRoute allowedRoles={['administrador']}>
+              <Demandas />
+            </ProtectedRoute>
+          } />
 
-        <Route 
-          path="contactos" 
-            element={
-              <ProtectedRoute allowedRoles={['administrador']}>
-                <Contactos/>
-             </ProtectedRoute>
-            } 
-          />
+        <Route
+          path="informacionempresa"
+          element={
+            <ProtectedRoute allowedRoles={['administrador']}>
+              <InformacionEmpresa />
+            </ProtectedRoute>
+          }
+        />
 
-        <Route 
-          path="politicas" 
-            element={
-              <ProtectedRoute allowedRoles={['administrador']}>
-                <CrudPoliticas/>
-              </ProtectedRoute>
-            } 
-          /> 
+        <Route
+          path="contactos"
+          element={
+            <ProtectedRoute allowedRoles={['administrador']}>
+              <Contactos />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="politicas"
+          element={
+            <ProtectedRoute allowedRoles={['administrador']}>
+              <CrudPoliticas />
+            </ProtectedRoute>
+          }
+        />
 
 
         {/* Ruta para páginas no encontradas */}

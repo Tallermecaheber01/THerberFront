@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from 'react'; 
+import React, { useEffect, useState, useContext } from 'react';
 import Breadcrumbs from '../Breadcrumbs';
 import { AuthContext } from '../AuthContext';
 import { getAllRepairs, getAllServices, updateRepair, getClientById } from '../../api/employ';
@@ -82,9 +82,9 @@ function ConsultasReparaciones() {
             (repair) => repair.idEmpleado === auth.user.id
           );
         }
-  
+
         console.log("Datos obtenidos de reparaciones:", repairsData);
-  
+
         const formattedRepairs = await Promise.all(
           repairsData.map(async (repair) => {
             const costoNum =
@@ -92,9 +92,9 @@ function ConsultasReparaciones() {
             const serviciosArray = Array.isArray(repair.servicio)
               ? repair.servicio
               : typeof repair.servicio === 'string'
-              ? repair.servicio.split(', ')
-              : [];
-  
+                ? repair.servicio.split(', ')
+                : [];
+
             let clientName;
             if (repair.nombreCliente) {
               clientName = repair.nombreCliente;
@@ -108,7 +108,7 @@ function ConsultasReparaciones() {
                 clientName = String(repair.idCliente);
               }
             }
-  
+
             return {
               id: repair.id,
               cliente: clientName || 'Sin nombre',
@@ -132,26 +132,27 @@ function ConsultasReparaciones() {
               comentario: repair.comentario || '',
               marca: repair.marca || '',
               modelo: repair.modelo || '',
+              estado: repair.estado || 'N/A',
             };
           })
         );
-  
+
         setReparaciones(formattedRepairs);
       } catch (error) {
         console.error("Error al obtener reparaciones:", error);
       }
     };
-  
+
     // Llamada inicial y establecimiento del intervalo de 1 segundo
     fetchRepairs();
     const interval = setInterval(() => {
       fetchRepairs();
     }, 1000);
-  
+
     return () => clearInterval(interval);
   }, [auth]);
-  
-  
+
+
   // Función para sanitizar entradas
   const sanitizeInput = (str) => {
     if (typeof str !== 'string') return str;
@@ -176,7 +177,7 @@ function ConsultasReparaciones() {
     setComentario(repair.comentario || '');
     setExtra(0);
     setTempCost(Number(repair.costo));
-    const serviciosIniciales = repair.serviciosArray || 
+    const serviciosIniciales = repair.serviciosArray ||
       (typeof repair.servicio === 'string'
         ? repair.servicio.split(', ')
         : []);
@@ -186,7 +187,7 @@ function ConsultasReparaciones() {
     setCommentError('');
     setServiceError('');
   };
-  
+
   const confirmEditarReparacion = () => {
     if (pendingEditRepair) {
       handleEditarReparacion(pendingEditRepair);
@@ -234,11 +235,11 @@ function ConsultasReparaciones() {
   const handleAgregarServicio = () => {
     const serviceTrimmed = serviciosExtra.trim();
     if (serviceTrimmed === '') return;
-  
+
     const validService = allServices.find(
       (service) => service.nombre.toLowerCase() === serviceTrimmed.toLowerCase()
     );
-  
+
     if (!validService) {
       setServiceError('El servicio ingresado no es válido.');
       return;
@@ -273,10 +274,10 @@ function ConsultasReparaciones() {
     try {
       await updateRepair(repairSeleccionada.id, payload);
       const repairActualizada = {
-         ...repairSeleccionada,
-         comentario: sanitizedComentario,
-         costo: tempCost,
-         servicio: sanitizedTempServices.join(', '),
+        ...repairSeleccionada,
+        comentario: sanitizedComentario,
+        costo: tempCost,
+        servicio: sanitizedTempServices.join(', '),
       };
       const nuevasReparaciones = reparaciones.map((rep) =>
         rep.id === repairSeleccionada.id ? repairActualizada : rep
@@ -500,6 +501,13 @@ function ConsultasReparaciones() {
                     <div className="mb-1">
                       <span className="detalle-label">Total: </span>
                       <span className="detalle-costo">${repair.total}</span>
+                    </div>
+                    <div className="mb-1">
+                      <span className="detalle-label">Estado del pago: </span>
+                      <span className="detalle-costo">
+                        {repair.estado.charAt(0).toUpperCase() + repair.estado.slice(1)}
+                      </span>
+
                     </div>
                     {repair.comentario && (
                       <div className="mb-1">

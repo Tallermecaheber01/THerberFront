@@ -1,53 +1,91 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Breadcrumbs from '../Breadcrumbs';
+import { getRepairHistory } from '../../api/client';
 
 function HistorialReparaciones() {
-  // estado de búsqueda simple y filtros avanzados
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState([{ type: '', value: '' }]);
+  const [reparaciones, setReparaciones] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  // datos de ejemplo
-  const [reparaciones] = useState([
-    { id: 'V123', marca: 'BMW', modelo: 'X3', servicio: 'Cambio de Aceite', fechaHora: '2024-12-01T10:30', trabajador: 'Luis Gómez', comentario: 'Filtro reemplazado correctamente', costo: 120 },
-    { id: 'V456', marca: 'Ford', modelo: 'Focus', servicio: 'Revisión General', fechaHora: '2024-11-15T08:00', trabajador: 'María Pérez', comentario: 'Ajuste de frenos y aceite', costo: 200 },
-    { id: 'V789', marca: 'BMW', modelo: 'M3', servicio: 'Alineación de Ruedas', fechaHora: '2024-10-20T14:45', trabajador: 'Carlos Ruiz', comentario: 'Balanceo final ok, Balanceo final ok Balanceo final ok. Balanceo final ok', costo: 150 },
-  ]);
+  const availableFilterTypes = [
+    { key: 'trabajador', label: 'Nombre Empleado' },
+    { key: 'servicio', label: 'Servicio' },
+  ];
 
-  const availableFilterTypes = ['marca', 'modelo', 'servicio', 'trabajador'];
+  useEffect(() => {
+    async function fetchData() {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await getRepairHistory();
 
-  // handlers
+        const datosTransformados = data.map((item) => {
+          let servicioParseado;
+          try {
+            servicioParseado = JSON.parse(item.servicio);
+          } catch {
+            servicioParseado = item.servicio;
+          }
+
+          return {
+            marca: item.marca || '',
+            modelo: item.modelo || '',
+            servicio: Array.isArray(servicioParseado)
+              ? servicioParseado.join(', ')
+              : servicioParseado || '',
+            fechaHora: item.fechaHoraAtencion || '',
+            trabajador: item.nombre_completo_empleado || '',
+            comentario: item.comentario || 'No hay comentarios',
+            costo: parseFloat(item.totalFinal) || 0,
+          };
+        });
+
+        setReparaciones(datosTransformados);
+      } catch (err) {
+        setError('Error al cargar el historial de reparaciones.');
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData();
+  }, []);
+
   const handleFilterChange = (i, field, val) => {
     const newF = [...filters];
     newF[i] = { ...newF[i], [field]: val };
     if (field === 'type') newF[i].value = '';
     setFilters(newF);
   };
+
   const handleAddFilter = () => {
-    if (filters.length < 3 && filters[filters.length - 1].type && filters[filters.length - 1].value) {
+    if (
+      filters.length < 3 &&
+      filters[filters.length - 1].type &&
+      filters[filters.length - 1].value
+    ) {
       setFilters([...filters, { type: '', value: '' }]);
     }
   };
+
   const handleRemoveFilter = (idx) => {
     const newF = filters.filter((_, i) => i !== idx);
     setFilters(newF.length ? newF : [{ type: '', value: '' }]);
   };
 
-  // determinar si hay filtro activo con valor
   const advancedActive = filters.some((f) => f.type && f.value);
 
-  // filtrado combinado
   const filtradas = reparaciones.filter((r) => {
     if (!advancedActive && searchQuery) {
-      // búsqueda simple
       const hay = Object.values(r).some(
         (v) => typeof v === 'string' && v.toLowerCase().includes(searchQuery.toLowerCase())
       );
       if (!hay) return false;
     }
-    // aplicar filtros avanzados
     return filters.every((f) => {
       if (!f.type || !f.value) return true;
-      return r[f.type]?.toLowerCase().includes(f.value.toLowerCase());
+      return (r[f.type]?.toString().toLowerCase() || '').includes(f.value.toLowerCase());
     });
   });
 
@@ -72,6 +110,7 @@ function HistorialReparaciones() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="form-input w-64"
+                disabled={loading}
               />
             )}
             <div className="flex flex-col space-y-3">
@@ -81,11 +120,12 @@ function HistorialReparaciones() {
                     value={f.type}
                     onChange={(e) => handleFilterChange(idx, 'type', e.target.value)}
                     className="form-input w-48"
+                    disabled={loading}
                   >
                     <option value="">Filtro</option>
-                    {availableFilterTypes.map((opt) => (
-                      <option key={opt} value={opt}>
-                        {opt.charAt(0).toUpperCase() + opt.slice(1)}
+                    {availableFilterTypes.map(({ key, label }) => (
+                      <option key={key} value={key}>
+                        {label}
                       </option>
                     ))}
                   </select>
@@ -94,8 +134,11 @@ function HistorialReparaciones() {
                       value={f.value}
                       onChange={(e) => handleFilterChange(idx, 'value', e.target.value)}
                       className="form-input w-48"
+                      disabled={loading}
                     >
-                      <option value="">Seleccione {f.type}</option>
+                      <option value="">
+                        Seleccione {availableFilterTypes.find((a) => a.key === f.type)?.label}
+                      </option>
                       {[...new Set(reparaciones.map((r) => r[f.type]))].map((val) => (
                         <option key={val} value={val}>
                           {val}
@@ -104,23 +147,37 @@ function HistorialReparaciones() {
                     </select>
                   )}
                   {f.value && (
-                    <button type="button" onClick={() => handleRemoveFilter(idx)} className="textError">
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveFilter(idx)}
+                      className="textError"
+                      disabled={loading}
+                    >
                       X
                     </button>
                   )}
                 </div>
               ))}
               {!filters.some((f) => !f.type || !f.value) && filters.length < 3 && (
-                <button type="button" onClick={handleAddFilter} className="button-yellow w-40">
+                <button
+                  type="button"
+                  onClick={handleAddFilter}
+                  className="button-yellow w-40"
+                  disabled={loading}
+                >
                   Agregar Filtro
                 </button>
               )}
             </div>
           </div>
 
+          {/* mensajes de estado */}
+          {loading && <p className="text-center mt-6">Cargando reparaciones...</p>}
+          {error && <p className="text-center mt-6 text-red-600">{error}</p>}
+
           {/* cards */}
           <div className="mt-6">
-            {filtradas.length > 0 ? (
+            {!loading && filtradas.length > 0 ? (
               <div className="cardCitas grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filtradas.map((r, idx) => (
                   <div
@@ -161,9 +218,11 @@ function HistorialReparaciones() {
                 ))}
               </div>
             ) : (
-              <p className="advertencia text-center">
-                No se encontraron reparaciones con los filtros aplicados.
-              </p>
+              !loading && (
+                <p className="advertencia text-center">
+                  No se encontraron reparaciones con los filtros aplicados.
+                </p>
+              )
             )}
           </div>
         </form>

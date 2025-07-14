@@ -270,3 +270,23 @@ export const deletePolice = async (id) => {
     return handleError(error, 'deletePolice');
   }
 };
+
+
+//Acceptar los pagos en efectivo
+export const getRepairsInProcess = async () => {
+  try {
+    const response = await api.get('/admin/repairs-in-process');
+    return response.data;
+  } catch (error) {
+    return handleError(error, 'getRepairsInProcess');
+  }
+};
+
+export const confirmCashPayment = async (repairId) => {
+  try {
+    const response = await api.patch(`/admin/confirm-cash-payment/${repairId}`);
+    return response.data;
+  } catch (error) {
+    return handleError(error, 'confirmCashPayment');
+  }
+};

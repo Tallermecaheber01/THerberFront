@@ -48,14 +48,14 @@ export const getAllEmployees = async () => {
 
 export const getClientById = async (id) => {
     try {
-      const response = await api.get(`/employ/clients/${id}`);
-      return response.data;
+        const response = await api.get(`/employ/clients/${id}`);
+        return response.data;
     } catch (error) {
-      return handleError(error, 'getClientById');
+        return handleError(error, 'getClientById');
     }
-  }
-  
-  
+}
+
+
 
 
 export const getAllServices = async () => {
@@ -72,7 +72,7 @@ export const getAppointmentById = async (appointmentId) => {
         const response = await api.get(`/employ/appointment/${appointmentId}`);
         return response.data
     } catch (error) {
-        return handleError(error,'getAppointmentById');
+        return handleError(error, 'getAppointmentById');
     }
 }
 
@@ -80,7 +80,7 @@ export const getAppointmentsWithServicesID = async (employeeId) => {
     try {
         const url = employeeId
             ? `/employ/appointments/full/${employeeId}`
-            : `/employ/appointments/full`; 
+            : `/employ/appointments/full`;
 
         const response = await api.get(url);
         return response.data;
@@ -89,14 +89,14 @@ export const getAppointmentsWithServicesID = async (employeeId) => {
         return null;
     }
 };
-  
+
 
 export const getAppointmentsInWaiting = async () => {
     try {
         const response = await api.get('/employ/appointments/waiting')
         return response.data;
     } catch (error) {
-        return handleError(error,'getAppointmentsInWaiting')
+        return handleError(error, 'getAppointmentsInWaiting')
     }
 }
 
@@ -115,7 +115,7 @@ export const getAppointmentsCancelled = async () => {
         const responde = await api.get(`/employ/appointments/canceled`);
         return responde.data;
     } catch (error) {
-        return handleError(error,'getAppointmentsCancelled')
+        return handleError(error, 'getAppointmentsCancelled')
     }
 };
 
@@ -126,37 +126,37 @@ export const createRepair = async (repairData) => {
     } catch (error) {
         return handleError(error, 'createRepair');
     }
-    
+
 };
 
 // Función para obtener todas las reparaciones
 export const getAllRepairs = async () => {
     try {
-      const response = await api.get('/employ/repairs');
-      return response.data;
-    } catch (error) { 
-      return handleError(error, 'getAllRepairs');
-    }
-  };
-
-  export const getRepairById = async (repairId) => {
-    try {
-      const response = await api.get(`/employ/repairs/${repairId}`);
-      return response.data;
+        const response = await api.get('/employ/repairs');
+        return response.data;
     } catch (error) {
-      return handleError(error, 'getRepairById');
+        return handleError(error, 'getAllRepairs');
     }
-  };
+};
 
-  export const updateRepair = async (repairId, updateRepairDto) => {
+export const getRepairById = async (repairId) => {
     try {
-      const response = await api.patch(`/employ/repairs/${repairId}`, updateRepairDto);
-      return response.data;
+        const response = await api.get(`/employ/repairs/${repairId}`);
+        return response.data;
     } catch (error) {
-      return handleError(error, 'updateRepair');
+        return handleError(error, 'getRepairById');
     }
-  };
-  
+};
+
+export const updateRepair = async (repairId, updateRepairDto) => {
+    try {
+        const response = await api.patch(`/employ/repairs/${repairId}`, updateRepairDto);
+        return response.data;
+    } catch (error) {
+        return handleError(error, 'updateRepair');
+    }
+};
+
 
 export const rejectAppointment = async (data) => {
     try {
@@ -166,4 +166,14 @@ export const rejectAppointment = async (data) => {
         return handleError(error, 'rejectAppointment')
     }
 }
+
+export const getAppointmentsPendingChange = async () => {
+    try {
+        const response = await api.get('/employ/appointments/pending-change');
+        return response.data;
+    } catch (error) {
+        return handleError(error, 'getAppointmentsPendingChange');
+    }
+};
+
 

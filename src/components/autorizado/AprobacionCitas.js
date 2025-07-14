@@ -1,7 +1,12 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2';
 import Breadcrumbs from '../Breadcrumbs';
-import { getAppointmentsInWaiting, getAllEmployees, updateWaitingAppointment, rejectAppointment } from '../../api/employ';
+import {
+  getAppointmentsInWaiting, getAllEmployees, updateWaitingAppointment, rejectAppointment,
+  getAllServices
+} from '../../api/employ';
+
 import { AuthContext } from '../AuthContext';
 
 function AprobacionesCitas() {
@@ -9,23 +14,33 @@ function AprobacionesCitas() {
   const navigate = useNavigate();
   const [appoinmentInWaiting, setAppointmentInWaiting] = useState([]);
   const [employes, setEmployes] = useState([]);
+  const [services, setServices] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const appointmentData = await getAppointmentsInWaiting();
         const employData = await getAllEmployees();
-        console.log("Respuesta:", appointmentData);
-        console.log("Empleados:", employData);
+        const servicesData = await getAllServices();
         setAppointmentInWaiting(appointmentData);
         setEmployes(employData);
+        setServices(servicesData);
+        console.log("Datos de citas en espera obtenidos:", appointmentData);
+        console.log("Datos de empleados obtenidos:", employData);
+        console.log("Datos de servicios obtenidos:", servicesData);
       } catch (error) {
         console.error("Error al obtener los datos:", error);
       }
     };
-
     fetchData();
   }, []);
+
+  // Obtén marcas únicas de las citas en espera
+  const marcasUnicas = useMemo(() => {
+    const marcas = appoinmentInWaiting.map(cita => cita.marca).filter(Boolean);
+    // elimina duplicados
+    return [...new Set(marcas)];
+  }, [appoinmentInWaiting]);
 
   const [selectedCita, setSelectedCita] = useState(null);
   const [total, setTotal] = useState('');
@@ -33,7 +48,6 @@ function AprobacionesCitas() {
   const [isRejectionMode, setIsRejectionMode] = useState(false);
   const [razonRechazo, setRazonRechazo] = useState('');
   const [approvalErrors, setApprovalErrors] = useState({});
-  const [showConfirmApproveModal, setShowConfirmApproveModal] = useState(false);
 
   const staticBreadcrumbs = [
     { name: 'Inicio', link: '/' },
@@ -44,14 +58,8 @@ function AprobacionesCitas() {
   const availableFilterTypes = ['marca', 'cliente', 'servicio'];
   const appliedFilterTypes = filters.map((filter) => filter.type);
   const optionsByFilter = {
-    marca: ['Toyota', 'Ford', 'Chevrolet', 'Honda', 'Nissan'],
-    servicio: [
-      'Cambio de aceite',
-      'Revisión de frenos',
-      'Cambio de batería',
-      'Revisión de suspensión',
-      'Reparación de aire acondicionado',
-    ],
+    marca: marcasUnicas,
+    servicio: services.map((s) => s.nombre),
   };
 
   const getDynamicBreadcrumbs = () => {
@@ -100,10 +108,8 @@ function AprobacionesCitas() {
   };
 
   const filteredCitas = appoinmentInWaiting.filter((cita) => {
-    // Filtrar solo las citas que están en estado 'En espera'
     if (cita.estado !== 'En espera') return false;
 
-    // Buscar coincidencias en los valores de la cita
     const matchesSearch =
       searchQuery === '' ||
       Object.values(cita).some((value) => {
@@ -115,13 +121,11 @@ function AprobacionesCitas() {
         return false;
       });
 
-    // Filtrar por los filtros proporcionados
     const matchesFilters = filters.every((filter) => {
       if (!filter.type || !filter.value) return true;
 
       const field = filter.type.toLowerCase();
 
-      // Verificación especial para 'servicio', buscamos dentro de 'services'
       if (field === 'servicio') {
         return (
           Array.isArray(cita.services) &&
@@ -131,8 +135,13 @@ function AprobacionesCitas() {
         );
       }
 
+      if (field === 'cliente') {
+        return cita.nombreCliente?.toLowerCase().includes(filter.value.toLowerCase());
+      }
+
       return cita[field]?.toLowerCase().includes(filter.value.toLowerCase());
     });
+
 
     return matchesSearch && matchesFilters;
   });
@@ -179,9 +188,7 @@ function AprobacionesCitas() {
     return true;
   };
 
-  const handleAttemptApprove = () => {
-    console.log("Empleado seleccionado en handleAttemptApprove:", selectedEmpleado);
-
+  const handleAttemptApprove = async () => {
     const errors = {};
 
     if (total.trim() === '') {
@@ -205,7 +212,25 @@ function AprobacionesCitas() {
       return;
     }
     setApprovalErrors({});
-    setShowConfirmApproveModal(true);
+
+    // Confirmación con SweetAlert2
+    const result = await Swal.fire({
+      title: 'Confirmar aprobación',
+      html: `¿Está seguro de aprobar la cita con total de <b>$${total}</b> y asignar al empleado <b>${getEmpleadoNombre(selectedEmpleado)}</b>?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, aprobar',
+      cancelButtonText: 'Cancelar',
+    });
+
+    if (result.isConfirmed) {
+      confirmApprove();
+    }
+  };
+
+  const getEmpleadoNombre = (id) => {
+    const empleado = employes.find(e => e.id === Number(id));
+    return empleado ? empleado.nombre_completo : '';
   };
 
   const confirmApprove = async () => {
@@ -214,14 +239,8 @@ function AprobacionesCitas() {
         ...prevErrors,
         empleado: "Por favor, seleccione un empleado",
       }));
-      console.log("Empleado no seleccionado.");
       return;
     }
-
-    console.log("Citas antes de la actualización:", appoinmentInWaiting);
-    console.log("Cita seleccionada:", selectedCita);
-    console.log("Total que se enviará:", Number(total));
-    console.log("Empleado:", Number(selectedEmpleado));
 
     try {
       const updatedAppointment = await updateWaitingAppointment(selectedCita.appointment_id, {
@@ -230,25 +249,34 @@ function AprobacionesCitas() {
         estado: "Confirmada",
       });
 
-      console.log("Respuesta de la API:", updatedAppointment);
-
       setAppointmentInWaiting((prevCitas) =>
         prevCitas.map((cita) =>
           cita.appointment_id === selectedCita.appointment_id
             ? {
-                ...cita,
-                estado: "Confirmada",
-                total: Number(total),
-                nombreEmpleado: selectedEmpleado,
-              }
+              ...cita,
+              estado: "Confirmada",
+              total: Number(total),
+              nombreEmpleado: getEmpleadoNombre(selectedEmpleado),
+            }
             : cita
         )
       );
+
+      Swal.fire({
+        icon: 'success',
+        title: '¡Cita aprobada!',
+        timer: 1500,
+        showConfirmButton: false,
+      });
     } catch (error) {
       console.error("Error al actualizar la cita:", error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudo aprobar la cita.',
+      });
     }
 
-    setShowConfirmApproveModal(false);
     setSelectedCita(null);
     setTotal("");
     setSelectedEmpleado("");
@@ -261,6 +289,13 @@ function AprobacionesCitas() {
   };
 
   const handleConfirmRejection = async () => {
+    if (razonRechazo.trim() === '') {
+      setApprovalErrors({
+        razonRechazo: 'La razón de rechazo es obligatoria.',
+      });
+      return;
+    }
+
     if (razonRechazo.trim() !== '' && /^\d+$/.test(razonRechazo.trim())) {
       setApprovalErrors({
         razonRechazo: 'La razón de rechazo no puede contener solo números.',
@@ -276,11 +311,21 @@ function AprobacionesCitas() {
     }
 
     const idPersonal = auth && auth.user ? auth.user.id : null;
-
     if (!idPersonal) {
       console.error("No se encontró el ID del personal.");
       return;
     }
+
+    const result = await Swal.fire({
+      title: 'Confirmar rechazo',
+      html: `¿Está seguro de rechazar la cita?<br/><b>Motivo:</b> ${razonRechazo}`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, rechazar',
+      cancelButtonText: 'Cancelar',
+    });
+
+    if (!result.isConfirmed) return;
 
     try {
       const data = {
@@ -289,8 +334,7 @@ function AprobacionesCitas() {
         idPersonal,
       };
 
-      const response = await rejectAppointment(data);
-      console.log("Respuesta de la API:", response);
+      await rejectAppointment(data);
 
       setAppointmentInWaiting((prevCitas) =>
         prevCitas.map((cita) =>
@@ -299,12 +343,26 @@ function AprobacionesCitas() {
             : cita
         )
       );
+
+      Swal.fire({
+        icon: 'success',
+        title: '¡Cita rechazada!',
+        timer: 1500,
+        showConfirmButton: false,
+      });
     } catch (error) {
       console.error("Error al rechazar la cita:", error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudo rechazar la cita.',
+      });
     }
 
     setSelectedCita(null);
     setApprovalErrors({});
+    setRazonRechazo('');
+    setIsRejectionMode(false);
   };
 
   const handleCancelRejection = () => {
@@ -313,7 +371,6 @@ function AprobacionesCitas() {
     setApprovalErrors({});
   };
 
-  // Función para filtrar empleados según el rol del usuario autenticado
   const getFilteredEmployees = () => {
     if (auth.role === 'empleado') {
       return employes.filter((empleado) => empleado.id === auth.user.id);
@@ -424,29 +481,34 @@ function AprobacionesCitas() {
           </div>
         </div>
         {!selectedCita && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredCitas.map((cita) => (
-              <div
-                key={cita.appointment_id}
-                className="reparacion-card cursor-pointer card-transition"
-                onClick={() => handleSelectCita(cita.appointment_id)}
-              >
-                <h2 className="cita-title">{cita.appointment_id}</h2>
-                <p className="cita-subtitle">Modelo: {cita.modelo}</p>
-                <p className="cita-subtitle">Marca: {cita.marca}</p>
-                <p className="cita-subtitle">Cliente: {cita.nombreCliente}</p>
-                <p className="cita-subtitle">
-                  Fecha: {new Date(cita.fecha).toLocaleDateString()} - Hora: {cita.hora}
-                </p>
-                <p className="cita-subtitle">
-                  Servicios: {Array.isArray(cita.services) && cita.services.length > 0
-                    ? cita.services.map(service => service.servicio).join(', ')
-                    : 'No hay servicios'}
-                </p>
-              </div>
-            ))}
-          </div>
+          filteredCitas.length === 0 ? (
+            <p className="text-center text-gray-600 text-lg mt-12">No hay citas por aprobar.</p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredCitas.map((cita) => (
+                <div
+                  key={cita.appointment_id}
+                  className="reparacion-card cursor-pointer card-transition"
+                  onClick={() => handleSelectCita(cita.appointment_id)}
+                >
+                  <h2 className="cita-title">{cita.appointment_id}</h2>
+                  <p className="cita-subtitle">Modelo: {cita.modelo}</p>
+                  <p className="cita-subtitle">Marca: {cita.marca}</p>
+                  <p className="cita-subtitle">Cliente: {cita.nombreCliente}</p>
+                  <p className="cita-subtitle">
+                    Fecha: {new Date(cita.fecha).toLocaleDateString()} - Hora: {cita.hora}
+                  </p>
+                  <p className="cita-subtitle">
+                    Servicios: {Array.isArray(cita.services) && cita.services.length > 0
+                      ? cita.services.map(service => service.servicio).join(', ')
+                      : 'No hay servicios'}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )
         )}
+
         {selectedCita && (
           <div className="reparacion-card">
             <div className="flex justify-end">
@@ -506,7 +568,7 @@ function AprobacionesCitas() {
                     <option value="">Seleccione un trabajador</option>
                     {getFilteredEmployees().map((empleado) => (
                       <option key={empleado.id} value={empleado.id}>
-                        {empleado.nombre}
+                        {empleado.nombre_completo}
                       </option>
                     ))}
                   </select>
@@ -516,91 +578,60 @@ function AprobacionesCitas() {
                     </p>
                   )}
                 </div>
+                <div className="flex gap-4 mt-6 justify-center">
+                  <button
+                    className="button-yellow w-44"
+                    onClick={handleAttemptApprove}
+                  >
+                    Aprobar cita
+                  </button>
+                  <button
+                    className="btn-cancelar w-44"
+                    onClick={handleEnterRejection}
+                  >
+                    Rechazar cita
+                  </button>
+                </div>
               </>
             )}
             {isRejectionMode && (
-              <div className="form-group">
-                <label htmlFor="razon" className="form-label">
-                  Razón de rechazo:
-                </label>
-                <textarea
-                  id="razon"
-                  className="form-input"
-                  value={razonRechazo}
-                  onChange={(e) => setRazonRechazo(e.target.value)}
-                  placeholder="Ingrese la razón del rechazo (no solo números)"
-                  rows="4"
-                />
-                {approvalErrors.razonRechazo && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {approvalErrors.razonRechazo}
-                  </p>
-                )}
-              </div>
-            )}
-            <div className="flex gap-4 mt-4">
-              {isRejectionMode ? (
-                <>
+              <>
+                <div className="form-group">
+                  <label htmlFor="razonRechazo" className="form-label">
+                    Razón de rechazo:
+                  </label>
+                  <textarea
+                    id="razonRechazo"
+                    className="form-input"
+                    value={razonRechazo}
+                    onChange={(e) => setRazonRechazo(e.target.value)}
+                    placeholder="Escriba el motivo de rechazo"
+                  />
+                  {approvalErrors.razonRechazo && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {approvalErrors.razonRechazo}
+                    </p>
+                  )}
+                </div>
+                <div className="flex gap-4 mt-6 justify-center">
                   <button
-                    type="button"
-                    className="btn-aceptar"
+                    className="button-yellow w-44"
                     onClick={handleConfirmRejection}
                   >
-                    Aceptar
+                    Confirmar rechazo
                   </button>
                   <button
-                    type="button"
-                    className="btn-cancelar"
+                    className="btn-cancelar w-44"
                     onClick={handleCancelRejection}
                   >
                     Cancelar
                   </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    type="button"
-                    className="btn-aceptar"
-                    onClick={handleAttemptApprove}
-                  >
-                    Aprobar Cita
-                  </button>
-                  <button
-                    type="button"
-                    className="btn-cancelar"
-                    onClick={handleEnterRejection}
-                  >
-                    Rechazar Cita
-                  </button>
-                </>
-              )}
-            </div>
+                </div>
+              </>
+            )}
           </div>
         )}
       </div>
-      {showConfirmApproveModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded shadow-lg w-80">
-            <h2 className="text-xl mb-4 text-yellow-500">
-              Confirmación de Aprobación
-            </h2>
-            <p className="mb-4 text-gray-700 dark:text-gray-300">
-              ¿Está seguro de aprobar la cita con total de ${total} y asignar al empleado {selectedEmpleado}?
-            </p>
-            <div className="flex justify-end gap-4">
-              <button className="btn-aceptar" onClick={confirmApprove}>
-                Confirmar
-              </button>
-              <button
-                className="btn-cancelar"
-                onClick={() => setShowConfirmApproveModal(false)}
-              >
-                Cancelar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

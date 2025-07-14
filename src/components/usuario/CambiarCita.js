@@ -1,74 +1,116 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Breadcrumbs from '../Breadcrumbs';
+import { useNavigate, useParams } from 'react-router-dom';
+import { getAllServices } from '../../api/admin';
+import { getAppointmentById, updateAppointmentDate } from '../../api/client';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function CambiarCita() {
-  const [fechaActual] = useState('2024-12-22T14:30');
-  const [nuevaFecha, setNuevaFecha] = useState('2024-12-22T14:30');
-  const [motivo, setMotivo] = useState('');
-  const [serviciosSeleccionados, setServiciosSeleccionados] = useState({
-    cambioAceite: true,
-    revisionGeneral: true,
-    reparacionFrenos: true,
-  });
+  const navigate = useNavigate();
+  const { id } = useParams();
 
+  const [fechaActual, setFechaActual] = useState('');
+  const [nuevaFecha, setNuevaFecha] = useState('');
+
+  const [servicios, setServicios] = useState([]);
+  const [serviciosSeleccionados, setServiciosSeleccionados] = useState({});
   const [mostrarServicios, setMostrarServicios] = useState(false);
   const [busquedaServicio, setBusquedaServicio] = useState('');
 
-  const breadcrumbPaths = [
-    { name: 'Inicio', link: '/' },
-    { name: 'Consulta Cita', link: '/consultacita' },
-    { name: 'Editar Cita', link: '/editarcita' },
-  ];
+  const [trabajadorAsignado, setTrabajadorAsignado] = useState('');
 
-  const servicios = [
-    { nombre: 'Cambio de Aceite', clave: 'cambioAceite' },
-    { nombre: 'Revisión General', clave: 'revisionGeneral' },
-    { nombre: 'Reparación de Frenos', clave: 'reparacionFrenos' },
-    { nombre: 'Alineación de Ruedas', clave: 'alineacionRuedas' },
-    { nombre: 'Cambio de Filtro de Aire', clave: 'cambioFiltroAire' },
-    { nombre: 'Reparación de Suspensión', clave: 'reparacionSuspension' },
-    { nombre: 'Reemplazo de Batería', clave: 'reemplazoBateria' },
-    { nombre: 'Reparación de Radiador', clave: 'reparacionRadiador' },
-    { nombre: 'Cambio de Neumáticos', clave: 'cambioNeumaticos' },
-    { nombre: 'Cambio de Frenos', clave: 'cambioFrenos' },
-  ];
+  const formatearFechaHora = (fechaISO, horaStr) => {
+    if (!fechaISO || !horaStr) return '';
+    const fechaParte = fechaISO.slice(0, 10);
+    const horaMinutos = horaStr.slice(0, 5);
+    return `${fechaParte}T${horaMinutos}`;
+  };
 
-  // Toggle servicio
-  const manejarServicioToggle = clave => {
+  const formatDate = dateTimeLocal => {
+    if (!dateTimeLocal) return 'Fecha inválida';
+    const date = new Date(dateTimeLocal);
+    if (isNaN(date.getTime())) return 'Fecha inválida';
+    return date.toLocaleString('es-ES', { hour12: false });
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const servicesResponse = await getAllServices();
+        setServicios(servicesResponse);
+
+        const cita = await getAppointmentById(id);
+        console.log('📅 Cita obtenida:', cita);
+
+        setTrabajadorAsignado(cita.nombreCompletoPersonal || 'Sin asignar');
+
+        const fechaHoraInput = formatearFechaHora(cita.fecha, cita.hora);
+        setFechaActual(fechaHoraInput);
+        setNuevaFecha(fechaHoraInput);
+
+        const seleccionInicial = {};
+        servicesResponse.forEach(s => {
+          seleccionInicial[s.id] = false;
+        });
+        cita.servicios.forEach(s => {
+          seleccionInicial[s.idServicio] = true;
+        });
+        setServiciosSeleccionados(seleccionInicial);
+      } catch (error) {
+        console.error('Error al cargar cita o servicios:', error);
+      }
+    };
+    fetchData();
+  }, [id]);
+
+  const manejarServicioToggle = id => {
     setServiciosSeleccionados(prev => ({
       ...prev,
-      [clave]: !prev[clave] // Invertir valor boolean
+      [id]: !prev[id],
     }));
   };
 
   const manejarNuevaFechaChange = e => setNuevaFecha(e.target.value);
-  const manejarMotivoChange    = e => setMotivo(e.target.value);
 
-  const manejarEnviar = e => {
+  const manejarEnviar = async e => {
     e.preventDefault();
-    console.log({
-      fechaActual,
-      nuevaFecha,
-      motivo,
-      servicios: Object.keys(serviciosSeleccionados)
-    });
-    // pal back
+    console.log('🛠️ Modificando cita con ID:', id);
+
+    const [fecha, hora] = nuevaFecha.split('T');
+
+    const serviciosSeleccionadosFinal = servicios
+      .filter(s => serviciosSeleccionados[s.id])
+      .map(s => s.nombre);
+
+    const datosAEnviar = {
+      fecha,
+      hora,
+      servicios: serviciosSeleccionadosFinal,
+    };
+
+    try {
+      console.log('Datos a enviar:', datosAEnviar);
+      await updateAppointmentDate(id, datosAEnviar);
+      toast.success('Solicitud de cambio de cita enviado correctamente.');
+      setTimeout(() => navigate('/consultacita'), 3000);
+    } catch (error) {
+      console.error('Error al actualizar cita:', error);
+      toast.error('Hubo un error al actualizar la cita.');
+    }
   };
 
   const serviciosFiltrados = servicios.filter(s =>
     s.nombre.toLowerCase().includes(busquedaServicio.toLowerCase())
   );
 
-  // Array estable de seleccionados
-  const seleccionados = servicios.filter(s => serviciosSeleccionados[s.clave]);
+  const seleccionados = servicios.filter(s => serviciosSeleccionados[s.id]);
 
-
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return isNaN(date.getTime()) 
-      ? 'Fecha inválida' 
-      : date.toLocaleString('es-ES');
-  };
+  const breadcrumbPaths = [
+    { name: 'Inicio', link: '/' },
+    { name: 'Consulta Cita', link: '/consultacita' },
+    { name: 'Editar Cita', link: '/editarcita' },
+  ];
 
   return (
     <div className="container mx-auto p-4">
@@ -79,17 +121,16 @@ function CambiarCita() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="space-y-4">
-            {/* Fecha actual */}
             <div className="form-group">
               <label className="form-label">Fecha y Hora Actual</label>
-              <p className="cita-subtitle">
-                {new Date(fechaActual).toLocaleString()}
-              </p>
+              <p className="cita-subtitle">{formatDate(fechaActual)}</p>
             </div>
+
             <div className="form-group">
               <label className="form-label">Trabajador Asignado</label>
-              <p className="cita-subtitle">Juan Pérez</p>
+              <p className="cita-subtitle">{trabajadorAsignado}</p>
             </div>
+
             <div className="form-group">
               <label htmlFor="nueva-fecha" className="form-label">
                 Nueva Fecha y Hora
@@ -103,18 +144,7 @@ function CambiarCita() {
                 required
               />
             </div>
-            <div className="form-group">
-              <label htmlFor="motivo" className="form-label">
-                Motivo (Opcional)
-              </label>
-              <textarea
-                id="motivo"
-                value={motivo}
-                onChange={manejarMotivoChange}
-                className="form-input"
-                placeholder="Describe el motivo del cambio"
-              />
-            </div>
+
             <button
               type="button"
               onClick={() => setMostrarServicios(!mostrarServicios)}
@@ -122,6 +152,7 @@ function CambiarCita() {
             >
               {mostrarServicios ? 'Ocultar Servicios' : 'Agregar Servicios'}
             </button>
+
             {mostrarServicios && (
               <div className="space-y-3 mt-4">
                 <input
@@ -131,45 +162,36 @@ function CambiarCita() {
                   onChange={e => setBusquedaServicio(e.target.value)}
                   className="form-input"
                 />
-                {serviciosFiltrados.map(srv => {
-                  const checked = !!serviciosSeleccionados[srv.clave];
-                  return (
-                    <label key={srv.clave} className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        checked={checked}
-                        onChange={() => manejarServicioToggle(srv.clave)}
-                        className="form-checkbox"
-                      />
-                      <span>{srv.nombre}</span>
-                    </label>
-                  );
-                })}
+                {serviciosFiltrados.map(srv => (
+                  <label key={srv.id} className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      checked={serviciosSeleccionados[srv.id] || false}
+                      onChange={() => manejarServicioToggle(srv.id)}
+                      className="form-checkbox"
+                    />
+                    <span>{srv.nombre}</span>
+                  </label>
+                ))}
               </div>
             )}
           </div>
+
           <div className="space-y-6">
-          <div key={`fecha-${nuevaFecha}`} className="p-4 bg-gray-50 rounded space-y-2">
+            <div className="p-4 bg-gray-50 rounded space-y-2">
               <h3 className="font-semibold">Resumen de Cambio</h3>
-              <p>
-                <strong>Fecha Actual:</strong>{' '}
-                {new Date(fechaActual).toLocaleString()}
-              </p>
-              <div className="debug-border">
-    
+              <p><strong>Fecha Actual:</strong> {formatDate(fechaActual)}</p>
               <p><strong>Nueva Fecha:</strong> {formatDate(nuevaFecha)}</p>
-            </div>
-            <p key={motivo}><strong>Motivo:</strong> {motivo || '—'}</p>
               <div>
                 <strong>Servicios:</strong>
                 {seleccionados.length > 0 ? (
                   <ul className="list-disc pl-5">
                     {seleccionados.map(srv => (
-                      <li key={srv.clave} className="flex justify-between">
+                      <li key={srv.id} className="flex justify-between">
                         {srv.nombre}
                         <button
                           type="button"
-                          onClick={() => manejarServicioToggle(srv.clave)}
+                          onClick={() => manejarServicioToggle(srv.id)}
                           className="text-red-500 font-bold"
                         >
                           ×
@@ -190,7 +212,7 @@ function CambiarCita() {
               <button
                 type="button"
                 className="btn-cancelar py-1 flex-1"
-                onClick={() => window.location.reload()}
+                onClick={() => navigate('/consultacita')}
               >
                 Cancelar
               </button>
@@ -198,17 +220,10 @@ function CambiarCita() {
           </div>
         </div>
       </form>
+
+      <ToastContainer position="top-right" autoClose={3000} />
     </div>
   );
 }
 
 export default CambiarCita;
-
-
-
-
-
-
-
-
-

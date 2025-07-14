@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react';
+import Swal from 'sweetalert2';
 import { createNewAppointment, getAllUsersClient, getAllEmployees, getAllServices } from '../../api/employ';
 import { AuthContext } from "../AuthContext";
 import Breadcrumbs from "../Breadcrumbs";
@@ -140,16 +141,28 @@ function AsignacionCita() {
   const handleSumarExtra = (e) => {
     e.preventDefault();
     const extra = parseFloat(extraAmount);
+
     if (isNaN(extra)) {
-      alert('Ingrese una cantidad extra válida.');
+      Swal.fire({
+        icon: 'warning',
+        title: 'Cantidad inválida',
+        text: 'Ingrese una cantidad extra válida.',
+      });
       return;
     }
+
     if (extra < 0) {
-      alert('La cantidad extra no puede ser negativa.');
+      Swal.fire({
+        icon: 'warning',
+        title: 'Cantidad negativa',
+        text: 'La cantidad extra no puede ser negativa.',
+      });
       return;
     }
+
     setTotalCosto((prev) => prev + extra);
   };
+
 
   const handleRestarExtra = (e) => {
     e.preventDefault();
@@ -238,9 +251,7 @@ function AsignacionCita() {
     setShowConfirmAssignModal(true);
   };
 
-  serviciosSeleccionados.forEach((servicio, index) => {
-    // console.log(`Servicio ${index + 1}:`, servicio);
-  });
+
 
   const confirmAsignacion = async () => {
     const vehicleSeleccionado = clienteSeleccionado.vehicles.find(
@@ -265,30 +276,34 @@ function AsignacionCita() {
       }))
     };
 
-    console.log("Auto:", vehicleSeleccionado);
-    console.log("Cliente seleccionado:", clienteSeleccionado.user_nombre_completo);
-    console.log("Marca del auto seleccionada:", selectedMarca);
-    console.log("Modelo del auto seleccionado:", selectedModelo);
-    console.log("Empleado seleccionado:", empleadoSeleccionado);
-    console.log("Fecha:", fecha);
-    console.log("Hora:", hora);
-    console.log("Servicios seleccionados:", serviciosSeleccionados);
-    console.log("Extra:", extraAmount);
-    console.log("Costo total:", totalCosto);
     try {
       const response = await createNewAppointment(appointmentData);
       if (response) {
-        toast.success('Cita asignada correctamente');
+        await Swal.fire({
+          icon: 'success',
+          title: '¡Cita asignada!',
+          text: 'La cita fue asignada correctamente.',
+          confirmButtonText: 'Aceptar'
+        });
         limpiarCampos();
         setShowConfirmAssignModal(false);
       } else {
-        toast.error('Hubo un error al asignar la cita. Intente nuevamente.')
+        Swal.fire({
+          icon: 'error',
+          title: 'Error al asignar la cita',
+          text: 'Hubo un error al asignar la cita. Intente nuevamente.'
+        });
       }
     } catch (error) {
-      alert("Hubo un error al asignar la cita. Intente nuevamente.");
+      Swal.fire({
+        icon: 'error',
+        title: 'Error inesperado',
+        text: 'Hubo un error al asignar la cita. Intente nuevamente.'
+      });
       console.error("Error al crear la cita:", error);
     }
   };
+
 
   const handleCancelar = (e) => {
     e.preventDefault();
@@ -591,7 +606,7 @@ function AsignacionCita() {
                 </div>
                 <div className="form-group mt-2 flex gap-2">
                   <button
-                  type="button"
+                    type="button"
                     className="btn-aceptar"
                     onClick={handleSumarExtra}
                     disabled={!clienteSeleccionado}

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Breadcrumbs from '../Breadcrumbs';
 import { getVehicles, updateVehicle, deleteVehicle } from '../../api/client';
 import { toast } from 'react-toastify';
+import Swal from 'sweetalert2';
 
 function ConsultaVehiculos() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -16,7 +17,7 @@ function ConsultaVehiculos() {
       console.log('Vehículos obtenidos:', vehiclesResponse);
       setVehicles(vehiclesResponse);
     } catch (error) {
-      console.error('Error al obtener vehículos:', error);
+      console.log('Error al obtener vehículos:', error);
     }
   };
   useEffect(() => {
@@ -100,20 +101,29 @@ function ConsultaVehiculos() {
   };
 
   const handleDeleteClick = async (id) => {
-    const confirmDelete = window.confirm("¿Estás seguro de que deseas eliminar este vehículo?");
-    if (!confirmDelete) return;
+    const result = await Swal.fire({
+      title: '¿Estás seguro?',
+      text: 'Esta acción eliminará el vehículo permanentemente.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+    });
 
-    try {
-      await deleteVehicle(id); // Asegúrate de importar esta función
-      toast.success('Vehículo eliminado exitosamente');
-
-      // Opcional: actualiza la lista de vehículos después de eliminar
-      setVehicles(prev => prev.filter(v => v.id !== id));
-    } catch (error) {
-      console.error('Error al eliminar vehículo:', error);
-      toast.error('Ocurrió un error al eliminar el vehículo');
+    if (result.isConfirmed) {
+      try {
+        await deleteVehicle(id);
+        toast.success('Vehículo eliminado exitosamente');
+        setVehicles(prev => prev.filter(v => v.id !== id));
+      } catch (error) {
+        console.error('Error al eliminar vehículo:', error);
+        toast.error('Ocurrió un error al eliminar el vehículo');
+      }
     }
   };
+
 
 
 

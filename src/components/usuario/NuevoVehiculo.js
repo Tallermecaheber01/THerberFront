@@ -77,7 +77,7 @@ function RegistrarVehiculo() {
     setMostrarSugerencias(false);
   };
 
-  const handleSubmit = e => {
+  const handleSubmit = async e => {
     e.preventDefault();
     if(!auth.user || !auth.user.id) {
       alert('Debes iniciar sesión para registrar un vehículo.');
@@ -89,7 +89,7 @@ function RegistrarVehiculo() {
       idPropietario: auth.user.id, // Asignar el ID del propietario
     }
     try {
-      const response = createNewVehicle(dataVehicle);
+      const response = await createNewVehicle(dataVehicle);
       if (response) {
         toast.success('Vehículo registrado exitosamente');
       }else {

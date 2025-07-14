@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Breadcrumbs from '../Breadcrumbs';
-import { getAppointments } from '../../api/client';
+import { getAppointments, cancelAppointment } from '../../api/client'; // ✅ Import cancelAppointment
+import Swal from 'sweetalert2';
 
 function Consulta_cita() {
   const staticBreadcrumbs = [
@@ -9,63 +10,29 @@ function Consulta_cita() {
     { name: 'Consulta cita', link: '/consultacita' },
   ];
 
-  /*const [citas, setCitas] = useState([
-    {
-      id: 1,
-      trabajador: 'Pedro Cruz',
-      horario: '10:00 AM - 11:00 AM',
-      ubicacion: 'Sucursal Centro',
-      servicio: 'Cambio de aceite',
-    },
-    {
-      id: 2,
-      trabajador: 'Pedro Cruz',
-      horario: '12:00 PM - 01:00 PM',
-      ubicacion: 'Sucursal Norte',
-      servicio: 'Revisión de frenos',
-    },
-    {
-      id: 3,
-      trabajador: 'Pedro Cruz',
-      horario: '02:00 PM - 3:00 PM',
-      ubicacion: 'Sucursal Sur',
-      servicio: 'Alineación y balanceo',
-    },
-    {
-      id: 4,
-      trabajador: 'Pedro Cruz',
-      horario: '03:30 PM - 04:30 PM',
-      ubicacion: 'Sucursal Este',
-      servicio: 'Cambio de batería',
-    },
-    {
-      id: 5,
-      trabajador: 'Pedro Cruz',
-      horario: '05:00 PM - 06:00 PM',
-      ubicacion: 'Sucursal Oeste',
-      servicio: 'Revisión general',
-    },
-  ]);*/
-
   const [appointments, setAppointments] = useState([]);
+  const [selectedCita, setSelectedCita] = useState(null);
+  const [filters, setFilters] = useState([{ type: '', value: '' }]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
+
+  const availableFilterTypes = ['trabajador', 'servicio', 'estado'];
+  const appliedFilterTypes = filters.map((filter) => filter.type);
+
   const optionsByFilter = React.useMemo(() => {
     const trabajadores = [...new Set(appointments.map(a => a.nombreCompletoPersonal))];
     const servicios = [...new Set(appointments.flatMap(a => a.servicios.map(s => s.nombreServicio)))];
-    
-
+    const estados = [...new Set(appointments.map(a => a.estado))];
     return {
       trabajador: trabajadores,
       servicio: servicios,
-    
+      estado: estados,
     };
   }, [appointments]);
-
-
 
   const fetchData = async () => {
     try {
       const appointmentsResponse = await getAppointments();
-      console.log('Citas obtenidas:', appointmentsResponse);
       setAppointments(appointmentsResponse);
     } catch (error) {
       console.error('Error al obtener las citas:', error);
@@ -76,60 +43,82 @@ function Consulta_cita() {
     fetchData();
   }, []);
 
-
-  const [selectedCita, setSelectedCita] = useState(null);
-  // Estado de filtros avanzados: se inicia con un objeto vacío para mostrar la UI de filtros
-  const [filters, setFilters] = useState([{ type: '', value: '' }]);
-  const [searchQuery, setSearchQuery] = useState(''); // Búsqueda simple
-
-  const navigate = useNavigate();
-
-  // Genera los breadcrumbs combinando los fijos con aquellos derivados de filtros activos
   const getDynamicBreadcrumbs = () => {
     const activeFilters = filters.filter(
       (filter) => filter.type && filter.value.trim() !== ''
     );
     const filterBreadcrumbs = activeFilters.map((filter) => ({
       name: filter.type,
-      link: '#', // El link es ficticio; la acción se maneja en el onCrumbClick
+      link: '#',
     }));
     return [...staticBreadcrumbs, ...filterBreadcrumbs];
   };
 
-  // Al hacer clic en un breadcrumb:
-  // - Si es un breadcrumb fijo ("Inicio" o "Consulta cita"), se reinician los filtros y la búsqueda.
-  // - Si es un breadcrumb de filtro, se eliminan los filtros que vengan después del seleccionado.
   const handleBreadcrumbClick = (index) => {
-    console.log('Se hizo clic en el breadcrumb con índice:', index);
     if (index < staticBreadcrumbs.length) {
-      // Reinicia los filtros (dejándolos en estado inicial) y la búsqueda simple.
       setFilters([{ type: '', value: '' }]);
       setSearchQuery('');
       navigate(staticBreadcrumbs[index].link);
     } else {
-      // Índice relativo en el array de filtros activos:
       const filterIndex = index - staticBreadcrumbs.length;
       setFilters((prevFilters) => prevFilters.slice(0, filterIndex + 1));
     }
   };
 
-  // Funciones de navegación y acciones sobre las citas
   const handleAgregarCita = () => {
     navigate('/agregarCita');
   };
 
   const handleCambiarCita = (id) => {
-    navigate('/cambiarCita');
+    navigate(`/cambiarCita/${id}`);
   };
 
-  const handleCancelarCita = (idCita) => {
-    const confirmar = window.confirm(
-      '¿Estás seguro de que deseas cancelar esta cita?'
-    );
-    if (confirmar) {
-      setAppointments(appointments.filter((cita) => cita.idCita !== idCita));
-      alert('Cita cancelada con éxito.');
-      setSelectedCita(null);
+  // ✅ Función actualizada con llamada al backend
+  const handleCancelarCita = async (idCita) => {
+    const { isConfirmed, value: motivo } = await Swal.fire({
+      title: '¿Cancelar cita?',
+      html: `
+        <p>Por favor ingresa el motivo de la cancelación:</p>
+        <textarea id="motivoTextarea" class="swal2-textarea" placeholder="Escribe el motivo aquí..."></textarea>
+      `,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Sí, cancelar',
+      cancelButtonText: 'No',
+      preConfirm: () => {
+        const motivo = document.getElementById('motivoTextarea').value.trim();
+        if (!motivo) {
+          Swal.showValidationMessage('Debes ingresar un motivo');
+          return false;
+        }
+        return motivo;
+      }
+    });
+
+    if (isConfirmed) {
+      try {
+        await cancelAppointment(idCita, {
+          canceladoPor: 'Cliente',
+          motivo,
+        });
+
+        setAppointments((prev) =>
+          prev.filter((cita) => cita.idCita !== idCita)
+        );
+        setSelectedCita(null);
+
+        await Swal.fire({
+          title: 'Cita cancelada',
+          text: 'La cita ha sido cancelada con éxito.',
+          icon: 'success',
+          confirmButtonColor: '#3085d6',
+        });
+      } catch (error) {
+        console.error('Error al cancelar la cita:', error);
+        Swal.fire('Error', 'No se pudo cancelar la cita.', 'error');
+      }
     }
   };
 
@@ -141,18 +130,16 @@ function Consulta_cita() {
     setSelectedCita(null);
   };
 
-  // Actualiza un filtro específico según el índice, el campo ("type" o "value") y el nuevo valor
   const handleFilterChange = (index, field, value) => {
     const newFilters = [...filters];
     newFilters[index] = {
       ...newFilters[index],
       [field]: value,
     };
-    if (field === 'type') newFilters[index].value = ''; // Reinicia el valor si se cambia el tipo
+    if (field === 'type') newFilters[index].value = '';
     setFilters(newFilters);
   };
 
-  // Agrega un nuevo filtro si el último ya tiene ambos campos completos y se permite hasta 3 filtros
   const handleAddFilter = () => {
     if (
       filters.length < 3 &&
@@ -163,21 +150,14 @@ function Consulta_cita() {
     }
   };
 
-  // Elimina un filtro en particular
   const handleRemoveFilter = (index) => {
     const newFilters = filters.filter((_, i) => i !== index);
-    // Si se elimina el último filtro y queda vacío, se vuelve a inicializar con un objeto vacío
     if (newFilters.length === 0) newFilters.push({ type: '', value: '' });
     setFilters(newFilters);
   };
 
-  const availableFilterTypes = ['trabajador', 'servicio'];
-  const appliedFilterTypes = filters.map((filter) => filter.type);
-
-  // Filtra las citas según la búsqueda simple y los filtros avanzados activos
   const filteredCitas = appointments.filter((cita) => {
     return (
-      // Búsqueda simple
       (searchQuery === '' ||
         Object.values(cita).some((value) => {
           return (
@@ -185,20 +165,32 @@ function Consulta_cita() {
             value.toLowerCase().includes(searchQuery.toLowerCase())
           );
         })) &&
-      // Filtros avanzados
       filters.every((filter) => {
         if (!filter.type || !filter.value) return true;
-        const field = filter.type.toLowerCase();
-        return cita[field]
-          ?.toString()
-          .toLowerCase()
-          .includes(filter.value.toLowerCase());
+
+        if (filter.type === 'trabajador') {
+          return cita.nombreCompletoPersonal
+            ?.toLowerCase()
+            .includes(filter.value.toLowerCase());
+        }
+
+        if (filter.type === 'servicio') {
+          return cita.servicios.some((servicio) =>
+            servicio.nombreServicio
+              .toLowerCase()
+              .includes(filter.value.toLowerCase())
+          );
+        }
+
+        if (filter.type === 'estado') {
+          return cita.estado?.toLowerCase().includes(filter.value.toLowerCase());
+        }
+
+        return true;
       })
     );
   });
 
-
-  // Si la cita seleccionada ya no se encuentra entre las citas filtradas, se cierra la vista de detalles.
   useEffect(() => {
     if (
       selectedCita &&
@@ -210,7 +202,6 @@ function Consulta_cita() {
 
   return (
     <div className="pt-20">
-      {/* Breadcrumbs dinámicos */}
       <Breadcrumbs
         paths={getDynamicBreadcrumbs()}
         onCrumbClick={handleBreadcrumbClick}
@@ -220,9 +211,7 @@ function Consulta_cita() {
         <div className="services-container">
           <h2 className="services-title">Citas del Mes</h2>
 
-          {/* Área de búsqueda y filtros */}
           <div className="max-w-screen-lg mx-auto flex flex-wrap items-center justify-end gap-4 mb-8">
-            {/* Se muestra la búsqueda simple cuando se tiene un único filtro sin valor */}
             {filters.length === 1 && filters[0].value.trim() === '' && (
               <input
                 type="text"
@@ -233,7 +222,6 @@ function Consulta_cita() {
               />
             )}
 
-            {/* UI de filtros avanzados */}
             <div className="flex flex-col items-end space-y-6">
               {filters.map((filter, index) => (
                 <div
@@ -280,7 +268,6 @@ function Consulta_cita() {
                     </select>
                   )}
 
-
                   {filters.length > 1 && (
                     <button
                       onClick={() => handleRemoveFilter(index)}
@@ -307,10 +294,9 @@ function Consulta_cita() {
             </div>
           </div>
 
-          {/* Listado de citas filtradas */}
           <div className="services-grid">
             {filteredCitas.map((cita) => (
-              <div key={cita.id} className="service-card card-transition">
+              <div key={cita.idCita} className="service-card card-transition">
                 <div className="service-card-content">
                   <h3 className="service-card-title">{cita.nombreCompletoPersonal}</h3>
                   <p className="service-card-text">
@@ -327,11 +313,13 @@ function Consulta_cita() {
             ))}
           </div>
 
-          {/* Detalles de la cita seleccionada */}
           {selectedCita && (
             <div className="bg-cardClaro dark:bg-cardObscuro rounded-lg p-6 mt-8">
               <div className="detalle-content">
                 <h3 className="detalle-title">Detalles de la Cita</h3>
+                <p className="detalle-descripcion">
+                  <strong>Estado:</strong> {selectedCita.estado}
+                </p>
                 <p className="detalle-descripcion">
                   <strong>Atención por el empleado:</strong>{' '}
                   {selectedCita.nombreCompletoPersonal}
@@ -339,26 +327,25 @@ function Consulta_cita() {
                 <p className="detalle-descripcion">
                   <strong>Horario:</strong> {new Date(selectedCita.fecha).toLocaleDateString('es-ES')} - {selectedCita.hora.slice(0, 5)}
                 </p>
-
-
                 <p className="detalle-descripcion">
                   <strong>Servicios:</strong>{' '}
                   {selectedCita.servicios.map((servicio) => servicio.nombreServicio).join(', ')}
                 </p>
-
                 <div className="flex gap-4 mt-4">
                   <button
                     className="btn-blue"
-                    onClick={() => handleCambiarCita(selectedCita.id)}
+                    onClick={() => handleCambiarCita(selectedCita.idCita)}
                   >
                     Cambiar Cita
                   </button>
-                  <button
-                    className="button-yellow"
-                    onClick={() => handleCancelarCita(selectedCita.id)}
-                  >
-                    Cancelar Cita
-                  </button>
+                  {selectedCita.estado !== 'Cancelada' && (
+                    <button
+                      className="button-yellow"
+                      onClick={() => handleCancelarCita(selectedCita.idCita)}
+                    >
+                      Cancelar Cita
+                    </button>
+                  )}
                   <button
                     className="btn-cancelar"
                     onClick={handleCerrarDetalles}
