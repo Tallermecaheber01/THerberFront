@@ -1,14 +1,27 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Breadcrumbs from '../Breadcrumbs';
+import { getVehicles, updateVehicle, deleteVehicle } from '../../api/client';
+import { toast } from 'react-toastify';
 
 function ConsultaVehiculos() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState([{ type: '', value: '' }]);
-  const [vehiculos, setVehiculos] = useState([
-    { id: 'V001', marca: 'BMW', modelo: 'X5', año: 2022, placa: 'ABC123', vin: '1HGCM82633A004352' },
-    { id: 'V002', marca: 'Ford', modelo: 'Explorer', año: 2021, placa: 'XYZ456', vin: '2HGCM82633A004353' },
-    { id: 'V003', marca: 'Nissan', modelo: 'Sentra', año: 2020, placa: 'JKL789', vin: '3HGCM82633A004354' }
-  ]);
+
+
+  const [vehicles, setVehicles] = useState([]);
+
+  const fetchData = async () => {
+    try {
+      const vehiclesResponse = await getVehicles();
+      console.log('Vehículos obtenidos:', vehiclesResponse);
+      setVehicles(vehiclesResponse);
+    } catch (error) {
+      console.error('Error al obtener vehículos:', error);
+    }
+  };
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const availableFilterTypes = ['marca', 'modelo', 'año'];
 
@@ -35,7 +48,7 @@ function ConsultaVehiculos() {
   const advancedActive = filters.some((f) => f.type && f.value);
 
   // Búsqueda / filtrado
-  const filtrados = vehiculos.filter((v) => {
+  const filtrados = vehicles.filter((v) => {
     if (!advancedActive && searchQuery) {
       return Object.values(v).some(val => val.toString().toLowerCase().includes(searchQuery.toLowerCase()));
     }
@@ -49,6 +62,10 @@ function ConsultaVehiculos() {
   const handleEditClick = (v) => {
     setEditingId(v.id);
     setFormData({ año: v.año, placa: v.placa, vin: v.vin });
+
+
+
+
   };
   const handleCancel = () => {
     setEditingId(null);
@@ -57,16 +74,48 @@ function ConsultaVehiculos() {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
-  const handleSave = (id) => {
-    setVehiculos(prev =>
-      prev.map(v =>
-        v.id === id
-          ? { ...v, año: parseInt(formData.año, 10), placa: formData.placa, vin: formData.vin }
-          : v
-      )
-    );
-    setEditingId(null);
+
+
+  const handleSave = async (id) => {
+    try {
+      const response = await updateVehicle(id, formData);
+      if (response) {
+        toast.success('Vehículo actualizado exitosamente');
+        setVehicles(prev =>
+          prev.map(v =>
+            v.id === id
+              ? { ...v, año: parseInt(formData.año, 10), placa: formData.placa, vin: formData.vin }
+              : v
+          )
+        );
+      } else {
+        toast.error('Error al actualizar el vehículo');
+      }
+    } catch (error) {
+      console.error('Error al actualizar vehículo:', error);
+      toast.error('Ocurrió un error al actualizar el vehículo. Por favor, inténtalo de nuevo.');
+    } finally {
+      setEditingId(null);
+    }
   };
+
+  const handleDeleteClick = async (id) => {
+    const confirmDelete = window.confirm("¿Estás seguro de que deseas eliminar este vehículo?");
+    if (!confirmDelete) return;
+
+    try {
+      await deleteVehicle(id); // Asegúrate de importar esta función
+      toast.success('Vehículo eliminado exitosamente');
+
+      // Opcional: actualiza la lista de vehículos después de eliminar
+      setVehicles(prev => prev.filter(v => v.id !== id));
+    } catch (error) {
+      console.error('Error al eliminar vehículo:', error);
+      toast.error('Ocurrió un error al eliminar el vehículo');
+    }
+  };
+
+
 
   const breadcrumbPaths = [
     { name: 'Inicio', link: '/' },
@@ -113,7 +162,7 @@ function ConsultaVehiculos() {
                       className="form-input w-48"
                     >
                       <option value="">Seleccione {f.type}</option>
-                      {[...new Set(vehiculos.map(v => v[f.type]))].map(val => (
+                      {[...new Set(vehicles.map(v => v[f.type]))].map(val => (
                         <option key={val} value={val}>{val}</option>
                       ))}
                     </select>
@@ -160,6 +209,10 @@ function ConsultaVehiculos() {
                       <span className="detalle-costo">{v.modelo}</span>
                     </div>
                     <div>
+                      <span className="detalle-label">Numero de Serie:</span>{' '}
+                      <span className="detalle-costo">{v.numeroSerie}</span>
+                    </div>
+                    <div>
                       <span className="detalle-label">Año:</span>{' '}
                       {editingId === v.id ? (
                         <input
@@ -192,17 +245,17 @@ function ConsultaVehiculos() {
                       {editingId === v.id ? (
                         <input
                           type="text"
-                          name="vin"
-                          value={formData.vin}
+                          name="VIN"
+                          value={formData.VIN}
                           onChange={handleChange}
                           className="form-input w-full inline-block"
                         />
                       ) : (
                         <span
                           className="detalle-costo truncate max-w-full block"
-                          title={v.vin}
+                          title={v.VIN}
                         >
-                          {v.vin}
+                          {v.VIN}
                         </span>
                       )}
                     </div>
@@ -236,6 +289,7 @@ function ConsultaVehiculos() {
                           <button
                             type="button"
                             className="btn-cancelar w-24"
+                            onClick={() => handleDeleteClick(v.id)}
                           >
                             Eliminar
                           </button>

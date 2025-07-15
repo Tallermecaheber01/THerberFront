@@ -1,20 +1,44 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Breadcrumbs from '../Breadcrumbs';
+import { createNewVehicle, getAllBrands } from '../../api/client';
+import { toast } from 'react-toastify';
+import { AuthContext } from '../AuthContext';
 
 function RegistrarVehiculo() {
+  const { auth } = React.useContext(AuthContext);
+
   const [formData, setFormData] = useState({
     marca: '',
     modelo: '',
-    anio: '',
+    año: '',
     placa: '',
-    vin: ''
+    VIN: '',
+    numeroSerie: ''
   });
   const [modelosSugeridos, setModelosSugeridos] = useState([]);
   const [mostrarSugerencias, setMostrarSugerencias] = useState(false);
   const timerRef = useRef(null);
 
+  const [brands, setBrands] = useState([]);
+
+  const fetchData = async () => {
+    try {
+      const brandsResponse = await getAllBrands();
+
+      console.log('Marcas obtenidas:', brandsResponse);
+      setBrands(brandsResponse);
+    } catch (error) {
+      console.error('Error al obtener marcas:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+
   // Obtener marcas ejemplo
-  const marcasDisponibles = ['Honda', 'Chevrolet', 'Nissan', 'Ford', 'BMW'];
+  //const marcasDisponibles = ['Honda', 'Chevrolet', 'Nissan', 'Ford', 'BMW'];
 
   // Maneja cambio de inputs
   const handleChange = e => {
@@ -55,9 +79,30 @@ function RegistrarVehiculo() {
 
   const handleSubmit = e => {
     e.preventDefault();
+    if(!auth.user || !auth.user.id) {
+      alert('Debes iniciar sesión para registrar un vehículo.');
+      return
+    }
     console.log('Vehículo registrado:', formData);
+    const dataVehicle = {
+      ...formData,
+      idPropietario: auth.user.id, // Asignar el ID del propietario
+    }
+    try {
+      const response = createNewVehicle(dataVehicle);
+      if (response) {
+        toast.success('Vehículo registrado exitosamente');
+      }else {
+        toast.error('Error al registrar el vehículo');
+      }
+    } catch (error) {
+      console.error('Error al registrar vehículo:', error);
+      alert('Ocurrió un error al registrar el vehículo. Por favor, inténtalo de nuevo.');
+      return;
+
+    }
     // reset
-    setFormData({ marca: '', modelo: '', anio: '', placa: '', vin: '' });
+    setFormData({ marca: '', modelo: '', año: '', placa: '', VIN: '',numeroSerie: '' });
   };
 
   return (
@@ -71,7 +116,7 @@ function RegistrarVehiculo() {
             <label className="form-label">Marca</label>
             <select name="marca" value={formData.marca} onChange={handleChange} className="form-input">
               <option value="" disabled>Selecciona una marca</option>
-              {marcasDisponibles.map(m => <option key={m} value={m}>{m}</option>)}
+              {brands.map(brand => <option key={brand.id} value={brand.nombre}>{brand.nombre}</option>)}
             </select>
           </div>
 
@@ -106,7 +151,7 @@ function RegistrarVehiculo() {
           {/* Año */}
           <div className="form-group">
             <label className="form-label">Año</label>
-            <select name="anio" value={formData.anio} onChange={handleChange} className="form-input">
+            <select name="año" value={formData.año} onChange={handleChange} className="form-input">
               <option value="" disabled>Selecciona un año</option>
               {Array.from({ length: new Date().getFullYear() - 1999 }, (_, i) => 2000 + i).map(anio => (
                 <option key={anio} value={anio}>{anio}</option>
@@ -114,7 +159,7 @@ function RegistrarVehiculo() {
             </select>
           </div>
 
-          {/* Placa & VIN */}
+          {/* Placa & VIN  & NumSerie*/}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="form-group">
               <label className="form-label">Número de Placa</label>
@@ -122,7 +167,11 @@ function RegistrarVehiculo() {
             </div>
             <div className="form-group">
               <label className="form-label">VIN</label>
-              <input name="vin" value={formData.vin} onChange={handleChange} className="form-input" required />
+              <input name="VIN" value={formData.VIN} onChange={handleChange} className="form-input" required />
+            </div>
+            <div>
+              <label className="form-label">Número de Serie</label>
+              <input name="numeroSerie" value={formData.numeroSerie} onChange={handleChange} className="form-input" required />
             </div>
           </div>
 

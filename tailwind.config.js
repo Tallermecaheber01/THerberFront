@@ -5,7 +5,7 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        customBlue: "#153854", // Define tu color personalizado
+        customBlue: "#153854", // Definir color
         amarillobtn: "#c78f28",
         fondoClaro: "#FFFFFF",
         fondoObscuro: "#000e21",
