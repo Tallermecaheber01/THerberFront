@@ -160,7 +160,7 @@ function InformacionEmpresa() {
           <h3 className="form-title text-[#1f618d]">
         {currentSection.label}
       </h3> 
-      <div className="!text-black [&_*]:text-black">
+      <div className="!text-black [&_*]:text-white">
     {renderEditor(currentSection.field, currentSection.label, currentSection.content)}
   </div>
       </div>

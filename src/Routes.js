@@ -16,6 +16,8 @@ import PoliticaDePrivacidad from './components/publico/PoliticaDePrivacidad';
 import TerminosYCondiciones from './components/publico/TerminosYCondiciones';
 import ValidacionCuenta from './components/publico/ValidacionCuenta';
 import Marcas from './components/publico/Marcas';
+import PoliticaSeguridad from './components/publico/PoliticaSeguridad';
+import Deslinde from './components/publico/Deslinde';
 
 // Páginas de error
 import PageNotFound from './components/failed/PageNotFound';
@@ -56,6 +58,11 @@ import InformacionEmpresa from './components/admin/InformacionEmpresa';
 import Contactos from './components/admin/CrudContactos';
 import CrudPoliticas from './components/admin/crudPoliticas';
 import AceptarPagoEfectivo from './payments/AceptarPagoEfectivo';
+import CrudSettings from './components/admin/CrudTerminos';
+import FAQ from './FAQ';
+import FAQCrud from './components/admin/FAQCrud';
+import CrudQUIZ from './components/admin/CrudQUIZ';
+
 
 const AppRoutes = () => {
   return (
@@ -74,6 +81,9 @@ const AppRoutes = () => {
         <Route path="terminosycondiciones" element={<TerminosYCondiciones />} />
         <Route path="validacioncuenta" element={<ValidacionCuenta />} />
         <Route path="Marcas" element={<Marcas />} />
+        <Route path="deslinde" element={<Deslinde />} />
+        <Route path="politicaSeguridad" element={<PoliticaSeguridad />} />
+        <Route path="FAQ" element={<FAQ />} />
 
         {/* Páginas de error */}
         <Route path="NotFound" element={<PageNotFound />} />
@@ -271,6 +281,7 @@ const AppRoutes = () => {
         />
 
         <Route
+
           path="aceptarpagoefectivo"
           element={
             <ProtectedRoute allowedRoles={['administrador']}>
@@ -278,6 +289,21 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="crudTerminos"
+          element={
+            <ProtectedRoute allowedRoles={['administrador']}>
+              <CrudSettings />
+            </ProtectedRoute>
+          }
+        />
+        <Route 
+        path="demandas" 
+        element={
+          <ProtectedRoute allowedRoles={['administrador']}>
+             <Demandas />
+             </ProtectedRoute>
+        } />
 
         <Route
           path="demandas"
@@ -314,6 +340,23 @@ const AppRoutes = () => {
           }
         />
 
+        <Route 
+          path="faqCRud" 
+            element={
+              <ProtectedRoute allowedRoles={['administrador']}>
+                <FAQCrud/>
+              </ProtectedRoute>
+            } 
+          /> 
+
+        <Route 
+          path="CrudQUIZ" 
+            element={
+              <ProtectedRoute allowedRoles={['administrador']}>
+                <CrudQUIZ/>
+              </ProtectedRoute>
+            } 
+          />
 
         {/* Ruta para páginas no encontradas */}
         <Route path="*" element={<Navigate to="/NotFound" replace />} />

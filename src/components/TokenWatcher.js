@@ -19,11 +19,14 @@ const TokenWatcher = () => {
     '/politicadeprivacidad', 
     '/terminosycondiciones', 
     '/validacioncuenta', 
+    '/deslinde',
+    '/politicaSeguridad',
     '/NotFound',
     '/500',
     '/403',
     '/400',
-    '/demandas'
+    '/demandas',
+    '/FAQ',
   ];
 
   useEffect(() => {

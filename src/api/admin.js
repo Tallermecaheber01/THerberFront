@@ -272,6 +272,7 @@ export const deletePolice = async (id) => {
 };
 
 
+
 //Acceptar los pagos en efectivo
 export const getRepairsInProcess = async () => {
   try {
@@ -288,5 +289,194 @@ export const confirmCashPayment = async (repairId) => {
     return response.data;
   } catch (error) {
     return handleError(error, 'confirmCashPayment');
+
+  }
+}
+// Demarcations
+export const getAllDemarcations = async () => {
+  try {
+    const response = await api.get('/admin/demarcations');
+    return response.data;
+  } catch (error) {
+    return handleError(error, 'getAllDemarcations');
+  }
+};
+
+export const updateDemarcation = async (id, data) => {
+  try {
+    const response = await api.patch(`/admin/demarcations/${id}`, data);
+    return response.data;
+  } catch (error) {
+    return handleError(error, 'updateDemarcation');
+  }
+};
+
+// Security Policies
+export const getAllSecurityPolicies = async () => {
+  try {
+    const response = await api.get('/admin/security-policies');
+    return response.data;
+  } catch (error) {
+    return handleError(error, 'getAllSecurityPolicies');
+  }
+};
+
+export const updateSecurityPolicy = async (id, data) => {
+  try {
+    const response = await api.patch(`/admin/security-policies/${id}`, data);
+    return response.data;
+  } catch (error) {
+    return handleError(error, 'updateSecurityPolicy');
+  }
+};
+
+// Terms
+export const getAllTerms = async () => {
+  try {
+    const response = await api.get('/admin/terms');
+    return response.data;
+  } catch (error) {
+    return handleError(error, 'getAllTerms');
+  }
+};
+
+export const updateTerms = async (id, data) => {
+  try {
+    const response = await api.patch(`/admin/terms/${id}`, data);
+    return response.data;
+  } catch (error) {
+    return handleError(error, 'updateTerms');
+  }
+};
+
+// FAQ
+
+export const createFaq = async (faqData) => {
+  try {
+    const response = await api.post('/admin/new-faq', faqData);
+    return response.data;
+  } catch (error) {
+    return handleError(error, 'createFaq');
+  }
+};
+
+export const getAllFaqs = async () => {
+  try {
+    const response = await api.get('/admin/all-faqs');
+    return response.data;
+  } catch (error) {
+    return handleError(error, 'getAllFaqs');
+  }
+};
+
+export const getFaqById = async (id) => {
+  try {
+    const response = await api.get(`/admin/faq/${id}`);
+    return response.data;
+  } catch (error) {
+    return handleError(error, 'getFaqById');
+  }
+};
+
+export const updateFaq = async (faqData) => {
+  try {
+    const response = await api.patch('/admin/update-faq', faqData);
+    return response.data;
+  } catch (error) {
+    return handleError(error, 'updateFaq');
+  }
+};
+
+export const deleteFaq = async (id) => {
+  try {
+    const response = await api.delete(`/admin/delete-faq/${id}`);
+    return response.data;
+  } catch (error) {
+    return handleError(error, 'deleteFaq');
+  }
+};
+
+// Buscar FAQs parcialmente
+export const searchFaqs = async (query) => {
+  try {
+    const response = await api.get(`/admin/faq/search?q=${encodeURIComponent(query)}`);
+    return response.data;
+  } catch (error) {
+    return handleError(error, 'searchFaqs');
+  }
+};
+
+// Buscar FAQ por pregunta exacta
+export const findFaqByPregunta = async (pregunta) => {
+  try {
+    const response = await api.get(`/admin/faq/exact?pregunta=${encodeURIComponent(pregunta)}`);
+    return response.data;
+  } catch (error) {
+    return handleError(error, 'findFaqByPregunta');
+  }
+};
+
+// --- Quiz Questions ---
+export const createQuizQuestion = async (quizData) => {
+  try {
+    const response = await api.post('/admin/quiz/new-question', quizData);
+    return response.data;
+  } catch (error) {
+    return handleError(error, 'createQuizQuestion');
+  }
+};
+
+export const getAllQuizQuestions = async () => {
+  try {
+    const response = await api.get('/admin/quiz/questions');
+    return response.data;
+  } catch (error) {
+    return handleError(error, 'getAllQuizQuestions');
+  }
+};
+
+export const getQuizQuestionById = async (id) => {
+  try {
+    const response = await api.get(`/admin/quiz/question/${id}`);
+    return response.data;
+  } catch (error) {
+    return handleError(error, 'getQuizQuestionById');
+  }
+};
+
+export const updateQuizQuestion = async (quizData) => {
+  try {
+    const response = await api.patch('/admin/quiz/update-question', quizData);
+    return response.data;
+  } catch (error) {
+    return handleError(error, 'updateQuizQuestion');
+  }
+};
+
+export const deleteQuizQuestion = async (deleteDto) => {
+  try {
+    const response = await api.delete('/admin/quiz/delete-question', { data: deleteDto });
+    return response.data;
+  } catch (error) {
+    return handleError(error, 'deleteQuizQuestion');
+  }
+};
+
+// --- Quiz Contact ---
+export const updateQuizContact = async (contactData) => {
+  try {
+    const response = await api.patch('/admin/quiz/contact', contactData);
+    return response.data;
+  } catch (error) {
+    return handleError(error, 'updateQuizContact');
+  }
+};
+
+export const getQuizContact = async () => {
+  try {
+    const response = await api.get('/admin/quiz/contacts');
+    return response.data;
+  } catch (error) {
+    return handleError(error, 'getQuizContact');
   }
 };

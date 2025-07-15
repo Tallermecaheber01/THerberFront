@@ -133,10 +133,16 @@ const Navbar = () => {
             {auth?.role === 'cliente' && (
               <>
                 <li>
+                  <Link to="/Bienvenida" className="navbar-link">
+                    Informacion de usuario
+                  </Link>
+                </li>
+                <li>
                   <Link to="/atencioncliente" className="navbar-link">
                     Atención Cliente
                   </Link>
                 </li>
+
                 <li>
                   <Link to="/consultacita" className="navbar-link">
                     Citas próximas
@@ -173,6 +179,11 @@ const Navbar = () => {
             {/* Rutas empleado */}
             {auth?.role === 'empleado' && (
               <>
+                <li>
+                  <Link to="/Bienvenida" className="navbar-link">
+                    Informacion de usuario
+                  </Link>
+                </li>
                 {/* Dropdown "Citas" para empleado */}
                 <li className="relative" ref={adminCitasDropdownRef}>
                   <span
@@ -247,6 +258,11 @@ const Navbar = () => {
             {/* Rutas administrador */}
             {auth?.role === 'administrador' && (
               <>
+                <li>
+                  <Link to="/Bienvenida" className="navbar-link">
+                    Informacion de usuario
+                  </Link>
+                </li>
                 {/* Dropdown "Citas" */}
                 <li className="relative" ref={adminCitasDropdownRef}>
                   <span
@@ -439,6 +455,14 @@ const Navbar = () => {
                           Politicas
                         </Link>
                       </li>
+                      <li>
+                        <Link
+                          to="/crudTerminos"
+                          className="navbar-dropdown-text"
+                        >
+                          Terminos, deslinde, Politicas de seguridad
+                        </Link>
+                      </li>
                     </ul>
                   )}
                 </li>
@@ -458,6 +482,15 @@ const Navbar = () => {
                 <li>
                   <Link to="/aceptarpagoefectivo" className="navbar-link">
                     Aceptar Efectivo
+
+                  </Link>
+                  <Link to="/faqCrud" className="navbar-link">
+                   Preguntas frecuentes
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/CrudQUIZ" className="navbar-link">
+                   Crud Quiz Alexa
                   </Link>
                 </li>
 

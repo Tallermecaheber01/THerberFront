@@ -253,7 +253,7 @@ function ConsultarCitas() {
                       className="textError"
                       type="button"
                     >
-                      Eliminar
+                      X
                     </button>
                   )}
                 </div>

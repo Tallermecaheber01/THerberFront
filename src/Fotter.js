@@ -9,17 +9,23 @@ function Footer() {
   const [contacts, setContacts] = useState([]);
 
   useEffect(() => {
-    const loadContacts = () => {
-      getAllContacts().then(data => setContacts(data));
+    const loadContacts = async () => {
+      try {
+        const data = await getAllContacts();
+        // Ensure data is an array, fallback to empty array if not
+        setContacts(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error('Error fetching contacts:', error);
+        setContacts([]); // Set empty array on error
+      }
     };
     loadContacts();
-    const interval = setInterval(() => {
-      loadContacts();
-    }, 2000);
+    const interval = setInterval(loadContacts, 2000);
     return () => clearInterval(interval);
   }, []);
 
-  const contactInfo = contacts.filter(c => {
+  const contactInfo = (Array.isArray(contacts) ? contacts : []).filter(c => {
+    if (!c || !c.nombre) return false; // Guard against invalid contact objects
     const nombre = c.nombre.toLowerCase();
     return (
       nombre === 'correo' ||
@@ -29,7 +35,8 @@ function Footer() {
     );
   });
 
-  const socialContacts = contacts.filter(c => {
+  const socialContacts = (Array.isArray(contacts) ? contacts : []).filter(c => {
+    if (!c || !c.nombre) return false; // Guard against invalid contact objects
     const nombre = c.nombre.toLowerCase();
     return (
       nombre !== 'correo' &&
@@ -39,11 +46,11 @@ function Footer() {
     );
   });
 
-  const socialLinks = socialContacts.filter(c => c.informacion.startsWith('http'));
-  const socialUser = socialContacts.filter(c => !c.informacion.startsWith('http'));
+  const socialLinks = socialContacts.filter(c => c.informacion?.startsWith('http'));
+  const socialUser = socialContacts.filter(c => !c.informacion?.startsWith('http'));
 
   const getSocialIcon = (name) => {
-    switch (name.toLowerCase()) {
+    switch (name?.toLowerCase()) {
       case 'facebook':
         return <FaFacebook size={24} />;
       case 'instagram':
@@ -89,55 +96,77 @@ function Footer() {
                     Acerca De
                   </a>
                 </li>
+                <li>
+                  <a href="deslinde" className="navbar-link">
+                    Deslinde
+                  </a>
+                </li>
+                <li>
+                  <a href="politicaSeguridad" className="navbar-link">
+                    Políticas de Seguridad
+                  </a>
+                </li>
               </ul>
             </div>
             <div>
               <h3 className="subtitlefooter">Contacto</h3>
               <ul>
-                {contactInfo.map((c) => {
-                  const lowerName = c.nombre.toLowerCase();
-                  let icon = null;
-                  if (lowerName === 'correo') {
-                    icon = <FaEnvelope />;
-                  } else if (lowerName === 'telefono') {
-                    icon = <FaPhone />;
-                  }
+                {contactInfo.length > 0 ? (
+                  contactInfo.map((c) => {
+                    const lowerName = c.nombre.toLowerCase();
+                    let icon = null;
+                    if (lowerName === 'correo') {
+                      icon = <FaEnvelope />;
+                    } else if (lowerName === 'telefono') {
+                      icon = <FaPhone />;
+                    }
 
-                  return (
+                    return (
+                      <li key={c.id} style={{ marginBottom: '0.5rem' }}>
+                        <div className="flex items-center">
+                          {icon && <span style={{ marginRight: '0.5rem' }}>{icon}</span>}
+                          <span className="navbar-link">{c.nombre}:</span>
+                          <span style={{ marginLeft: '0.4rem', color: '#fff' }}>
+                            {c.informacion}
+                          </span>
+                        </div>
+                      </li>
+                    );
+                  })
+                ) : (
+                  <li>No hay información de contacto disponible.</li>
+                )}
+                {socialUser.length > 0 ? (
+                  socialUser.map((c) => (
                     <li key={c.id} style={{ marginBottom: '0.5rem' }}>
                       <div className="flex items-center">
-                        {icon && <span style={{ marginRight: '0.5rem' }}>{icon}</span>}
+                        <span style={{ marginRight: '0.5rem' }}>{getSocialIcon(c.nombre)}</span>
                         <span className="navbar-link">{c.nombre}:</span>
                         <span style={{ marginLeft: '0.4rem', color: '#fff' }}>
                           {c.informacion}
                         </span>
                       </div>
                     </li>
-                  );
-                })}
-                {socialUser.map((c) => (
-                  <li key={c.id} style={{ marginBottom: '0.5rem' }}>
-                    <div className="flex items-center">
-                      <span style={{ marginRight: '0.5rem' }}>{getSocialIcon(c.nombre)}</span>
-                      <span className="navbar-link">{c.nombre}:</span>
-                      <span style={{ marginLeft: '0.4rem', color: '#fff' }}>
-                        {c.informacion}
-                      </span>
-                    </div>
-                  </li>
-                ))}
+                  ))
+                ) : (
+                  <li>No hay redes sociales disponibles.</li>
+                )}
               </ul>
             </div>
             <div>
               <h3 className="subtitlefooter">Síguenos</h3>
               <div className="flex space-x-4">
-                {socialLinks.map((c) => (
-                  <SocialIcon
-                    key={c.id}
-                    url={c.informacion}
-                    style={{ height: 24, width: 24 }}
-                  />
-                ))}
+                {socialLinks.length > 0 ? (
+                  socialLinks.map((c) => (
+                    <SocialIcon
+                      key={c.id}
+                      url={c.informacion}
+                      style={{ height: 24, width: 24 }}
+                    />
+                  ))
+                ) : (
+                  <p>No hay enlaces de redes sociales disponibles.</p>
+                )}
               </div>
               <h3 className="subtitlefooter mt-4">Déjanos saber tu opinión</h3>
               <ul>
