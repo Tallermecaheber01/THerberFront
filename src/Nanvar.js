@@ -84,9 +84,8 @@ const Navbar = () => {
 
   return (
     <nav
-      className={`navbar fixed top-0 w-full z-50 transform transition-transform duration-500 ${
-        isVisible ? 'translate-y-0' : '-translate-y-full'
-      }`}
+      className={`navbar fixed top-0 w-full z-50 transform transition-transform duration-500 ${isVisible ? 'translate-y-0' : '-translate-y-full'
+        }`}
     >
       <div className="navbar-container">
         <div className="navbar-logo-title">
@@ -153,7 +152,7 @@ const Navbar = () => {
                     Historial de Reparaciones
                   </Link>
                 </li>
-                 <li>
+                <li>
                   <Link to="/pagarreparacion" className="navbar-link">
                     Pago de Reparacion
                   </Link>
@@ -371,6 +370,14 @@ const Navbar = () => {
                       </li>
                       <li>
                         <Link
+                          to="/analisisClientes"
+                          className="navbar-dropdown-text"
+                        >
+                          Analisis Clientes
+                        </Link>
+                      </li>
+                      <li>
+                        <Link
                           to="/datosestadisticos"
                           className="navbar-dropdown-text"
                         >
@@ -482,15 +489,17 @@ const Navbar = () => {
                 <li>
                   <Link to="/aceptarpagoefectivo" className="navbar-link">
                     Aceptar Efectivo
-
-                  </Link>
-                  <Link to="/faqCrud" className="navbar-link">
-                   Preguntas frecuentes
                   </Link>
                 </li>
                 <li>
+                  <Link to="/faqCrud" className="navbar-link">
+                    Preguntas frecuentes
+                  </Link>
+                </li>
+
+                <li>
                   <Link to="/CrudQUIZ" className="navbar-link">
-                   Crud Quiz Alexa
+                    Crud Quiz Alexa
                   </Link>
                 </li>
 

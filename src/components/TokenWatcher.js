@@ -15,6 +15,7 @@ const TokenWatcher = () => {
     '/consultaservicios', 
     '/recuperacion',
     '/verDetalles',
+    '/cotizarprecio',
     '/acercade', 
     '/politicadeprivacidad', 
     '/terminosycondiciones', 

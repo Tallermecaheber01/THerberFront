@@ -194,5 +194,22 @@ export const cancelAppointment = async (idCita, cancelData) => {
   }
 };
 
+export const getAllClientProfiles = async () => {
+  try {
+    const response = await api.get('/client/debug-perfil');
+    return response.data;
+  } catch (error) {
+    console.error('Error al obtener perfiles de clientes:', error);
+    throw error;
+  }
+};
 
-
+export const getClientProfileById = async (idCliente) => {
+  try {
+    const response = await api.get(`/client/debug-perfil/${idCliente}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error al obtener perfil del cliente con ID ${idCliente}:', error);
+    throw error;
+  }
+};

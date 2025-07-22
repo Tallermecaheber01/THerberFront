@@ -6,18 +6,16 @@ import { getServiceById } from '../../api/admin';
 function VerDetalles() {
   const location = useLocation();
   const navigate = useNavigate();
-  const serviceId = location.state?.serviceId; // Extrae el id desde state
+  const serviceId = location.state?.serviceId;
   const [servicio, setServicio] = useState(null);
   const [error, setError] = useState(null);
 
-  // Si no hay serviceId (por recarga o acceso directo), redirigir
   useEffect(() => {
     if (!serviceId) {
-      navigate('/consultaservicios'); // Redirige si no se encuentra el id
+      navigate('/consultaservicios');
     }
   }, [serviceId, navigate]);
 
-  // Breadcrumbs estáticos para navegación
   const breadcrumbPaths = [
     { name: 'Inicio', link: '/' },
     { name: 'Consulta Servicios', link: '/consultaservicios' },
@@ -85,10 +83,19 @@ function VerDetalles() {
                 <span className="detalle-label">Modelos:</span> {servicio.modelos.join(', ')}
               </p>
             )}
+
             <div className="detalle-boton">
               <Link to="/consultaservicios">
                 <button className="btn-aceptar w-auto text-sm py-2 px-1">
                   Volver al catálogo
+                </button>
+              </Link>
+            </div>
+
+            <div className="detalle-boton mt-2">
+              <Link to="/cotizarprecio">
+                <button className="btn-aceptar w-auto text-sm py-2 px-1">
+                  Cotizar precios
                 </button>
               </Link>
             </div>
