@@ -231,7 +231,34 @@ function AsignacionCita() {
 
     if (!fecha) errors.fecha = 'Debe seleccionar una fecha.';
     if (!hora) errors.hora = 'Debe seleccionar una hora.';
+        // VALIDACIONES ADICIONALES DE FECHA Y HORA
+    if (fecha && hora) {
+      const selectedDateTime = new Date(`${fecha}T${hora}`);
+      const now = new Date();
 
+      // No permitir fechas pasadas ni hoy si la hora ya pasó
+      if (selectedDateTime <= now) {
+        errors.fecha = 'No puede agendar citas en fechas pasadas ni en una hora ya pasada de hoy.';
+      }
+
+      // No más de 4 meses en el futuro
+      const maxDate = new Date();
+      maxDate.setMonth(maxDate.getMonth() + 4);
+      if (selectedDateTime > maxDate) {
+        errors.fecha = 'No puede agendar citas para más de 4 meses en el futuro.';
+      }
+
+      // No domingos (0 = domingo)
+      if (selectedDateTime.getDay() === 0) {
+        errors.fecha = 'No se pueden agendar citas los días domingo.';
+      }
+
+      // Horario permitido: de 09:00 a 19:00 (19:00 excluyente)
+      const hour = selectedDateTime.getHours();
+      if (hour < 9 || hour >= 19) {
+        errors.hora = 'Las citas solo pueden agendarse entre las 9:00 y las 19:00.';
+      }
+    }
     if (serviciosSeleccionados.length === 0)
       errors.servicios = 'Debe agregar al menos un servicio.';
 

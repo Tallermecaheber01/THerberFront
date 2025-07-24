@@ -23,6 +23,12 @@ const Navbar = () => {
   const [isDocDropdownOpen, setIsDocDropdownOpen] = useState(false);
   const [isDocClicked, setIsDocClicked] = useState(false);
   const docDropdownRef = useRef(null);
+  const [isReparacionesOpen, setIsReparacionesOpen] = useState(false);
+  const [isReparacionesClicked, setIsReparacionesClicked] = useState(false);
+  const [isAlexaOpen, setIsAlexaOpen] = useState(false);
+  const [isAlexaClicked, setIsAlexaClicked] = useState(false);
+const reparacionesDropdownRef = useRef(null);
+const alexaDropdownRef = useRef(null);
 
   useEffect(() => {
     setIsVisible(true);
@@ -73,6 +79,40 @@ const Navbar = () => {
     document.addEventListener('mousedown', handleClickOutsideDoc);
     return () => document.removeEventListener('mousedown', handleClickOutsideDoc);
   }, []);
+
+useEffect(() => {
+  const handleClickOutsideReparaciones = (event) => {
+    if (
+      reparacionesDropdownRef.current &&
+      !reparacionesDropdownRef.current.contains(event.target)
+    ) {
+      setIsReparacionesOpen(false);
+      setIsReparacionesClicked(false);
+    }
+  };
+  document.addEventListener('mousedown', handleClickOutsideReparaciones);
+  return () => {
+    document.removeEventListener('mousedown', handleClickOutsideReparaciones);
+  };
+}, []);
+
+
+useEffect(() => {
+  const handleClickOutsideAlexa = (event) => {
+    if (
+      alexaDropdownRef.current &&
+      !alexaDropdownRef.current.contains(event.target)
+    ) {
+      setIsAlexaOpen(false);
+      setIsAlexaClicked(false);
+    }
+  };
+  document.addEventListener('mousedown', handleClickOutsideAlexa);
+  return () => {
+    document.removeEventListener('mousedown', handleClickOutsideAlexa);
+  };
+}, []);
+
 
   const handleLogout = () => {
     // Eliminamos la cookie de autenticación
@@ -136,12 +176,6 @@ const Navbar = () => {
                     Informacion de usuario
                   </Link>
                 </li>
-                <li>
-                  <Link to="/atencioncliente" className="navbar-link">
-                    Atención Cliente
-                  </Link>
-                </li>
-
                 <li>
                   <Link to="/consultacita" className="navbar-link">
                     Citas próximas
@@ -350,7 +384,7 @@ const Navbar = () => {
                       })
                     }
                   >
-                    Demandas empresa
+                    Demanda de la empresa
                   </span>
                   {isGestDropdownOpen && (
                     <ul
@@ -362,34 +396,10 @@ const Navbar = () => {
                     >
                       <li>
                         <Link
-                          to="/analisisrendimiento"
-                          className="navbar-dropdown-text"
-                        >
-                          Rendimiento
-                        </Link>
-                      </li>
-                      <li>
-                        <Link
                           to="/analisisClientes"
                           className="navbar-dropdown-text"
                         >
                           Analisis Clientes
-                        </Link>
-                      </li>
-                      <li>
-                        <Link
-                          to="/datosestadisticos"
-                          className="navbar-dropdown-text"
-                        >
-                          Datos Estadísticos
-                        </Link>
-                      </li>
-                      <li>
-                        <Link
-                          to="/gestionfinanciera"
-                          className="navbar-dropdown-text"
-                        >
-                          Gestión Financiera
                         </Link>
                       </li>
                       <li>
@@ -481,27 +491,82 @@ const Navbar = () => {
                   </Link>
                 </li>
 
-                <li>
-                  <Link to="/consultasreparaciones" className="navbar-link">
-                    Reparaciones realizadas
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/aceptarpagoefectivo" className="navbar-link">
-                    Aceptar Efectivo
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/faqCrud" className="navbar-link">
-                    Preguntas frecuentes
-                  </Link>
-                </li>
-
-                <li>
-                  <Link to="/CrudQUIZ" className="navbar-link">
-                    Crud Quiz Alexa
-                  </Link>
-                </li>
+                <li className="relative" ref={reparacionesDropdownRef}>
+  <span
+    className="navbar-link cursor-pointer"
+    onMouseEnter={() => setIsReparacionesOpen(true)}
+    onMouseLeave={() => {
+      if (!isReparacionesClicked) setIsReparacionesOpen(false);
+    }}
+    onClick={() =>
+      setIsReparacionesClicked((prev) => {
+        const newState = !prev;
+        setIsReparacionesOpen(newState);
+        return newState;
+      })
+    }
+  >
+    Reparaciones y pagos
+  </span>
+  {isReparacionesOpen && (
+    <ul
+      className="navbar-dropdown"
+      onMouseEnter={() => setIsReparacionesOpen(true)}
+      onMouseLeave={() => {
+        if (!isReparacionesClicked) setIsReparacionesOpen(false);
+      }}
+    >
+      <li>
+        <Link to="/consultasreparaciones" className="navbar-dropdown-text">
+          Reparaciones realizadas
+        </Link>
+      </li>
+      <li>
+        <Link to="/aceptarpagoefectivo" className="navbar-dropdown-text">
+          Aceptar Efectivo
+        </Link>
+      </li>
+    </ul>
+  )}
+</li>
+                <li className="relative" ref={alexaDropdownRef}>
+          <span
+            className="navbar-link cursor-pointer"
+            onMouseEnter={() => setIsAlexaOpen(true)}
+            onMouseLeave={() => {
+              if (!isAlexaClicked) setIsAlexaOpen(false);
+            }}
+            onClick={() =>
+              setIsAlexaClicked((prev) => {
+                const newState = !prev;
+                setIsAlexaOpen(newState);
+                return newState;
+              })
+            }
+          >
+            Gestión otros
+          </span>
+          {isAlexaOpen && (
+            <ul
+              className="navbar-dropdown"
+              onMouseEnter={() => setIsAlexaOpen(true)}
+              onMouseLeave={() => {
+                if (!isAlexaClicked) setIsAlexaOpen(false);
+              }}
+            >
+              <li>
+                <Link to="/faqCrud" className="navbar-dropdown-text">
+                  Preguntas frecuentes
+                </Link>
+              </li>
+              <li>
+                <Link to="/CrudQUIZ" className="navbar-dropdown-text">
+                  Crud Quiz Alexa
+                </Link>
+              </li>
+            </ul>
+          )}
+        </li>
 
               </>
             )}

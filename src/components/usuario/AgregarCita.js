@@ -61,7 +61,46 @@ function AgregarCita() {
     e.preventDefault();
 
     const fechaObj = new Date(fecha);
-    const fechaStr = fechaObj.toISOString().split('T')[0];
+    const ahora = new Date();
+
+    if (isNaN(fechaObj.getTime())) {
+    toast.error('Fecha inválida.');
+    return;
+  }
+
+  if (fechaObj < ahora) {
+    toast.error('No puedes agendar una cita en una fecha y hora pasada.');
+    return;
+  }
+
+  const cuatroMesesDespues = new Date();
+  cuatroMesesDespues.setMonth(cuatroMesesDespues.getMonth() + 4);
+  if (fechaObj > cuatroMesesDespues) {
+    toast.error('No puedes agendar una cita con más de 4 meses de anticipación.');
+    return;
+  }
+
+  const hora = fechaObj.getHours();
+  if (hora < 9 || hora >= 19) {
+    toast.error('Solo se puede agendar entre las 9:00 a.m. y las 7:00 p.m.');
+    return;
+  }
+
+
+   const diaSemana = fechaObj.getDay();
+  if (diaSemana === 0) {
+    toast.error('No puedes agendar citas los domingos.');
+    return;
+  }
+
+
+  const serviciosSeleccionados = Object.keys(servSeleccionados).filter(id => servSeleccionados[id]);
+  if (serviciosSeleccionados.length === 0 && !diagnostico) {
+    toast.error('Debes seleccionar al menos un servicio o activar el diagnóstico.');
+    return;
+  }
+
+      const fechaStr = fechaObj.toISOString().split('T')[0];
     const horaStr = fechaObj.toTimeString().split(' ')[0];
 
     const serviciosNombres = servicios1
@@ -153,21 +192,41 @@ function AgregarCita() {
               </div>
             </div>
 
-            <div className="p-4 bg-gray-50 rounded space-y-2">
-              <h3 className="font-semibold">Resumen</h3>
-              <p><strong>Marca:</strong> {marca || '—'}</p>
-              <p><strong>Modelo:</strong> {modelo || '—'}</p>
-              <p><strong>Fecha:</strong> {fecha ? new Date(fecha).toLocaleString() : '—'}</p>
-              <p><strong>Diagnóstico:</strong> {diagnostico ? 'Sí' : 'No'}</p>
-              <div>
-                <strong>Servicios:</strong>
-                {seleccionados.length > 0 ? (
-                  <ul className="list-disc pl-5">
-                    {seleccionados.map(srv => <li key={srv.id}>{srv.nombre}</li>)}
-                  </ul>
-                ) : <span> Ninguno</span>}
-              </div>
+            <div className="p-4 dark:bg-gray-800 form-input rounded space-y-2">
+            <h3 className="font-semibold">Resumen</h3>
+            <p><strong>Marca:</strong> {marca || '—'}</p>
+            <p><strong>Modelo:</strong> {modelo || '—'}</p>
+            <p><strong>Fecha:</strong> {fecha ? new Date(fecha).toLocaleString() : '—'}</p>
+            <p><strong>Diagnóstico:</strong> {diagnostico ? 'Sí' : 'No'}</p>
+            <div>
+              <strong>Servicios:</strong>
+              {seleccionados.length > 0 ? (
+                <div className="max-h-32 overflow-y-auto border border-transparent rounded mt-2 p-2 bg-white dark:bg-gray-800 space-y-1">
+                  {seleccionados.map(srv => (
+                    <div key={srv.id} className="flex justify-between items-center bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded">
+                      <span>{srv.nombre}</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setServSeleccionados(prev => {
+                            const next = { ...prev };
+                            delete next[srv.id];
+                            return next;
+                          });
+                        }}
+                        className="text-red-600 hover:text-red-800 font-bold ml-2"
+                        title="Quitar"
+                      >
+                        ✖
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <span> Ninguno</span>
+              )}
             </div>
+          </div>
 
             <div className="flex gap-4">
               <button type="submit" className="btn-aceptar flex-1">Solicitar Cita</button>
@@ -210,24 +269,27 @@ function AgregarCita() {
                   onChange={e => setBusquedaServ(e.target.value)}
                   className="form-input"
                 />
-                {servFiltrados.map(srv => (
-                  <label key={srv.id} className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      checked={!!servSeleccionados[srv.id]}
-                      onChange={() => {
-                        setServSeleccionados(prev => {
-                          const next = { ...prev };
-                          if (next[srv.id]) delete next[srv.id];
-                          else next[srv.id] = true;
-                          return next;
-                        });
-                      }}
-                      className="form-checkbox"
-                    />
-                    <span>{srv.nombre}</span>
-                  </label>
-                ))}
+                <div className="max-h-64 overflow-y-auto pr-2 rounded border dark:text-white border-gray-300 bg-white dark:bg-gray-900 dark:border-gray-600">
+              {servFiltrados.map(srv => (
+                <label key={srv.id} className="flex items-center space-x-2 px-2 py-1">
+                  <input
+                    type="checkbox"
+                    checked={!!servSeleccionados[srv.id]}
+                    onChange={() => {
+                      setServSeleccionados(prev => {
+                        const next = { ...prev };
+                        if (next[srv.id]) delete next[srv.id];
+                        else next[srv.id] = true;
+                        return next;
+                      });
+                    }}
+                    className="form-checkbox"
+                  />
+                  <span>{srv.nombre}</span>
+                </label>
+              ))}
+            </div>
+
               </div>
             )}
           </div>

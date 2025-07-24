@@ -147,7 +147,7 @@ const ClientInsights = () => {
   );
 
   return (
-    <div className="p-6 pt-20 bg-fondoClaro dark:bg-fondoObscuro rounded-lg shadow-lg">
+    <div className="p-6 pt-32 bg-fondoClaro dark:bg-fondoObscuro rounded-lg shadow-lg">
       <h1 className="form-title text-center mb-6">Análisis Estratégico de Clientes</h1>
       <div className="service-card p-6 bg-cardClaro dark:bg-cardObscuro mb-6 relative">
         {!detalle && (

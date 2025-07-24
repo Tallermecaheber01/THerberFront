@@ -98,7 +98,7 @@ function Bienvenida() {
 
             {role === 'cliente' && (
               <div className="form-group flex flex-col items-center gap-4 mt-20">
-                <p className="text-center text-gray-700 font-medium">
+                <p className="text-center text-green-800 dark:text-green-200 font-medium text-xl">
                   Vincular tu smartwatch para recibir notificaciones:
                 </p>
                 <button
@@ -114,7 +114,7 @@ function Bienvenida() {
                 </button>
 
                 {codigoSmartwatch && (
-                  <div className="mt-2 text-blue-700 font-bold text-lg">
+                  <div className="mt-2 text-black-800 dark:text-white text-center font-bold text-lg">
                     Código: {codigoSmartwatch}
                   </div>
                 )}
