@@ -442,14 +442,6 @@ useEffect(() => {
                     >
                       <li>
                         <Link
-                          to="/crudregulatorios"
-                          className="navbar-dropdown-text"
-                        >
-                          Documentos Regulatorios
-                        </Link>
-                      </li>
-                      <li>
-                        <Link
                           to="/contactos"
                           className="navbar-dropdown-text"
                         >
@@ -567,6 +559,12 @@ useEffect(() => {
             </ul>
           )}
         </li>
+
+             <li>
+                  <Link to="/adminEmpleados" className="navbar-link">
+                    Administrar empleados
+                  </Link>
+                </li>
 
               </>
             )}

@@ -462,23 +462,23 @@ function Recuperacion() {
                     {showRequirements && !allChecksSatisfied && (
                       <div className="requirements-list">
                         <ul className="list-none p-0 m-0">
-                          <li className="flex items-center gap-2">
+                          <li className="flex items-center gap-2 mt-5">
                             {passwordChecks.minLength ? (
                               <FiCheckCircle className="iconoCorrect" />
                             ) : (
                               <FiXCircle className="iconoError" />
                             )}
-                            <span className="white-text">
+                            <span className="dark:text-gray-300 ">
                               Mínimo 8 caracteres (máx. 20)
                             </span>
                           </li>
-                          <li className="flex items-center gap-2">
+                          <li className="flex items-center gap-2 ">
                             {passwordChecks.upperCase ? (
                               <FiCheckCircle className="iconoCorrect" />
                             ) : (
                               <FiXCircle className="iconoError" />
                             )}
-                            <span className="white-text">Al menos una mayúscula</span>
+                            <span className="dark:text-gray-300">Al menos una mayúscula</span>
                           </li>
                           <li className="flex items-center gap-2">
                             {passwordChecks.lowerCase ? (
@@ -486,7 +486,7 @@ function Recuperacion() {
                             ) : (
                               <FiXCircle className="iconoError" />
                             )}
-                            <span className="white-text">Al menos una minúscula</span>
+                            <span className="dark:text-gray-300">Al menos una minúscula</span>
                           </li>
                           <li className="flex items-center gap-2">
                             {passwordChecks.number ? (
@@ -494,7 +494,7 @@ function Recuperacion() {
                             ) : (
                               <FiXCircle className="iconoError" />
                             )}
-                            <span className="white-text">Al menos un número</span>
+                            <span className="dark:text-gray-300">Al menos un número</span>
                           </li>
                           <li className="flex items-center gap-2">
                             {passwordChecks.specialChar ? (
@@ -502,7 +502,7 @@ function Recuperacion() {
                             ) : (
                               <FiXCircle className="iconoError" />
                             )}
-                            <span className="white-text">
+                            <span className="dark:text-gray-300">
                               Al menos un carácter especial (!@#$%^&*)
                             </span>
                           </li>
@@ -512,7 +512,7 @@ function Recuperacion() {
                             ) : (
                               <FiXCircle className="iconoError" />
                             )}
-                            <span className="white-text">
+                            <span className=" dark:text-gray-300 ">
                               Sin secuencias obvias como "12345" o "abcd"
                             </span>
                           </li>

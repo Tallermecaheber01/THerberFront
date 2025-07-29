@@ -33,7 +33,6 @@ function InformacionEmpresa() {
     fetchData();
   }, []);
 
-  
   const validateContent = (content) => {
     if (content.trim().length < 30) {
       toast.error("El contenido debe tener al menos 30 caracteres.");
@@ -99,7 +98,7 @@ function InformacionEmpresa() {
             value={tempContent} 
             onChange={(e) => setTempContent(e.target.value)}
             rows="5"
-            className="form-input mb-2"
+            className="form-input mb-2 text-black dark:text-white"
           />
           <div className="flex gap-2">
             <button onClick={handleSave} className="btn-aceptar">Guardar</button>
@@ -112,7 +111,8 @@ function InformacionEmpresa() {
     return (
       <div>
         <div style={{ maxHeight: '200px', overflowY: 'auto', overflowX: 'hidden' }}>
-          <p className="white-text whitespace-pre-wrap break-words">{content}</p>
+          {/* Aquí agrego clases para que el texto sea negro en tema claro y blanco en tema oscuro */}
+          <p className="whitespace-pre-wrap break-words text-black dark:text-white">{content}</p>
         </div>
         <button 
           onClick={() => handleEdit(field)} 
@@ -146,7 +146,7 @@ function InformacionEmpresa() {
             setActiveEditor(null); 
             setSelectedSection(e.target.value);
           }}
-          className="w-full p-2 border border-gray-400 rounded-lg focus:ring-2 focus:ring-[#2C75B2] dark:focus:ring-yellow-500;"
+          className="w-full p-2 border border-gray-400 rounded-lg focus:ring-2 focus:ring-[#2C75B2] dark:focus:ring-yellow-500"
         >
           <option value="mission">Misión</option>
           <option value="vision">Visión</option>
@@ -160,9 +160,9 @@ function InformacionEmpresa() {
           <h3 className="form-title text-[#1f618d]">
         {currentSection.label}
       </h3> 
-      <div className="!text-black [&_*]:text-white">
-    {renderEditor(currentSection.field, currentSection.label, currentSection.content)}
-  </div>
+      <div>
+        {renderEditor(currentSection.field, currentSection.label, currentSection.content)}
+      </div>
       </div>
       
       <ToastContainer />
@@ -171,4 +171,3 @@ function InformacionEmpresa() {
 }
 
 export default InformacionEmpresa;
-

@@ -172,3 +172,88 @@ export const getAllQuestions = async () => {
         )
     }
 }
+
+export const updateUserInfo = async (id, data) => {
+  try {
+    const response = await api.put(
+      `/public/client/${id}`,
+      data,
+      { withCredentials: true }
+    );
+    toast.success('Información actualizada');
+    return response.data;
+  } catch (error) {
+    console.error(
+      'Error al actualizar cliente:',
+      error.response ? error.response.data : error.message
+    );
+    toast.error('No se pudo actualizar la información');
+    throw error;
+  }
+};
+
+
+export const updatePersonnelInfo = async (id, data) => {
+  try {
+    const response = await api.put(
+      `/public/personnel/${id}`,
+      data,
+      { withCredentials: true }
+    );
+    toast.success('Información actualizada correctamente');
+    return response.data;
+  } catch (error) {
+    console.error(
+      'Error al actualizar la información del personal:',
+      error.response ? error.response.data : error.message
+    );
+    toast.error('No se pudo actualizar la información');
+    throw error;
+  }
+};
+
+// todos los empleados
+export const getAllEmployers = async () => {
+  try {
+    const response = await api.get('/public/employers');
+    return response.data;
+  } catch (error) {
+    console.error(
+      'Error al obtener empleados:',
+      error.response ? error.response.data : error.message
+    );
+    throw error;
+  }
+};
+
+// Crear nuevo empleado
+export const createEmployer = async (employerData) => {
+  try {
+    const response = await api.post('/public/employers', employerData);
+    toast.success('Empleado creado correctamente');
+    return response.data;
+  } catch (error) {
+    console.error(
+      'Error al crear empleado:',
+      error.response ? error.response.data : error.message
+    );
+    toast.error('No se pudo crear el empleado');
+    throw error;
+  }
+};
+
+// Eliminar empleado por id
+export const deleteEmployer = async (id) => {
+  try {
+    const response = await api.delete(`/public/employers/${id}`);
+    toast.success('Empleado eliminado correctamente');
+    return response.data;
+  } catch (error) {
+    console.error(
+      'Error al eliminar empleado:',
+      error.response ? error.response.data : error.message
+    );
+    toast.error('No se pudo eliminar el empleado');
+    throw error;
+  }
+};

@@ -190,7 +190,7 @@ const Login = () => {
               <button
                 type="button"
                 onClick={togglePasswordVisibility}
-                className="absolute right-3 top-9"
+                className="absolute right-3 top-9 text-black dark:text-white"
               >
                 {showPassword ? (
                   <FiEyeOff className="iconoVer" />

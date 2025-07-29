@@ -527,16 +527,6 @@ function ConsultasReparaciones() {
                         <span className="detalle-costo">{repair.modelo}</span>
                       </div>
                     )}
-                    <button
-                      type="button"
-                      className="btn-aceptar w-full mt-2"
-                      onClick={() => {
-                        setPendingEditRepair(repair);
-                        setIsEditConfirmModalOpen(true);
-                      }}
-                    >
-                      Editar Reparación
-                    </button>
                   </div>
                 ))}
               </div>

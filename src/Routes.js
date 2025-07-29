@@ -64,7 +64,7 @@ import FAQ from './FAQ';
 import FAQCrud from './components/admin/FAQCrud';
 import CrudQUIZ from './components/admin/CrudQUIZ';
 import AnalisisClientes from './components/admin/AnalisisClientes';
-
+import AdminEmpleados from './components/admin/AdminEmpleados';
 
 const AppRoutes = () => {
   return (
@@ -365,6 +365,15 @@ const AppRoutes = () => {
           element={
             <ProtectedRoute allowedRoles={['administrador']}>
               <CrudQUIZ />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="adminEmpleados"
+          element={
+            <ProtectedRoute allowedRoles={['administrador']}>
+              <AdminEmpleados />
             </ProtectedRoute>
           }
         />
