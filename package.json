@@ -5,7 +5,7 @@
   "dependencies": {
     "@cloudinary/react": "^1.13.1",
     "@cloudinary/url-gen": "^1.21.0",
-    "axios": "^1.7.9",
+    "axios": "^1.8.3",
     "chart.js": "^4.4.7",
     "chartjs-plugin-datalabels": "^2.2.0",
     "cra-template": "1.2.0",
